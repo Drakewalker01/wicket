@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Willow HD Live Stream</title>
+    <title id="page-title">Sony Sports 3 HD Live Stream</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- JW Player library as provided by the user -->
@@ -84,7 +84,7 @@
                 </div>
             </div>
             <div class="p-4">
-                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: Willow HD Live</h2>
+                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: Sony Sports 3 HD Live</h2>
             </div>
         </div>
     </div>
@@ -134,26 +134,19 @@
             // No need to set channelTitleElement.textContent here as it's now a static link in HTML
             const currentProgramTitleElement = document.getElementById('current-program-title');
 
-            currentProgramTitleElement.textContent = `Now Playing: Willow HD Live`;
+            currentProgramTitleElement.textContent = `Now Playing: Sony Sports 3 HD Live`;
             hideProgramStatusMessage(); // Hide any existing status message when loading a new stream
 
             // Initialize JW Player with the provided DASH + ClearKey DRM stream
             player = jwplayer("my-video").setup({
-                file: "https://dish.slivcdn.com/hls/live/2020591-b/TEN3HD/master.m3u8",
-                type: "dash",
+                file: "https://dish.slivcdn.com/hls/live/2020591/TEN3HD/master.m3u8",
                 width: "100%",
                 aspectratio: "16:9",
                 autostart: true, // Autostart the stream
                 stretching: "uniform",
                 controls: true,
                 preload: "auto",
-                primary: "html5",
-                drm: {
-                    clearkey: {
-                        keyId: "ae26845bd33038a9c0774a0981007294",
-                        key: "63ac662dde310cfb4cc6f9b43b34196d"
-                    }
-                }
+                primary: "html5"
             });
 
             // This listener will catch JW Player's internal errors and show your custom message.
