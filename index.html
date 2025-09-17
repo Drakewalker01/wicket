@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber TV</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a; /* Dark background */
+            color: #ffffff; /* White text */
+            display: flex;
+            flex-direction: column; /* Changed to column to push footer to bottom */
+            justify-content: space-between; /* Distribute space between content and footer */
+            align-items: center; /* Center content horizontally */
+            min-height: 100vh;
+            padding: 2rem 1rem; /* Add some padding around the content */
+            box-sizing: border-box;
+        }
+
+        /* Slider specific styles */
+        .slider-container {
+            position: relative;
+            max-width: 100%;
+            height: 250px; /* Fixed height for the slider */
+            margin: 0 auto 2rem auto;
+            overflow: hidden;
+            border-radius: 0.75rem; /* Updated to rounded-xl from EPG card */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Stronger shadow from EPG hover */
+            background-color: #1a1a1a; /* Darker gray for consistency */
+        }
+
+        .slides {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            border-radius: 0.75rem; /* Match container */
+            overflow: hidden;
+            /* Using left, transform, opacity for transitions */
+            transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out, left 0.6s ease-in-out, width 0.6s ease-in-out, z-index 0s;
+            opacity: 0;
+            pointer-events: none; /* Disable interaction when not active */
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.75rem; /* Match parent */
+        }
+
+        .slide::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay for inactive slides */
+            transition: background-color 0.6s ease-in-out;
+            pointer-events: none;
+        }
+
+        .slide.active {
+            left: 50%;
+            width: 70%;
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+            z-index: 3; /* Bring active slide to front */
+            pointer-events: auto; /* Enable interaction for active slide */
+        }
+        .slide.active::after {
+            background-color: rgba(0, 0, 0, 0); /* Remove overlay for active slide */
+        }
+
+        .slide.prev-visible {
+            left: 0%;
+            width: 40%;
+            transform: translateX(10%) scale(0.8);
+            opacity: 1;
+            z-index: 2; /* Keep visible slides behind active one */
+        }
+
+        .slide.next-visible {
+            left: 60%;
+            width: 40%;
+            transform: translateX(-10%) scale(0.8);
+            opacity: 1;
+            z-index: 2;
+        }
+
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 1rem;
+            margin-top: -1.5rem;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            transition: background-color 0.3s ease;
+            user-select: none;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 0.5rem;
+            z-index: 4; /* Ensure arrows are above slides */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prev {
+            left: 10px;
+        }
+        .next {
+            right: 10px;
+        }
+
+        .prev:hover, .next:hover {
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .dots-container {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4;
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            cursor: pointer;
+            height: 10px;
+            width: 10px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .dot.active, .dot:hover {
+            background-color: #00c2cb; /* Teal/Cyan highlight from EPG */
+        }
+
+        /* Responsive adjustments for slider height on smaller screens */
+        @media (max-width: 640px) {
+            .slider-container {
+                height: 180px; /* Adjust height for small screens */
+            }
+            .prev, .next {
+                padding: 0.75rem;
+                font-size: 1.2rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .slider-container {
+                height: 150px; /* Further adjust height for very small screens */
+            }
+            .prev, .next {
+                padding: 0.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="w-full max-w-4xl mx-auto flex-grow flex flex-col">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-semibold text-gray-100">HitWicket</h1>
+        </header>
+
+        <!-- Main content area for slider and other sections -->
+        <main class="flex-grow p-0 md:p-0 pb-4"> <!-- Removed padding as slider container has its own margin -->
+
+            <section class="slider-container" id="sliderSection">
+                <div class="slides" id="imageSlider">
+                    <div class="slide">
+                        <img src="https://mobond.yuppcdn.net/peotvgo/content/banner/mobile/page/banners/banners-banner-wfrazh9din.jpeg" alt="Slide 1">
+                    </div>
+                    <div class="slide">
+                        <img src="https://i.postimg.cc/9FPgcprY/Polish-20250622-162849443.jpg" alt="Slide 2">
+                    </div>
+                    <div class="slide">
+                        <img src="https://mobond.yuppcdn.net/peotvgo/320/180/content/common/movie/images/1_p-ph-day22.jpg" alt="Slide 3">
+                    </div>
+                </div>
+
+                <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                <a class="next" onclick="plusSlides(1)">&#10095;</a>
+
+                <div class="dots-container" id="dotsContainer">
+                    <!-- Dots will be generated by JavaScript -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- TV Channel Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 p-4" id="channelGrid">
+            <!-- Channel Card 1 -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://play-lh.googleusercontent.com/fmz6L0mlFDCRRudZ01RUk_DOLF6ITxEyRYysb2DRDp-mhle4cnsyi5QGF00tSNjPR_B2" alt="Channel One Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">Wllow HD</p>
+            </div>
+
+            <!-- Channel Card 2 -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://placehold.co/120x80/2d3748/ffffff?text=Rupavahini" alt="Rupavahini Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">2. Rupavahini</p>
+            </div>
+
+            <!-- Channel Card 3 -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://placehold.co/120x80/2d3748/ffffff?text=Nethra+TV" alt="Nethra TV Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">3. Nethra TV</p>
+            </div>
+
+            <!-- Channel Card 4 -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://placehold.co/120x80/2d3748/ffffff?text=ITN" alt="ITN Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">4. ITN</p>
+            </div>
+
+            <!-- Channel Card 5 -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://placehold.co/120x80/2d3748/ffffff?text=Vasantham+TV" alt="Vasantham TV Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">5. Vasantham TV</p>
+            </div>
+
+            <!-- Channel Card 6 -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://placehold.co/120x80/2d3748/ffffff?text=TV+Derana" alt="TV Derana Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">6. TV Derana</p>
+            </div>
+
+            <!-- Channel Card 7 (Added for more content) -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://placehold.co/120x80/2d3748/ffffff?text=Sirasa+TV" alt="Sirasa TV Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">7. Sirasa TV</p>
+            </div>
+
+            <!-- Channel Card 8 (Added for more content) -->
+            <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500">
+                <img src="https://placehold.co/120x80/2d3748/ffffff?text=Swarnavahini" alt="Swarnavahini Logo" class="w-full h-auto rounded-lg mb-3 object-cover">
+                <p class="text-sm sm:text-base font-medium text-gray-200 text-center">8. Swarnavahini</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-center text-gray-400 text-sm mt-8">
+        <p>&copy; 2025 @HitWicket.online</p>
+    </footer>
+
+    <script>
+        // --- Image Slider Logic ---
+        let slideIndex = 1; // Current slide index
+        let autoSlideInterval; // Variable to hold the interval for auto-sliding
+        let allSlides; // Reference to all slide elements
+        let dotsContainer; // Reference to the dots container
+        let dots; // Reference to all dot elements
+
+        /**
+         * Displays the slides based on the current slideIndex.
+         * Manages active, previous, and next visible slides, and updates dots.
+         * @param {number} n The index of the slide to show (1-based).
+         */
+        function showSlides(n) {
+            // Ensure slides are initialized before proceeding
+            if (!allSlides || allSlides.length === 0) {
+                console.error("Slides not initialized.");
+                return;
+            }
+
+            // Handle slide index overflow, wrapping around
+            if (n > allSlides.length) { slideIndex = 1 }
+            if (n < 1) { slideIndex = allSlides.length }
+
+            // Calculate current, previous, and next slide indices (0-based)
+            let currentIdx = slideIndex - 1;
+            let prevIdx = (currentIdx - 1 + allSlides.length) % allSlides.length;
+            let nextIdx = (currentIdx + 1) % allSlides.length;
+
+            // Reset all slides: remove active/visible classes, set opacity and z-index
+            for (let i = 0; i < allSlides.length; i++) {
+                allSlides[i].classList.remove('active', 'prev-visible', 'next-visible');
+                allSlides[i].style.opacity = '0';
+                allSlides[i].style.zIndex = '1';
+                allSlides[i].style.pointerEvents = 'none'; // Disable interaction for inactive slides
+            }
+
+            // Set the current active slide
+            allSlides[currentIdx].classList.add('active');
+            allSlides[currentIdx].style.opacity = '1';
+            allSlides[currentIdx].style.zIndex = '3';
+            allSlides[currentIdx].style.pointerEvents = 'auto'; // Enable interaction for active slide
+
+            // Set the previous visible slide
+            allSlides[prevIdx].classList.add('prev-visible');
+            allSlides[prevIdx].style.opacity = '1';
+            allSlides[prevIdx].style.zIndex = '2';
+
+            // Set the next visible slide
+            allSlides[nextIdx].classList.add('next-visible');
+            allSlides[nextIdx].style.opacity = '1';
+            allSlides[nextIdx].style.zIndex = '2';
+
+            // Update dots if they exist
+            if (dots && dots.length > 0) {
+                for (let i = 0; i < dots.length; i++) {
+                    dots[i].classList.remove("active");
+                }
+                dots[currentIdx].classList.add("active");
+            }
+        }
+
+        /**
+         * Advances or goes back in slides based on 'n' value.
+         * Resets the auto-slide interval.
+         * @param {number} n -1 for previous, 1 for next.
+         */
+        function plusSlides(n) {
+            clearInterval(autoSlideInterval); // Stop auto-slide on manual navigation
+            slideIndex += n;
+            showSlides(slideIndex);
+            startAutoSlide(); // Restart auto-slide after a brief delay
+        }
+
+        /**
+         * Jumps to a specific slide.
+         * Resets the auto-slide interval.
+         * @param {number} n The 1-based index of the slide to jump to.
+         */
+        function currentSlide(n) {
+            clearInterval(autoSlideInterval); // Stop auto-slide on manual navigation
+            slideIndex = n;
+            showSlides(slideIndex);
+            startAutoSlide(); // Restart auto-slide after a brief delay
+        }
+
+        /**
+         * Starts the automatic slide show.
+         */
+        function startAutoSlide() {
+            // Clear any existing interval to prevent multiple intervals running
+            clearInterval(autoSlideInterval);
+            autoSlideInterval = setInterval(function() {
+                plusSlides(1); // Advance to the next slide every 3 seconds
+            }, 3000);
+        }
+
+        // Initialize the slider when the window loads
+        window.onload = function() {
+            // Slider initialization
+            allSlides = document.getElementsByClassName("slide");
+            dotsContainer = document.getElementById("dotsContainer");
+
+            if (dotsContainer && allSlides.length > 0) {
+                for (let i = 0; i < allSlides.length; i++) {
+                    let dot = document.createElement('span');
+                    dot.classList.add('dot');
+                    dot.onclick = (function(index) {
+                        return function() {
+                            currentSlide(index + 1);
+                        };
+                    })(i);
+                    dotsContainer.appendChild(dot);
+                }
+                dots = document.getElementsByClassName("dot");
+            }
+
+            showSlides(slideIndex);
+            startAutoSlide();
+        };
+    </script>
+</body>
+</html>
+
