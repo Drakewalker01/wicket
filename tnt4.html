@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Willow HD Live Stream</title>
+    <title id="page-title">Tamasha HD Live Stream</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- JW Player library as provided by the user -->
@@ -73,7 +73,7 @@
     <div class="max-w-4xl mx-auto">
         <!-- Added an anchor tag around the channel title to redirect to index.html -->
         <h1 class="text-3xl font-bold text-center my-6 text-white">
-            <a href="index.html" class="hover:underline">Willow HD</a>
+            <a href="index.html" class="hover:underline">HITWicket</a>
         </h1>
 
         <div class="bg-gray-900 rounded-xl shadow-lg mb-6 overflow-hidden">
@@ -84,7 +84,7 @@
                 </div>
             </div>
             <div class="p-4">
-                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: Willow HD Live</h2>
+                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: Tamasha HD Live</h2>
             </div>
         </div>
     </div>
@@ -134,26 +134,19 @@
             // No need to set channelTitleElement.textContent here as it's now a static link in HTML
             const currentProgramTitleElement = document.getElementById('current-program-title');
 
-            currentProgramTitleElement.textContent = `Now Playing: Willow HD Live`;
+            currentProgramTitleElement.textContent = `Now Playing: Tamasha HD Live`;
             hideProgramStatusMessage(); // Hide any existing status message when loading a new stream
 
             // Initialize JW Player with the provided DASH + ClearKey DRM stream
             player = jwplayer("my-video").setup({
-                file: "https://ottb.live.cf.ww.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/i2pcjr4pe5/out/v1/912e9db56d75403b8a9ac0a719110f36/cenc.mpd",
-                type: "dash",
+                file: "https://alibabacdn2.tamashaweb.com/alibaba02/alibaba02stream.m3u8",
                 width: "100%",
                 aspectratio: "16:9",
                 autostart: true, // Autostart the stream
                 stretching: "uniform",
                 controls: true,
                 preload: "auto",
-                primary: "html5",
-                drm: {
-                    clearkey: {
-                        keyId: "e31a5a81caff5d07ea2411a571fc2e59",
-                        key: "96c5ef69479732ae734f962748c19729"
-                    }
-                }
+                primary: "html5"
             });
 
             // This listener will catch JW Player's internal errors and show your custom message.
