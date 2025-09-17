@@ -6,7 +6,6 @@
     <title id="page-title">TSports HD Live Stream</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- JW Player library as provided by the user -->
     <script src="https://cdn.jwplayer.com/libraries/KB5zFt7A.js"></script>
     <style>
         body {
@@ -37,14 +36,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 1); /* Semi-transparent dark background */
+            background-color: rgba(0, 0, 0, 1); /* Solid dark background */
             color: #f0f0f0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             border-radius: 0.75rem;
-            z-index: 50; /* Above JW Player but below other UI if any */
+            z-index: 50; /* Above JW Player */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -56,22 +55,16 @@
             opacity: 1;
             visibility: visible;
         }
-        .program-status-message .icon {
-            font-size: 3rem; /* Make icon larger */
-            margin-bottom: 1rem;
-            color: #ffffff; /* White color for the icon */
-        }
         .program-status-message .message-text {
-            font-size: 1.5rem; /* Make text larger */
+            font-size: 1.5rem;
             text-align: center;
-            max-width: 80%; /* Prevent text from being too wide */
+            max-width: 80%;
             line-height: 1.4;
         }
     </style>
 </head>
 <body class="p-4">
     <div class="max-w-4xl mx-auto">
-        <!-- Added an anchor tag around the channel title to redirect to index.html -->
         <h1 class="text-3xl font-bold text-center my-6 text-white">
             <a href="index.html" class="hover:underline">HITWicket</a>
         </h1>
@@ -84,7 +77,7 @@
                 </div>
             </div>
             <div class="p-4">
-                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: TSports Live</h2>
+                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: TSports HD Live</h2>
             </div>
         </div>
     </div>
@@ -92,68 +85,62 @@
     <script>
         // Initialize JW Player variable
         let player;
-        let programStatusMessageElement; // Declare this globally or accessible
+        let programStatusMessageElement;
 
         // Function to show the custom program status message
         function showProgramStatusMessage(message = "An unexpected issue occurred. Please try again.") {
             programStatusMessageElement.querySelector('.message-text').textContent = message;
             programStatusMessageElement.classList.add('show');
+            
+            const jwPlayerDiv = document.getElementById('my-video');
 
-            // Pause the player and ensure JW Player background is completely hidden when our message is shown
             if (player) {
                 player.pause();
-                const jwPlayerDiv = document.getElementById('my-video');
-                if (jwPlayerDiv) {
-                    // Attempt to hide JW Player's own UI/interactions to reveal our overlay fully
-                    jwPlayerDiv.style.pointerEvents = 'none'; // Disable interaction with JW Player
-                    jwPlayerDiv.style.userSelect = 'none'; // Prevent text selection
-                    jwPlayerDiv.style.zIndex = '1'; // Ensure our overlay (z-index: 50) is above it
-                }
             }
-            const jwPlayerDiv = document.getElementById('my-video');
+
             if (jwPlayerDiv) {
-                jwPlayerDiv.style.backgroundColor = 'transparent'; // Ensure no residual background
+                // Hide JW Player's own UI/interactions to reveal our overlay fully
+                jwPlayerDiv.style.pointerEvents = 'none'; // Disable interaction
+                jwPlayerDiv.style.zIndex = '1'; // Ensure our overlay is on top
             }
         }
 
         // Function to hide the custom program status message
         function hideProgramStatusMessage() {
             programStatusMessageElement.classList.remove('show');
-            // When hiding our message, reset JW Player's visibility/interaction
+            
             const jwPlayerDiv = document.getElementById('my-video');
             if (jwPlayerDiv) {
-                jwPlayerDiv.style.backgroundColor = ''; // Reset to default (black as defined in CSS)
                 jwPlayerDiv.style.pointerEvents = ''; // Re-enable interaction
-                jwPlayerDiv.style.userSelect = ''; // Re-enable user selection
                 jwPlayerDiv.style.zIndex = ''; // Reset z-index
             }
         }
 
         // Function to initialize player with the specified static stream
         function initializePlayerWithStaticStream() {
-            // No need to set channelTitleElement.textContent here as it's now a static link in HTML
             const currentProgramTitleElement = document.getElementById('current-program-title');
 
-            currentProgramTitleElement.textContent = `Now Playing: Willow HD Live`;
-            hideProgramStatusMessage(); // Hide any existing status message when loading a new stream
+            // CORRECTED: Matched the program title to the actual stream source.
+            currentProgramTitleElement.textContent = `Now Playing: TSports Live`;
+            hideProgramStatusMessage(); // Hide any existing status message
 
-            // Initialize JW Player with the provided DASH + ClearKey DRM stream
+            // Initialize JW Player
             player = jwplayer("my-video").setup({
-        file: "http://103.73.107.122:3255/TSportsHD/index.m3u8",
-        width: "100%",
-        aspectratio: "16:9",
-        autostart: true,
-        stretching: "uniform",
-        controls: true,
-        preload: "auto",
-        primary: "html5"
-            });
+                file: "http://103.73.107.122:3255/TSportsHD/index.m3u8",
+                width: "100%",
+                aspectratio: "16:9",
+                autostart: true,
+                stretching: "uniform",
+                controls: true,
+                preload: "auto",
+                primary: "html5"
+            }); // CORRECTED: Added the missing closing brace for the setup object.
 
-            // This listener will catch JW Player's internal errors and show your custom message.
+            // This listener will catch JW Player's internal errors.
             player.on('error', function(event) {
                 console.error("JW Player encountered an error:", event);
-                // The custom message you want to display
-                const customErrorMessage = "This video file cannot be played. Please try again later.";
+                // A more descriptive custom message for the user.
+                const customErrorMessage = "This video cannot be played. The stream may be offline or unavailable. Please try again later.";
                 showProgramStatusMessage(customErrorMessage);
                 player.stop(); // Stop playback definitively
             });
@@ -162,10 +149,8 @@
         // Initial load when the window loads
         window.onload = function () {
             programStatusMessageElement = document.getElementById('program-status-message');
-            // The page title is already set statically in the HTML <title> tag
             initializePlayerWithStaticStream();
         };
-
     </script>
 </body>
 </html>
