@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Willow HD Live Stream</title>
+    <title id="page-title">TSports HD Live Stream</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- JW Player library as provided by the user -->
@@ -73,7 +73,7 @@
     <div class="max-w-4xl mx-auto">
         <!-- Added an anchor tag around the channel title to redirect to index.html -->
         <h1 class="text-3xl font-bold text-center my-6 text-white">
-            <a href="index.html" class="hover:underline">Willow HD</a>
+            <a href="index.html" class="hover:underline">HITWicket</a>
         </h1>
 
         <div class="bg-gray-900 rounded-xl shadow-lg mb-6 overflow-hidden">
@@ -84,7 +84,7 @@
                 </div>
             </div>
             <div class="p-4">
-                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: Willow HD Live</h2>
+                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: TSports Live</h2>
             </div>
         </div>
     </div>
@@ -139,7 +139,7 @@
 
             // Initialize JW Player with the provided DASH + ClearKey DRM stream
             player = jwplayer("my-video").setup({
-        file: "http://135.125.238.26:8080/catena-36-1149991-streamer-nz_sky_sport_2/video.m3u8?token=f54abc11fcaeb75c0368edb767264658",
+        file: "http://103.73.107.122:3255/TSportsHD/index.m3u8",
         width: "100%",
         aspectratio: "16:9",
         autostart: true,
