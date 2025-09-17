@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Willow HD Live Stream</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- JW Player library as provided by the user -->
+    <script src="https://cdn.jwplayer.com/libraries/KB5zFt7A.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d0d; /* Very dark background */
+            color: #f0f0f0; /* Light gray text for contrast */
+        }
+        .player-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        .player-container #my-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black; /* Default background for JW Player */
+        }
+
+        /* Custom program status message styles */
+        .program-status-message {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 1); /* Semi-transparent dark background */
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.75rem;
+            z-index: 50; /* Above JW Player but below other UI if any */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            text-align: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .program-status-message.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .program-status-message .icon {
+            font-size: 3rem; /* Make icon larger */
+            margin-bottom: 1rem;
+            color: #ffffff; /* White color for the icon */
+        }
+        .program-status-message .message-text {
+            font-size: 1.5rem; /* Make text larger */
+            text-align: center;
+            max-width: 80%; /* Prevent text from being too wide */
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Added an anchor tag around the channel title to redirect to index.html -->
+        <h1 class="text-3xl font-bold text-center my-6 text-white">
+            <a href="index.html" class="hover:underline">Willow HD</a>
+        </h1>
+
+        <div class="bg-gray-900 rounded-xl shadow-lg mb-6 overflow-hidden">
+            <div class="player-container">
+                <div id="my-video"></div>
+                <div id="program-status-message" class="program-status-message">
+                    <div class="message-text"></div>
+                </div>
+            </div>
+            <div class="p-4">
+                <h2 class="text-xl font-semibold mb-2" id="current-program-title">Now Playing: Willow HD Live</h2>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize JW Player variable
+        let player;
+        let programStatusMessageElement; // Declare this globally or accessible
+
+        // Function to show the custom program status message
+        function showProgramStatusMessage(message = "An unexpected issue occurred. Please try again.") {
+            programStatusMessageElement.querySelector('.message-text').textContent = message;
+            programStatusMessageElement.classList.add('show');
+
+            // Pause the player and ensure JW Player background is completely hidden when our message is shown
+            if (player) {
+                player.pause();
+                const jwPlayerDiv = document.getElementById('my-video');
+                if (jwPlayerDiv) {
+                    // Attempt to hide JW Player's own UI/interactions to reveal our overlay fully
+                    jwPlayerDiv.style.pointerEvents = 'none'; // Disable interaction with JW Player
+                    jwPlayerDiv.style.userSelect = 'none'; // Prevent text selection
+                    jwPlayerDiv.style.zIndex = '1'; // Ensure our overlay (z-index: 50) is above it
+                }
+            }
+            const jwPlayerDiv = document.getElementById('my-video');
+            if (jwPlayerDiv) {
+                jwPlayerDiv.style.backgroundColor = 'transparent'; // Ensure no residual background
+            }
+        }
+
+        // Function to hide the custom program status message
+        function hideProgramStatusMessage() {
+            programStatusMessageElement.classList.remove('show');
+            // When hiding our message, reset JW Player's visibility/interaction
+            const jwPlayerDiv = document.getElementById('my-video');
+            if (jwPlayerDiv) {
+                jwPlayerDiv.style.backgroundColor = ''; // Reset to default (black as defined in CSS)
+                jwPlayerDiv.style.pointerEvents = ''; // Re-enable interaction
+                jwPlayerDiv.style.userSelect = ''; // Re-enable user selection
+                jwPlayerDiv.style.zIndex = ''; // Reset z-index
+            }
+        }
+
+        // Function to initialize player with the specified static stream
+        function initializePlayerWithStaticStream() {
+            // No need to set channelTitleElement.textContent here as it's now a static link in HTML
+            const currentProgramTitleElement = document.getElementById('current-program-title');
+
+            currentProgramTitleElement.textContent = `Now Playing: Willow HD Live`;
+            hideProgramStatusMessage(); // Hide any existing status message when loading a new stream
+
+            // Initialize JW Player with the provided DASH + ClearKey DRM stream
+            player = jwplayer("my-video").setup({
+                file: "https://ottb.live.cf.ww.aiv-cdn.net/lhr-nitro/live/clients/dash/enc/f0qvkrra8j/out/v1/f8fa17f087564f51aa4d5c700be43ec4/cenc.mpd",
+                type: "dash",
+                width: "100%",
+                aspectratio: "16:9",
+                autostart: true, // Autostart the stream
+                stretching: "uniform",
+                controls: true,
+                preload: "auto",
+                primary: "html5",
+                drm: {
+                    clearkey: {
+                        keyId: "6d1708b185c6c4d7b37600520c7cc93c",
+                        key: "1aace05f58d8edef9697fd52cb09f441"
+                    }
+                }
+            });
+
+            // This listener will catch JW Player's internal errors and show your custom message.
+            player.on('error', function(event) {
+                console.error("JW Player encountered an error:", event);
+                // The custom message you want to display
+                const customErrorMessage = "This video file cannot be played. Please try again later.";
+                showProgramStatusMessage(customErrorMessage);
+                player.stop(); // Stop playback definitively
+            });
+        }
+
+        // Initial load when the window loads
+        window.onload = function () {
+            programStatusMessageElement = document.getElementById('program-status-message');
+            // The page title is already set statically in the HTML <title> tag
+            initializePlayerWithStaticStream();
+        };
+
+    </script>
+</body>
+</html>
