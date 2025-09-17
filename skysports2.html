@@ -139,15 +139,14 @@
 
             // Initialize JW Player with the provided DASH + ClearKey DRM stream
             player = jwplayer("my-video").setup({
-                file: "http://135.125.238.26:8080/catena-36-1149991-streamer-nz_sky_sport_2/video.m3u8?token=f54abc11fcaeb75c0368edb767264658",
-                type: "hls",
-                width: "100%",
-                aspectratio: "16:9",
-                autostart: true, // Autostart the stream
-                stretching: "uniform",
-                controls: true,
-                preload: "auto",
-                primary: "html5",
+        file: "http://135.125.238.26:8080/catena-36-1149991-streamer-nz_sky_sport_2/video.m3u8?token=f54abc11fcaeb75c0368edb767264658",
+        width: "100%",
+        aspectratio: "16:9",
+        autostart: true,
+        stretching: "uniform",
+        controls: true,
+        preload: "auto",
+        primary: "html5"
             });
 
             // This listener will catch JW Player's internal errors and show your custom message.
