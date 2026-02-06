@@ -25,14 +25,12 @@
         @keyframes blob { 0% { transform: translate(0,0) scale(1) } 33% { transform: translate(30px,-50px) scale(1.1) } 100% { transform: translate(0,0) scale(1) } }
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* Slider */
         .slider-blend-overlay { position: absolute; inset: 0; z-index: 5; background: linear-gradient(to bottom, transparent 60%, #0b1120 100%); pointer-events: none; }
         .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease-in-out; }
         .slide.active { opacity: 1; z-index: 2; }
         .nav-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); transition: 0.3s; z-index: 20; }
         .nav-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
 
-        /* Card Fast Running Effect */
         .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; }
         .channel-card::before, .channel-card::after { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
@@ -40,10 +38,7 @@
             animation: rotate 3s linear infinite; 
         }
         .channel-card::after { filter: blur(20px); opacity: 0.7; }
-        
-        /* HOVER FAST SPEED */
         .channel-card:hover::before, .channel-card:hover::after { animation-duration: 1.2s; }
-        
         .card-content { background: #111827; border-radius: 0.85rem; width: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; }
         .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
@@ -60,7 +55,10 @@
                 <h1 class="text-3xl font-bold italic uppercase tracking-wider">Hit<span class="text-neonBlue">Wicket</span></h1>
             </div>
             <div class="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50 flex items-center gap-2">
-                <span class="relative h-2 w-2"><span class="animate-ping absolute h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative h-2 w-2 bg-red-600 rounded-full"></span></span>
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600 shadow-[0_0_8px_#ef4444]"></span>
+                </span>
                 <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Live Now</span>
             </div>
         </div>
@@ -71,8 +69,8 @@
             <div class="slider-blend-overlay"></div>
             <div id="imageSlider" class="relative w-full h-full"></div>
             
-            <button onclick="changeSlide(-1)" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white"><i class="fas fa-chevron-left"></i></button>
-            <button onclick="changeSlide(1)" class="nav-btn absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white"><i class="fas fa-chevron-right"></i></button>
+            <button onclick="changeSlide(-1)" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-left"></i></button>
+            <button onclick="changeSlide(1)" class="nav-btn absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-right"></i></button>
         </section>
 
         <section>
@@ -84,43 +82,50 @@
         </section>
     </main>
 
+    <footer class="w-full py-10 border-t border-gray-800 bg-slate-900/50 backdrop-blur-md mt-20">
+        <div class="text-center text-gray-500 text-sm">© 2026 HITWicket. Professional Sports Network.</div>
+    </footer>
+
     <script>
         let slideIndex = 0;
         let slideTimer;
 
         async function init() {
-            const res = await fetch('data.json');
-            const data = await res.json();
-            
-            const slider = document.getElementById('imageSlider');
-            slider.innerHTML = data.slider.map((s, i) => `
-                <div class="slide ${i===0?'active':''}">
-                    <img src="${s.image}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
-                    <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
-                        <span class="px-3 py-1 text-[10px] font-bold bg-neonBlue text-black rounded mb-3 inline-block uppercase">${s.tag}</span>
-                        <h2 class="text-3xl md:text-5xl font-bold text-white mb-2">${s.title}</h2>
-                        <p class="text-gray-300 text-sm md:text-lg max-w-md">${s.desc}</p>
+            try {
+                const res = await fetch('data.json');
+                const data = await res.json();
+                
+                const slider = document.getElementById('imageSlider');
+                slider.innerHTML = data.slider.map((s, i) => `
+                    <div class="slide ${i===0?'active':''}">
+                        <img src="${s.image}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
+                            <span class="px-3 py-1 text-[10px] font-bold bg-neonBlue text-black rounded mb-3 inline-block uppercase">${s.tag}</span>
+                            <h2 class="text-3xl md:text-5xl font-bold text-white mb-2">${s.title}</h2>
+                            <p class="text-gray-300 text-sm md:text-lg max-w-md">${s.desc}</p>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
 
-            const grid = document.getElementById('channelGrid');
-            grid.innerHTML = data.channels.filter(ch => ch.streamUrl !== "").map(ch => `
-                <a href="player.html?id=${ch.id}" class="channel-card">
-                    <div class="card-content">
-                        <img src="${ch.logo}" class="w-full rounded-lg mb-3 aspect-square object-cover bg-slate-900">
-                        <p class="text-lg font-bold">${ch.name}</p>
-                        <span class="text-xs text-gray-500">${ch.quality}</span>
-                    </div>
-                </a>
-            `).join('');
+                const grid = document.getElementById('channelGrid');
+                grid.innerHTML = data.channels.filter(ch => ch.streamUrl !== "").map(ch => `
+                    <a href="player.html?id=${ch.id}" class="channel-card">
+                        <div class="card-content">
+                            <img src="${ch.logo}" class="w-full rounded-lg mb-3 aspect-square object-cover bg-slate-900">
+                            <p class="text-lg font-bold">${ch.name}</p>
+                            <span class="text-xs text-gray-500">${ch.quality}</span>
+                        </div>
+                    </a>
+                `).join('');
 
-            startTimer();
+                startTimer();
+            } catch (e) { console.log("JSON Load Error"); }
         }
 
         function changeSlide(n) {
             const slides = document.querySelectorAll('.slide');
+            if(slides.length === 0) return;
             slides[slideIndex].classList.remove('active');
             slideIndex = (slideIndex + n + slides.length) % slides.length;
             slides[slideIndex].classList.add('active');
