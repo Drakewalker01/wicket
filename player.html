@@ -85,7 +85,7 @@
         .status-overlay.show { display: flex; }
 
     </style>
-</head>
+    </head>
 <body class="antialiased flex flex-col items-center">
 
     <div class="bg-gradient-orb orb-1"></div>
@@ -184,7 +184,6 @@
                 const data = await res.json();
 
                 // 2. FILTER & RENDER GRID
-                // මේ කොටසින් Link නැති (හිස්) චැනල් අයින් කරනවා.
                 const activeChannels = data.channels.filter(c => 
                     (c.mpdUrl && c.mpdUrl.trim() !== "") || 
                     (c.streamUrl && c.streamUrl.trim() !== "")
@@ -252,6 +251,37 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (!window.shaka) initApp();
         });
+    </script>
+
+    <script>
+        (function() {
+            // Configuration
+            const adConfig = {
+                scriptUrl: 'https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js',
+                intervalMinutes: 10,
+                storageKey: 'adsterra_last_loaded'
+            };
+
+            const now = Date.now();
+            const lastLoaded = localStorage.getItem(adConfig.storageKey);
+
+            // Check if 10 minutes have passed or if it's the first time
+            if (!lastLoaded || (now - lastLoaded > adConfig.intervalMinutes * 60 * 1000)) {
+                
+                // Dynamically inject the script
+                let s = document.createElement('script');
+                s.src = adConfig.scriptUrl;
+                s.type = 'text/javascript';
+                s.async = true;
+                document.head.appendChild(s);
+
+                // Update the timestamp
+                localStorage.setItem(adConfig.storageKey, now);
+                console.log('Adsterra loaded (Next load allowed in 10 mins)');
+            } else {
+                console.log('Adsterra cooldown active. Script skipped.');
+            }
+        })();
     </script>
 </body>
 </html>
