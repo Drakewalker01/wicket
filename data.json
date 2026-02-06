@@ -1,0 +1,39 @@
+{
+  "channels": [
+    {
+      "id": "willowhd",
+      "name": "Willow HD",
+      "logo": "https://play-lh.googleusercontent.com/fmz6L0mlFDCRRudZ01RUk_DOLF6ITxEyRYysb2DRDp-mhle4cnsyi5QGF00tSNjPR_B2",
+      "streamUrl": "https://example.com/stream1.m3u8",
+      "quality": "1080p HQ"
+    },
+    {
+      "id": "tv1",
+      "name": "TV1",
+      "logo": "https://api3.viu.lk/api/client/v1/global/images/25669?accessKey=WkVjNWNscFhORDBLCg==",
+      "streamUrl": "https://example.com/stream2.m3u8",
+      "quality": "Live Feed"
+    },
+    {
+      "id": "sonysports1",
+      "name": "Sony Sports 1",
+      "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGE6O710SDHMpr580b_kjyRj2XD4fUMDc2gg&s",
+      "streamUrl": "https://dtvxtream.com/sonyliv2/300256.m3u8",
+      "quality": "Exclusive"
+    },
+    {
+      "id": "sonysports3",
+      "name": "Sony Sports 3",
+      "logo": "https://stmify.com/wp-content/uploads/2024/10/172-s.webp",
+      "streamUrl": "https://example.com/stream3.m3u8",
+      "quality": "Exclusive"
+    },
+    {
+      "id": "tsportshd",
+      "name": "TSports HD",
+      "logo": "https://media.licdn.com/dms/image/v2/C560BAQEkzy6nAcsyag/company-logo_200_200/0/1630662269264?v=beta&t=Xyxc5WJFZRKGMmHUyjXuUmOmYGO9bgGLbkwV9uyduxo",
+      "streamUrl": "https://example.com/stream4.m3u8",
+      "quality": "Sports"
+    }
+  ]
+}
