@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-    
     <link href="https://unpkg.com/@videojs/themes@1/dist/fantasy/index.css" rel="stylesheet">
 
     <script>
@@ -48,7 +47,7 @@
             position: relative;
         }
 
-        /* Customizing Video.js to match Neon Theme */
+        /* Customizing Video.js */
         .video-js .vjs-big-play-button {
             background-color: rgba(0, 243, 255, 0.7);
             border-color: #00f3ff;
@@ -104,7 +103,7 @@
         <section class="mb-12">
             <div class="unified-player-container">
                 <div class="video-area">
-                    <video id="my-video" class="video-js vjs-theme-fantasy vjs-big-play-centered" controls preload="auto" data-setup="{}">
+                    <video id="my-video" class="video-js vjs-theme-fantasy vjs-big-play-centered" controls preload="auto">
                     </video>
 
                     <div id="status-overlay" class="status-overlay">
@@ -153,11 +152,10 @@
     </footer>
 
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@5.3.0/dist/videojs-contrib-eme.min.js"></script>
 
     <script>
-        // Helper function to convert Hex String to Uint8Array (Required for Video.js Keys)
+        // Key Conversion Helper
         function hexToBytes(hex) {
             let bytes = [];
             for (let c = 0; c < hex.length; c += 2)
@@ -171,7 +169,7 @@
             const overlay = document.getElementById('status-overlay');
             const errorMsg = document.getElementById('error-msg');
             
-            // Initialize Player
+            // Player Initialization (JS ONLY)
             const player = videojs('my-video', {
                 fluid: true,
                 html5: {
@@ -194,45 +192,17 @@
 
                     // --- VIDEO.JS SOURCE LOGIC ---
 
-                    // 1. DASH (.mpd) Logic
+                    // 1. DASH (.mpd)
                     if (currentChannel.mpdUrl && currentChannel.mpdUrl !== "") {
                         let srcObj = {
                             src: currentChannel.mpdUrl,
                             type: 'application/dash+xml'
                         };
 
-                        // Add Keys if available
+                        // DRM Configuration
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
                             console.log("Applying DRM Keys...");
-                            
-                            // Convert keys for Video.js format
-                            let keyObj = {};
-                            for (const [keyId, keyVal] of Object.entries(currentChannel.drm.clearKeys)) {
-                                // Important: Video.js expects keys in a specific format for EME
-                                // This is a simplified implementation for ClearKey
-                                srcObj.keySystems = {
-                                    'org.w3.clearkey': {
-                                        videoContentType: 'video/webm; codecs="vp9"', 
-                                        audioContentType: 'audio/webm; codecs="vorbis"',
-                                        getLicense: function (emeOptions, keyMessage, callback) {
-                                            // Directly create license object
-                                            let licenseObj = { keys: [] };
-                                            // Add the key pairs
-                                            licenseObj.keys.push({
-                                                kty: 'oct',
-                                                k: keyVal.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('').replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, ""), // Convert to Base64URL
-                                                kid: keyId.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('').replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "")
-                                            });
-                                            callback(null, new TextEncoder().encode(JSON.stringify(licenseObj)));
-                                        }
-                                    }
-                                };
-                            }
-                            
-                            // *** SIMPLIFIED CLEARKEY FOR VIDEO.JS ***
-                            // Video.js EME plugin is complex. 
-                            // Using a simpler direct approach often works better for common ClearKey streams.
-                             srcObj.keySystems = {
+                            srcObj.keySystems = {
                                 'org.w3.clearkey': {
                                     audio: hexToBytes(Object.values(currentChannel.drm.clearKeys)[0]),
                                     video: hexToBytes(Object.values(currentChannel.drm.clearKeys)[0])
@@ -240,16 +210,16 @@
                             };
                         }
                         
-                        // Detect iOS
+                        // iOS Check
                         if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
                             overlay.classList.add('show');
-                            errorMsg.innerHTML = "iOS (iPhone) does not support DASH streams.<br>Please use HLS (.m3u8).";
+                            errorMsg.innerHTML = "iOS (iPhone) does not support DASH.<br>Please use a HLS stream.";
                             return;
                         }
 
                         player.src(srcObj);
                     }
-                    // 2. HLS (.m3u8) Logic
+                    // 2. HLS (.m3u8)
                     else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
                         console.log("Loading HLS...");
                         player.src({
@@ -264,9 +234,10 @@
                     player.play();
 
                     player.on('error', function() {
-                        console.error("VideoJS Error:", player.error());
+                        const error = player.error();
+                        console.error("VideoJS Error:", error);
                         overlay.classList.add('show');
-                        errorMsg.innerText = "Stream Error (Check Keys/Link)";
+                        errorMsg.innerText = "Playback Error (Check Console)";
                     });
 
                 } else {
@@ -274,7 +245,7 @@
                     errorMsg.innerText = "Channel Not Found";
                 }
 
-                // Grid Loading
+                // Grid
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
                     .filter(ch => (ch.streamUrl || ch.mpdUrl))
