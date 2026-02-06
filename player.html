@@ -8,9 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/dash-shaka-playback@latest/dist/dash-shaka-playback.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clappr-level-selector-plugin@latest/dist/level-selector.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/controls.min.css">
 
     <script>
         tailwind.config = {
@@ -26,7 +25,7 @@
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
         
-        /* === 1. BACKGROUND GLOWING ORBS (Back again!) === */
+        /* Background Animations */
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
@@ -44,78 +43,101 @@
             border-radius: 1.5rem; 
             overflow: hidden; 
             background: #000; 
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); /* Player Glow */
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); 
             border: 1px solid rgba(255,255,255,0.1);
             position: relative;
         }
 
-        .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-        #player-wrapper { position: absolute; inset: 0; width: 100%; height: 100%; }
-        /* Force Clappr to fill container */
-        #player-wrapper > div { width: 100% !important; height: 100% !important; }
+        /* --- Custom Shaka Player UI Design --- */
 
-        .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; text-align: center; }
+        /* 1. Control Bar - Floating Glass Style */
+        .shaka-bottom-controls {
+            background: rgba(15, 23, 42, 0.75) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 15px !important; 
+            width: calc(100% - 30px) !important; 
+            border-radius: 16px !important;
+            padding: 5px 10px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        /* 2. Seek Bar (Timeline) - Neon Blue */
+        .shaka-seek-bar-container {
+            height: 6px !important;
+            border-radius: 10px;
+        }
+        
+        .shaka-ad-marker-container, 
+        .shaka-seek-bar-container input[type=range] {
+            accent-color: #00f3ff; 
+        }
+
+        .shaka-seek-bar-container:hover {
+            height: 10px !important;
+            transition: height 0.2s;
+        }
+
+        /* 3. Buttons (Play, Volume, Fullscreen) */
+        .shaka-controls-button-panel button {
+            color: #ffffff !important;
+            transition: transform 0.2s, text-shadow 0.2s;
+        }
+
+        .shaka-controls-button-panel button:hover {
+            color: #00f3ff !important;
+            transform: scale(1.1);
+            text-shadow: 0 0 10px #00f3ff;
+        }
+
+        /* 4. Play Button - Big Center */
+        .shaka-play-button-container {
+            background: rgba(0, 243, 255, 0.1);
+            border-radius: 50%;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+        }
+
+        /* 5. Settings Menu (Quality/Captions) */
+        .shaka-overflow-menu {
+            background-color: rgba(11, 17, 32, 0.95) !important;
+            border: 1px solid #00f3ff !important;
+            border-radius: 12px !important;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            color: white !important;
+        }
+
+        .shaka-overflow-menu button {
+            color: white !important;
+            font-family: 'Rajdhani', sans-serif !important;
+        }
+
+        .shaka-overflow-menu button:hover {
+            background-color: rgba(0, 243, 255, 0.2) !important;
+        }
+
+        .shaka-overflow-menu-button { color: white !important; }
+
+        /* Loading Spinner */
+        .shaka-spinner-svg {
+            stroke: #00f3ff !important;
+        }
+
+        /* --- Standard Styles --- */
+        .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+        .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+
+        .status-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 50; text-align: center; }
         .status-overlay.show { display: flex; }
 
-        /* === 2. SNAKE BORDER ANIMATION (Running Glowing Effect) === */
-        .channel-card { 
-            position: relative; 
-            background: #0c4a6e; 
-            border-radius: 1rem; 
-            overflow: hidden; 
-            display: flex; 
-            padding: 3px; /* Space for the glowing border */
-            transition: 0.3s; 
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); 
-        }
-
-        /* The Moving Gradient */
-        .channel-card::before { 
-            content: ""; 
-            position: absolute; 
-            top: -50%; 
-            left: -50%; 
-            width: 200%; 
-            height: 200%; 
-            background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
-            animation: rotate 3s linear infinite; /* Running Animation */
-            z-index: 0; 
-        }
-
-        /* The Glow Blur */
-        .channel-card::after { 
-            content: ""; 
-            position: absolute; 
-            top: -50%; 
-            left: -50%; 
-            width: 200%; 
-            height: 200%; 
-            background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
-            animation: rotate 3s linear infinite; 
-            filter: blur(20px); 
-            opacity: 0.7; 
-            z-index: 0; 
-        }
-
-        .card-content { 
-            background: #111827; 
-            border-radius: 0.85rem; 
-            width: 100%; 
-            height: 100%; 
-            position: relative; 
-            z-index: 1; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 1rem; 
-        }
-
+        /* Card Styles */
+        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; overflow: hidden; display: flex; padding: 3px; transition: 0.3s; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
+        .channel-card::before, .channel-card::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); animation: rotate 3s linear infinite; z-index: 0; }
+        .channel-card::after { filter: blur(20px); opacity: 0.7; }
+        .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
         .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
-        
-        @keyframes rotate { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -140,39 +162,61 @@
     </nav>
 
     <main class="w-full max-w-7xl px-4 py-8 z-10">
+        
         <section class="mb-12">
-            <div class="unified-player-container">
-                <div class="video-area">
-                    <div id="player-wrapper"></div>
+            
+            <div class="unified-player-container group relative">
+                
+                <div class="video-area relative">
+                    <div data-shaka-player-container>
+                        <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
+                    </div>
+
+                    <div class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-red-500/30 pointer-events-none">
+                        <div class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+                        <span class="text-xs font-bold text-white tracking-widest">LIVE</span>
+                    </div>
+
+                    <div class="absolute top-4 right-4 z-10 opacity-50 pointer-events-none">
+                        <i class="fas fa-cricket text-2xl text-neonBlue drop-shadow-[0_0_5px_rgba(0,243,255,0.8)]"></i>
+                    </div>
 
                     <div id="status-overlay" class="status-overlay">
-                        <div class="p-6">
-                            <i class="fas fa-exclamation-circle text-5xl text-red-500 mb-4"></i>
-                            <p class="text-2xl font-bold" id="error-msg">Stream Loading...</p>
-                            <a href="index.html" class="mt-4 inline-block text-neonBlue hover:underline">Return to Home</a>
+                        <div class="p-6 bg-black/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl max-w-md">
+                            <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4 animate-bounce"></i>
+                            <p class="text-xl font-bold text-white mb-2" id="error-msg">Stream Loading...</p>
+                            <p class="text-sm text-gray-400 mb-6">Attempting to connect to the secure stream...</p>
+                            <a href="index.html" class="px-6 py-2 bg-neonBlue text-black font-bold rounded-lg hover:bg-white transition-all">
+                                Return to Home
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-900/95 backdrop-blur-xl border-t border-white/10 p-3 md:p-5 flex justify-between items-center gap-2">
-                    <div class="flex flex-col justify-center min-w-0">
-                        <h2 class="text-base md:text-2xl font-bold text-white leading-none truncate mb-0" id="ch-name">
-                            Loading...
-                        </h2>
-                        <div class="">
-                            <span class="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-wide" id="ch-quality"></span>
+                <div class="bg-[#0b1120] border-t border-white/5 p-4 flex justify-between items-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-20 h-full bg-neonBlue/10 blur-xl pointer-events-none"></div>
+                    
+                    <div class="flex items-center gap-4 z-10 max-w-[80%]">
+                        <div class="w-10 h-10 flex-shrink-0 rounded-full bg-slate-800 flex items-center justify-center border border-white/10 text-neonBlue">
+                            <i class="fas fa-tv"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h2 class="text-lg font-bold text-white leading-tight truncate" id="ch-name">Loading...</h2>
+                            <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                                <i class="fas fa-signal text-green-500 text-[10px]"></i> 
+                                <span id="ch-quality">Checking Quality...</span>
+                            </p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                        <div class="px-2 py-1.5 md:px-4 md:py-2 bg-slate-800 rounded-lg border border-white/10 text-[10px] md:text-xs font-bold whitespace-nowrap flex items-center gap-1.5">
-                            <i class="fas fa-server text-gray-400"></i> SERVER 1
-                        </div>
-                        <div class="px-2 py-1.5 md:px-4 md:py-2 bg-neonBlue text-black rounded-lg text-[10px] md:text-xs font-bold shadow-[0_0_10px_#00f3ff] whitespace-nowrap">
-                            HD STREAM
+
+                    <div class="flex items-center gap-3">
+                         <div class="px-3 py-1 bg-neonBlue/10 text-neonBlue border border-neonBlue/30 rounded-lg text-[10px] font-bold tracking-wider">
+                            HD
                         </div>
                     </div>
                 </div>
             </div>
+
         </section>
 
         <section>
@@ -181,10 +225,11 @@
                 <h2 class="text-2xl font-bold uppercase tracking-widest">Other <span class="text-neonBlue">Channels</span></h2>
                 <div class="flex-grow h-[1px] bg-gradient-to-r from-gray-800 to-transparent ml-4"></div>
             </div>
-            
+
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid">
-            </div>
+                </div>
         </section>
+
     </main>
 
     <footer class="w-full py-10 border-t border-gray-800 bg-slate-900/50 backdrop-blur-md mt-20">
@@ -192,14 +237,33 @@
     </footer>
 
     <script>
-        var player = null;
+        async function initApp() {
+            // Install built-in polyfills to patch browser incompatibilities.
+            shaka.polyfill.installAll();
 
-        async function initialize() {
-            const params = new URLSearchParams(window.location.search);
-            const channelId = params.get('id');
+            if (shaka.Player.isBrowserSupported()) {
+                initPlayer();
+            } else {
+                console.error('Browser not supported!');
+                showError("Browser not supported for this stream.");
+            }
+        }
+
+        async function initPlayer() {
+            const video = document.getElementById('video');
+            const ui = video['ui'];
+            const controls = ui.getControls();
+            const player = controls.getPlayer();
             const overlay = document.getElementById('status-overlay');
             const errorMsg = document.getElementById('error-msg');
-            const wrapper = document.getElementById('player-wrapper');
+            const params = new URLSearchParams(window.location.search);
+            const channelId = params.get('id');
+
+            // Handle Errors
+            player.addEventListener('error', (event) => {
+                console.error('Error code', event.detail.code, 'object', event.detail);
+                showError("Stream Error: " + event.detail.code);
+            });
 
             try {
                 const res = await fetch('data.json');
@@ -207,67 +271,46 @@
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
                 if (currentChannel) {
-                    // Update UI Info
+                    // Update UI
                     document.getElementById('page-title').innerText = currentChannel.name + " | Live Streaming";
                     document.getElementById('ch-name').innerText = currentChannel.name;
                     document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
 
-                    console.log("Initializing Clappr for:", currentChannel.name);
+                    const videoUrl = currentChannel.mpdUrl || currentChannel.streamUrl;
 
-                    // Clear previous player
-                    wrapper.innerHTML = "";
-                    
-                    // --- PLAYER CONFIG ---
-                    let playerConfig = {
-                        parentId: "#player-wrapper",
-                        width: '100%',
-                        height: '100%',
-                        autoPlay: true,
-                        plugins: [DashShakaPlayback, LevelSelector], // Load DASH Support
-                        shakaConfiguration: {
-                            preferredAudioLanguage: 'en-US',
-                            drm: {} 
-                        },
-                        events: {
-                            onError: function(e) {
-                                console.error("Clappr Error:", e);
-                                // Don't show overlay immediately, Clappr retries sometimes
-                            }
-                        }
-                    };
+                    if (videoUrl) {
+                        // Configuration Object
+                        let playerConfig = {};
 
-                    // 1. DASH + DRM Logic
-                    if (currentChannel.mpdUrl && currentChannel.mpdUrl !== "") {
-                        playerConfig.source = currentChannel.mpdUrl;
-                        
-                        // Add DRM Keys if available
+                        // Add DRM (ClearKey) configuration if keys exist
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
-                            console.log("Configuring DRM Keys...");
-                            playerConfig.shakaConfiguration.drm = {
+                            playerConfig.drm = {
                                 clearKeys: currentChannel.drm.clearKeys
                             };
                         }
-                    } 
-                    // 2. HLS Logic
-                    else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
-                        playerConfig.source = currentChannel.streamUrl;
-                    } 
-                    else {
-                        throw new Error("No URL found");
+
+                        // Apply Config
+                        player.configure(playerConfig);
+
+                        // Try to load
+                        try {
+                            await player.load(videoUrl);
+                            console.log('The video has now been loaded!');
+                        } catch (e) {
+                            console.error('Error loading video', e);
+                            showError("Stream Failed to Load (Key/Network Error)");
+                        }
+                    } else {
+                        showError("No Stream Link Available");
                     }
-
-                    // Create Player
-                    player = new Clappr.Player(playerConfig);
-
                 } else {
-                    overlay.classList.add('show');
-                    errorMsg.innerText = "Channel Not Found";
+                    showError("Channel Not Found");
                 }
 
-                // Grid Loading (With Glowing Cards)
+                // Load Grid
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
-                    .filter(ch => (ch.streamUrl || ch.mpdUrl))
+                    .filter(ch => (ch.streamUrl || ch.mpdUrl)) 
                     .map(ch => `
                         <a href="player.html?id=${ch.id}" class="channel-card">
                             <div class="card-content">
@@ -279,13 +322,21 @@
                     `).join('');
 
             } catch (err) {
-                console.error("System Error:", err);
+                console.error("Fetch error", err);
+                showError("Failed to load channel data");
+            }
+
+            function showError(msg) {
                 overlay.classList.add('show');
-                errorMsg.innerText = "App Error";
+                errorMsg.innerText = msg;
             }
         }
 
-        window.onload = initialize;
+        // Wait for UI library to load
+        document.addEventListener('shaka-ui-loaded', initApp);
+        // Fallback if UI event doesn't fire immediately (DOMContentLoaded)
+        document.addEventListener('DOMContentLoaded', initApp);
+
     </script>
 </body>
 </html>
