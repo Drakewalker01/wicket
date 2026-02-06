@@ -3,400 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HIT Wicket</title>
+    <title>HIT Wicket | Premium Sports Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Rajdhani', 'sans-serif'] },
+                    colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' },
+                    animation: { 'blob': 'blob 7s infinite' },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a; /* Dark background */
-            color: #ffffff; /* White text */
-            display: flex;
-            flex-direction: column; /* Changed to column to push footer to bottom */
-            justify-content: space-between; /* Distribute space between content and footer */
-            align-items: center; /* Center content horizontally */
-            min-height: 100vh;
-            padding: 2rem 1rem; /* Add some padding around the content */
-            box-sizing: border-box;
-        }
-
-        /* Slider specific styles */
-        .slider-container {
-            position: relative;
-            max-width: 100%;
-            height: 250px; /* Fixed height for the slider */
-            margin: 0 auto 2rem auto;
-            overflow: hidden;
-            border-radius: 0.75rem; /* Updated to rounded-xl from EPG card */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Stronger shadow from EPG hover */
-            background-color: #1a1a1a; /* Darker gray for consistency */
-        }
-
-        .slides {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        .slide {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            border-radius: 0.75rem; /* Match container */
-            overflow: hidden;
-            /* Using left, transform, opacity for transitions */
-            transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out, left 0.6s ease-in-out, width 0.6s ease-in-out, z-index 0s;
-            opacity: 0;
-            pointer-events: none; /* Disable interaction when not active */
-        }
-
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 0.75rem; /* Match parent */
-        }
-
-        .slide::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay for inactive slides */
-            transition: background-color 0.6s ease-in-out;
-            pointer-events: none;
-        }
-
-        .slide.active {
-            left: 50%;
-            width: 70%;
-            transform: translateX(-50%) scale(1);
-            opacity: 1;
-            z-index: 3; /* Bring active slide to front */
-            pointer-events: auto; /* Enable interaction for active slide */
-        }
-        .slide.active::after {
-            background-color: rgba(0, 0, 0, 0); /* Remove overlay for active slide */
-        }
-
-        .slide.prev-visible {
-            left: 0%;
-            width: 40%;
-            transform: translateX(10%) scale(0.8);
-            opacity: 1;
-            z-index: 2; /* Keep visible slides behind active one */
-        }
-
-        .slide.next-visible {
-            left: 60%;
-            width: 40%;
-            transform: translateX(-10%) scale(0.8);
-            opacity: 1;
-            z-index: 2;
-        }
-
-        .prev, .next {
-            cursor: pointer;
-            position: absolute;
-            top: 50%;
-            width: auto;
-            padding: 1rem;
-            margin-top: -1.5rem;
-            color: white;
-            font-weight: bold;
-            font-size: 1.5rem;
-            transition: background-color 0.3s ease;
-            user-select: none;
-            background-color: rgba(0,0,0,0.5);
-            border-radius: 0.5rem;
-            z-index: 4; /* Ensure arrows are above slides */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .prev {
-            left: 10px;
-        }
-        .next {
-            right: 10px;
-        }
-
-        .prev:hover, .next:hover {
-            background-color: rgba(0,0,0,0.8);
-        }
-
-        .dots-container {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 4;
-            display: flex;
-            gap: 8px;
-        }
-
-        .dot {
-            cursor: pointer;
-            height: 10px;
-            width: 10px;
-            background-color: #bbb;
-            border-radius: 50%;
-            display: inline-block;
-            transition: background-color 0.3s ease;
-        }
-
-        .dot.active, .dot:hover {
-            background-color: #00c2cb; /* Teal/Cyan highlight from EPG */
-        }
-
-        /* Responsive adjustments for slider height on smaller screens */
-        @media (max-width: 640px) {
-            .slider-container {
-                height: 180px; /* Adjust height for small screens */
-            }
-            .prev, .next {
-                padding: 0.75rem;
-                font-size: 1.2rem;
-            }
-        }
-        @media (max-width: 480px) {
-            .slider-container {
-                height: 150px; /* Further adjust height for very small screens */
-            }
-            .prev, .next {
-                padding: 0.5rem;
-                font-size: 1rem;
-            }
-        }
+        body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
+        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; }
+        .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
+        .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; overflow: hidden; display: flex; padding: 3px; transition: 0.3s; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); display: none; }
+        .channel-card::before, .channel-card::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); animation: rotate 3s linear infinite; z-index: 0; }
+        .channel-card::after { filter: blur(20px); opacity: 0.7; }
+        .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
+        .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .slide { transition: opacity 0.8s ease-in-out; }
     </style>
-
-    <script type='text/javascript' src='//sellinglitcedar.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js'></script>
 </head>
-<body class="antialiased">
-    <div class="w-full max-w-4xl mx-auto flex-grow flex flex-col">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-semibold text-gray-100">HitWicket</h1>
-        </header>
+<body class="antialiased flex flex-col items-center">
+    <div class="bg-gradient-orb orb-1"></div>
+    <div class="bg-gradient-orb orb-2"></div>
 
-        <main class="flex-grow p-0 md:p-0 pb-4"> <section class="slider-container" id="sliderSection">
-                <div class="slides" id="imageSlider">
-                    <div class="slide">
-                        <img src="https://s3.ap-southeast-1.amazonaws.com/images.asianage.com/images/aa-Cover-bemabt1n02m2qlob8721uj6fq0-20190429225321.Medi.jpeg" alt="Slide 1">
-                    </div>
-                    <div class="slide">
-                        <img src="https://www.shutterstock.com/image-vector/illustration-batsman-player-playing-cricket-600nw-2150221663.jpg" alt="Slide 2">
-                    </div>
-                    <div class="slide">
-                        <img src="https://www.yebhitheekhai.com/wp-content/uploads/2023/04/Untitled-design-20-1200x720.png" alt="Slide 3">
-                    </div>
-                    
-                     <div class="slide">
-                        <img src="https://www.shutterstock.com/image-vector/live-cricket-tournament-poster-banner-600nw-1267153834.jpg" alt="Slide 4">
-                    </div>
-                   
-                    
-                </div>
-
-                <a class="prev" onclick="plusSlides(-1)">❮</a>
-                <a class="next" onclick="plusSlides(1)">❯</a>
-
-                <div class="dots-container" id="dotsContainer">
-                    </div>
-            </section>
-
-        </main>
-        <center>
-
-       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 p-4" id="channelGrid">
-
-            <a href="https://sellinglitcedar.com/pc2npqv1q?key=ce938f1b0334a4a833f4137da0cd4094" class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://play-lh.googleusercontent.com/fmz6L0mlFDCRRudZ01RUk_DOLF6ITxEyRYysb2DRDp-mhle4cnsyi5QGF00tSNjPR_B2" alt="Willow HD Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">Willow HD</p>
-                </div>
-            </a>
-
-             <a href="https://hitwicket.online/tv1" class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://api3.viu.lk/api/client/v1/global/images/25669?accessKey=WkVjNWNscFhORDBLCg==" alt="TV1 Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">TV1</p>
-                </div>
-            </a>
-            
-            <a href="https://hitwicket.online/tamashahd"  class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/fa/36/79/fa3679ae-6a1b-8714-37de-93995becfd3c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/1200x600wa.png" alt="Tamasha HD Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">Tamasha HD</p>
-                </div>
-            </a>
-            
-            <a href="https://hitwicket.online/sonysports1"  class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGE6O710SDHMpr580b_kjyRj2XD4fUMDc2gg&s" alt="Sony Sports 1 Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">Sony Sports 1</p>
-                </div>
-            </a>
-            
-            <a href="https://hitwicket.online/sonysports3"  class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://stmify.com/wp-content/uploads/2024/10/172-s.webp" alt="Sony Sports 3 Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">Sony Sports 3</p>
-                </div>
-            </a>
-            
-            <a href="https://hitwicket.online/tsportshd" class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://media.licdn.com/dms/image/v2/C560BAQEkzy6nAcsyag/company-logo_200_200/company-logo_200_200/0/1630662269264?e=2147483647&v=beta&t=Xyxc5WJFZRKGMmHUyjXuUmOmYGO9bgGLbkwV9uyduxo" alt="TSports HD Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">TSports HD</p>
-                </div>
-            </a>
-            
-         <a href="#" class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLMhVJFXkNYK7trsuhRe58ZK1-pQLUhD3T6w&s" alt="TV1 Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">Ten Cricket</p>
-                </div>
-            </a>
-        <a href="#" class="block">
-                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-4 transform transition-all duration-300 ease-in-out hover:scale-105 border-2 border-transparent hover:border-blue-500 h-full">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbbgmYRlzsx1lmawuW9Rq8Y1kEEOez-tIKzfipIl4NiLA3Gl_LRI6LDb8lDsAVPEv_KzE" alt="TV1 Logo" class="w-full rounded-lg mb-3 object-cover aspect-square">
-                    <p class="text-sm sm:text-base font-medium text-gray-200 text-center">Star Sports</p>
-                </div>
-            </a>
-        
+    <nav class="w-full glass-panel sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-cricket text-3xl text-neonBlue"></i>
+                <h1 class="text-3xl font-bold italic">Hit<span class="text-neonBlue">Wicket</span></h1>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50">
+                <span class="relative flex h-3 w-3"><span class="animate-ping absolute h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative h-3 w-3 bg-red-600 rounded-full"></span></span>
+                <span class="text-xs font-bold text-red-400">LIVE NOW</span>
+            </div>
         </div>
-</center>
-    </div>
+    </nav>
 
-    <footer class="w-full py-4 text-center text-gray-400 text-sm mt-8">
-        <p>© 2025 @HitWicket.online</p>
-    </footer>
+    <main class="w-full max-w-7xl px-4 py-8 z-10">
+        <h2 class="text-2xl font-bold mb-8 uppercase tracking-wider">Live <span class="text-neonBlue">Streaming</span></h2>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid">
+            </div>
+    </main>
 
     <script>
-        // --- Image Slider Logic ---
-        let slideIndex = 1; // Current slide index
-        let autoSlideInterval; // Variable to hold the interval for auto-sliding
-        let allSlides; // Reference to all slide elements
-        let dotsContainer; // Reference to the dots container
-        let dots; // Reference to all dot elements
-
-        /**
-         * Displays the slides based on the current slideIndex.
-         * Manages active, previous, and next visible slides, and updates dots.
-         * @param {number} n The index of the slide to show (1-based).
-         */
-        function showSlides(n) {
-            // Ensure slides are initialized before proceeding
-            if (!allSlides || allSlides.length === 0) {
-                console.error("Slides not initialized.");
-                return;
-            }
-
-            // Handle slide index overflow, wrapping around
-            if (n > allSlides.length) { slideIndex = 1 }
-            if (n < 1) { slideIndex = allSlides.length }
-
-            // Calculate current, previous, and next slide indices (0-based)
-            let currentIdx = slideIndex - 1;
-            let prevIdx = (currentIdx - 1 + allSlides.length) % allSlides.length;
-            let nextIdx = (currentIdx + 1) % allSlides.length;
-
-            // Reset all slides: remove active/visible classes, set opacity and z-index
-            for (let i = 0; i < allSlides.length; i++) {
-                allSlides[i].classList.remove('active', 'prev-visible', 'next-visible');
-                allSlides[i].style.opacity = '0';
-                allSlides[i].style.zIndex = '1';
-                allSlides[i].style.pointerEvents = 'none'; // Disable interaction for inactive slides
-            }
-
-            // Set the current active slide
-            allSlides[currentIdx].classList.add('active');
-            allSlides[currentIdx].style.opacity = '1';
-            allSlides[currentIdx].style.zIndex = '3';
-            allSlides[currentIdx].style.pointerEvents = 'auto'; // Enable interaction for active slide
-
-            // Set the previous visible slide
-            allSlides[prevIdx].classList.add('prev-visible');
-            allSlides[prevIdx].style.opacity = '1';
-            allSlides[prevIdx].style.zIndex = '2';
-
-            // Set the next visible slide
-            allSlides[nextIdx].classList.add('next-visible');
-            allSlides[nextIdx].style.opacity = '1';
-            allSlides[nextIdx].style.zIndex = '2';
-
-            // Update dots if they exist
-            if (dots && dots.length > 0) {
-                for (let i = 0; i < dots.length; i++) {
-                    dots[i].classList.remove("active");
-                }
-                dots[currentIdx].classList.add("active");
-            }
+        async function loadChannels() {
+            try {
+                const res = await fetch('data.json');
+                const data = await res.json();
+                const grid = document.getElementById('channelGrid');
+                
+                grid.innerHTML = data.channels.map(ch => {
+                    if(!ch.streamUrl) return ''; // Link එකක් නැත්නම් පෙන්නන්න එපා
+                    return `
+                        <a href="player.html?id=${ch.id}" class="channel-card" style="display:flex">
+                            <div class="card-content">
+                                <img src="${ch.logo}" class="w-full rounded-lg mb-3 aspect-square object-cover bg-gray-900">
+                                <p class="text-lg font-semibold text-center">${ch.name}</p>
+                                <span class="text-xs text-gray-500 mt-1">${ch.quality}</span>
+                            </div>
+                        </a>
+                    `;
+                }).join('');
+            } catch (e) { console.error("Error loading JSON", e); }
         }
-
-        /**
-         * Advances or goes back in slides based on 'n' value.
-         * Resets the auto-slide interval.
-         * @param {number} n -1 for previous, 1 for next.
-         */
-        function plusSlides(n) {
-            clearInterval(autoSlideInterval); // Stop auto-slide on manual navigation
-            slideIndex += n;
-            showSlides(slideIndex);
-            startAutoSlide(); // Restart auto-slide after a brief delay
-        }
-
-        /**
-         * Jumps to a specific slide.
-         * Resets the auto-slide interval.
-         * @param {number} n The 1-based index of the slide to jump to.
-         */
-        function currentSlide(n) {
-            clearInterval(autoSlideInterval); // Stop auto-slide on manual navigation
-            slideIndex = n;
-            showSlides(slideIndex);
-            startAutoSlide(); // Restart auto-slide after a brief delay
-        }
-
-        /**
-         * Starts the automatic slide show.
-         */
-        function startAutoSlide() {
-            // Clear any existing interval to prevent multiple intervals running
-            clearInterval(autoSlideInterval);
-            autoSlideInterval = setInterval(function() {
-                plusSlides(1); // Advance to the next slide every 3 seconds
-            }, 3000);
-        }
-
-        // Initialize the slider when the window loads
-        window.onload = function() {
-            // Slider initialization
-            allSlides = document.getElementsByClassName("slide");
-            dotsContainer = document.getElementById("dotsContainer");
-
-            if (dotsContainer && allSlides.length > 0) {
-                for (let i = 0; i < allSlides.length; i++) {
-                    let dot = document.createElement('span');
-                    dot.classList.add('dot');
-                    dot.onclick = (function(index) {
-                        return function() {
-                            currentSlide(index + 1);
-                        };
-                    })(i);
-                    dotsContainer.appendChild(dot);
-                }
-                dots = document.getElementsByClassName("dot");
-            }
-
-            showSlides(slideIndex);
-            startAutoSlide();
-        };
+        window.onload = loadChannels;
     </script>
-
-  
 </body>
 </html>
