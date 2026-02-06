@@ -152,30 +152,57 @@
                 
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
-                if (currentChannel && currentChannel.streamUrl) {
+                if (currentChannel) {
+                    // Update UI info
                     document.getElementById('page-title').innerText = currentChannel.name + " | Live Streaming";
                     document.getElementById('ch-name').innerText = currentChannel.name;
-                    document.getElementById('ch-quality').innerText = currentChannel.quality;
+                    document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
 
-                    jwplayer("my-video").setup({
-                        file: currentChannel.streamUrl,
-                        width: "100%",
-                        aspectratio: "16:9",
-                        autostart: true,
-                        stretching: "uniform",
-                        type: "hls"
-                    }).on('error', function() {
+                    // Determine URL (Use streamUrl for HLS or mpdUrl for DASH)
+                    const videoUrl = currentChannel.streamUrl || currentChannel.mpdUrl;
+
+                    if (videoUrl) {
+                        // Base Configuration
+                        let playerConfig = {
+                            width: "100%",
+                            aspectratio: "16:9",
+                            autostart: true,
+                            stretching: "uniform",
+                            // removed hardcoded 'type: hls' to allow auto-detection
+                        };
+
+                        // Check if DRM keys exist (For DASH/MPD)
+                        if (currentChannel.drm && currentChannel.drm.clearKeys) {
+                            playerConfig.playlist = [{
+                                file: videoUrl,
+                                type: "dash", // Explicitly set dash for DRM content
+                                drm: {
+                                    clearkey: currentChannel.drm.clearKeys
+                                }
+                            }];
+                        } else {
+                            // Standard HLS or non-DRM setup
+                            playerConfig.file = videoUrl;
+                        }
+
+                        // Setup JW Player
+                        jwplayer("my-video").setup(playerConfig).on('error', function() {
+                            overlay.classList.add('show');
+                            errorMsg.innerText = "Stream is currently offline or Key Expired.";
+                        });
+                    } else {
                         overlay.classList.add('show');
-                        errorMsg.innerText = "Stream is currently offline.";
-                    });
+                        errorMsg.innerText = "No Stream Link Available.";
+                    }
                 } else {
                     overlay.classList.add('show');
-                    errorMsg.innerText = "Channel not found or Link missing.";
+                    errorMsg.innerText = "Channel not found.";
                 }
 
+                // Render Channel Grid
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
-                    .filter(ch => ch.streamUrl !== "") 
+                    .filter(ch => (ch.streamUrl && ch.streamUrl !== "") || (ch.mpdUrl && ch.mpdUrl !== "")) 
                     .map(ch => `
                         <a href="player.html?id=${ch.id}" class="channel-card">
                             <div class="card-content">
