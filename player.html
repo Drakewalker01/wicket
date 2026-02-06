@@ -7,7 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <script src="https://cdn.jwplayer.com/libraries/KB5zFt7A.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/controls.min.css">
 
     <script>
         tailwind.config = {
@@ -42,10 +44,18 @@
             background: #000; 
             box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); 
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
 
+        /* Shaka Player Customization to match theme */
+        .shaka-video-container { width: 100%; height: 100%; }
+        .shaka-controls-button-panel { color: #00f3ff; }
+        .shaka-overflow-menu { background-color: rgba(15, 23, 42, 0.95) !important; color: white !important; border: 1px solid #00f3ff; }
+        .shaka-overflow-menu-button { color: white !important; }
+
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-        .video-area #my-video { position: absolute; inset: 0; }
+        /* Positioning Shaka Player absolutely to fill the container */
+        .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
 
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; text-align: center; }
         .status-overlay.show { display: flex; }
@@ -87,7 +97,10 @@
             <div class="unified-player-container">
                 
                 <div class="video-area">
-                    <div id="my-video"></div>
+                    <div data-shaka-player-container>
+                        <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
+                    </div>
+
                     <div id="status-overlay" class="status-overlay">
                         <div class="p-6">
                             <i class="fas fa-exclamation-circle text-5xl text-red-500 mb-4"></i>
@@ -118,7 +131,7 @@
                     </div>
 
                 </div>
-                </div>
+            </div>
 
         </section>
 
@@ -130,7 +143,7 @@
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid">
-                </div>
+            </div>
         </section>
 
     </main>
@@ -140,69 +153,80 @@
     </footer>
 
     <script>
-        async function initialize() {
-            const params = new URLSearchParams(window.location.search);
-            const channelId = params.get('id');
+        async function initApp() {
+            // Install built-in polyfills to patch browser incompatibilities.
+            shaka.polyfill.installAll();
+
+            if (shaka.Player.isBrowserSupported()) {
+                initPlayer();
+            } else {
+                console.error('Browser not supported!');
+                showError("Browser not supported for this stream.");
+            }
+        }
+
+        async function initPlayer() {
+            const video = document.getElementById('video');
+            const ui = video['ui'];
+            const controls = ui.getControls();
+            const player = controls.getPlayer();
             const overlay = document.getElementById('status-overlay');
             const errorMsg = document.getElementById('error-msg');
+            const params = new URLSearchParams(window.location.search);
+            const channelId = params.get('id');
+
+            // Handle Errors
+            player.addEventListener('error', (event) => {
+                console.error('Error code', event.detail.code, 'object', event.detail);
+                showError("Stream Error: " + event.detail.code);
+            });
 
             try {
                 const res = await fetch('data.json');
                 const data = await res.json();
-                
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
                 if (currentChannel) {
-                    // Update UI info
+                    // Update UI
                     document.getElementById('page-title').innerText = currentChannel.name + " | Live Streaming";
                     document.getElementById('ch-name').innerText = currentChannel.name;
                     document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
 
-                    // Determine URL (Use streamUrl for HLS or mpdUrl for DASH)
-                    const videoUrl = currentChannel.streamUrl || currentChannel.mpdUrl;
+                    const videoUrl = currentChannel.mpdUrl || currentChannel.streamUrl;
 
                     if (videoUrl) {
-                        // Base Configuration
-                        let playerConfig = {
-                            width: "100%",
-                            aspectratio: "16:9",
-                            autostart: true,
-                            stretching: "uniform",
-                            // removed hardcoded 'type: hls' to allow auto-detection
-                        };
+                        // Configuration Object
+                        let playerConfig = {};
 
-                        // Check if DRM keys exist (For DASH/MPD)
+                        // Add DRM (ClearKey) configuration if keys exist
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
-                            playerConfig.playlist = [{
-                                file: videoUrl,
-                                type: "dash", // Explicitly set dash for DRM content
-                                drm: {
-                                    clearkey: currentChannel.drm.clearKeys
-                                }
-                            }];
-                        } else {
-                            // Standard HLS or non-DRM setup
-                            playerConfig.file = videoUrl;
+                            playerConfig.drm = {
+                                clearKeys: currentChannel.drm.clearKeys
+                            };
                         }
 
-                        // Setup JW Player
-                        jwplayer("my-video").setup(playerConfig).on('error', function() {
-                            overlay.classList.add('show');
-                            errorMsg.innerText = "Stream is currently offline or Key Expired.";
-                        });
+                        // Apply Config
+                        player.configure(playerConfig);
+
+                        // Try to load
+                        try {
+                            await player.load(videoUrl);
+                            console.log('The video has now been loaded!');
+                        } catch (e) {
+                            console.error('Error loading video', e);
+                            showError("Stream Failed to Load (Key/Network Error)");
+                        }
                     } else {
-                        overlay.classList.add('show');
-                        errorMsg.innerText = "No Stream Link Available.";
+                        showError("No Stream Link Available");
                     }
                 } else {
-                    overlay.classList.add('show');
-                    errorMsg.innerText = "Channel not found.";
+                    showError("Channel Not Found");
                 }
 
-                // Render Channel Grid
+                // Load Grid
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
-                    .filter(ch => (ch.streamUrl && ch.streamUrl !== "") || (ch.mpdUrl && ch.mpdUrl !== "")) 
+                    .filter(ch => (ch.streamUrl || ch.mpdUrl)) 
                     .map(ch => `
                         <a href="player.html?id=${ch.id}" class="channel-card">
                             <div class="card-content">
@@ -214,13 +238,21 @@
                     `).join('');
 
             } catch (err) {
-                console.error("Initialization failed", err);
+                console.error("Fetch error", err);
+                showError("Failed to load channel data");
+            }
+
+            function showError(msg) {
                 overlay.classList.add('show');
-                errorMsg.innerText = "Error loading data.";
+                errorMsg.innerText = msg;
             }
         }
 
-        window.onload = initialize;
+        // Wait for UI library to load
+        document.addEventListener('shaka-ui-loaded', initApp);
+        // Fallback if UI event doesn't fire immediately (DOMContentLoaded)
+        document.addEventListener('DOMContentLoaded', initApp);
+
     </script>
 </body>
 </html>
