@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
     <script src="https://cdn.jwplayer.com/libraries/KB5zFt7A.js"></script>
-    
-    <script src="https://ssl.p.jwpcdn.com/player/v/8.26.2/provider.shaka.js"></script>
 
     <script>
         tailwind.config = {
@@ -156,87 +154,70 @@
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
                 if (currentChannel) {
-                    // Update UI Info
+                    // Update UI
                     document.getElementById('page-title').innerText = currentChannel.name + " | Live Streaming";
                     document.getElementById('ch-name').innerText = currentChannel.name;
                     document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
 
                     console.log("Loading Channel:", currentChannel.name);
 
-                    // --- Player Configuration ---
-                    let playerSetup = {
+                    // Setup JW Player Config
+                    let playerConfig = {
                         width: "100%",
                         aspectratio: "16:9",
                         autostart: true,
                         stretching: "uniform",
-                        primary: "html5",
-                        playbackRateControls: true,
                     };
 
-                    // === LOGIC START: DRM vs Normal ===
+                    // === PLAYER LOGIC ===
                     
-                    // 1. DASH (.mpd) Link Check
+                    // Option 1: DASH (.mpd) with optional DRM
                     if (currentChannel.mpdUrl && currentChannel.mpdUrl !== "") {
-                        console.log("Status: DASH Mode Detected");
+                        console.log("Mode: DASH Detected");
                         
-                        // DASH සඳහා Playlist Object එක හැදීම
                         let playlistEntry = {
                             file: currentChannel.mpdUrl,
-                            type: "dash" // අනිවාර්යයෙන් type එක dash විය යුතුයි
+                            type: "dash"  // Important: Explicitly tell JW this is DASH
                         };
 
-                        // Keys තිබේදැයි බැලීම
+                        // Check for ClearKeys
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
-                            console.log("Status: DRM Keys Found");
+                            console.log("DRM Keys Detected");
                             playlistEntry.drm = {
                                 clearkey: currentChannel.drm.clearKeys
                             };
                         }
 
-                        // Player Setup එකට දැමීම
-                        playerSetup.playlist = [playlistEntry];
-                    } 
-                    // 2. Normal HLS (.m3u8) Link Check
-                    else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
-                        console.log("Status: HLS Mode Detected");
-                        playerSetup.file = currentChannel.streamUrl;
-                        playerSetup.type = "hls";
-                    } else {
-                        throw new Error("No valid stream link found in data.json");
+                        playerConfig.playlist = [playlistEntry];
                     }
-                    // === LOGIC END ===
+                    // Option 2: HLS (.m3u8)
+                    else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
+                        console.log("Mode: HLS Detected");
+                        playerConfig.file = currentChannel.streamUrl;
+                        playerConfig.type = "hls";
+                    } 
+                    else {
+                        throw new Error("No video URL found");
+                    }
 
-                    // Player Initialize
-                    const player = jwplayer("my-video").setup(playerSetup);
+                    // Initialize Player
+                    const player = jwplayer("my-video").setup(playerConfig);
 
-                    // --- Event Listeners for Debugging ---
+                    // Event Listeners
+                    player.on('ready', () => console.log("Player Ready"));
                     
-                    player.on('ready', () => { console.log("Player Ready."); });
-                    
-                    player.on('play', () => { 
-                        console.log("Playback Started!");
-                        overlay.classList.remove('show'); // Hide overlay if it was shown
-                    });
-
-                    player.on('error', function(e) {
-                        console.error("JW Player Error:", e);
+                    player.on('error', (e) => {
+                        console.error("Player Error:", e);
                         overlay.classList.add('show');
                         
-                        // Error Message Customization
+                        // User Friendly Error Messages
                         let msg = "Stream Offline";
-                        if (e.message) {
-                            if (e.message.includes("manifest")) msg = "Stream Source Error (Check Link)";
-                            if (e.message.includes("key") || e.message.includes("drm")) msg = "DRM Key Error (Expired)";
-                            if (e.message.includes("network")) msg = "Network Connection Error";
-                            // Error 246007 Specific Handling
-                            if (e.code === 246007 || e.message.includes("246007")) msg = "Format/DRM Not Supported (Check Keys)";
+                        if(e.message) {
+                            if(e.message.includes("manifest") || e.message.includes("403")) msg = "Stream Access Denied (Check Link)";
+                            if(e.message.includes("key")) msg = "DRM Key Mismatch (Check Keys)";
+                            if(e.message.includes("network")) msg = "Network Error";
                         }
-                        
-                        errorMsg.innerHTML = `
-                            ${msg}<br>
-                            <span class="text-sm text-gray-500 mt-2 block">Code: ${e.code || 'N/A'}</span>
-                            <span class="text-xs text-red-900/50 mt-1 block">${e.message || ''}</span>
-                        `;
+                        errorMsg.innerHTML = `${msg}<br><span class="text-xs text-gray-500">${e.message}</span>`;
                     });
 
                 } else {
@@ -244,7 +225,7 @@
                     errorMsg.innerText = "Channel Not Found";
                 }
 
-                // Grid Loading
+                // Load Grid
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
                     .filter(ch => (ch.streamUrl || ch.mpdUrl))
@@ -259,9 +240,9 @@
                     `).join('');
 
             } catch (err) {
-                console.error("System Error:", err);
+                console.error("Init Error:", err);
                 overlay.classList.add('show');
-                errorMsg.innerText = "System Error: Check Console";
+                errorMsg.innerText = "Failed to load data";
             }
         }
 
