@@ -8,7 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
-    <script src="https://cdn.jwplayer.com/libraries/KB5zFt7A.js"></script>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    
+    <link href="https://unpkg.com/@videojs/themes@1/dist/fantasy/index.css" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -43,15 +45,32 @@
             background: #000; 
             box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); 
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
 
+        /* Customizing Video.js to match Neon Theme */
+        .video-js .vjs-big-play-button {
+            background-color: rgba(0, 243, 255, 0.7);
+            border-color: #00f3ff;
+            color: black;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            font-size: 40px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .video-js .vjs-control-bar { background: rgba(0,0,0,0.8); }
+        .video-js .vjs-play-progress { background-color: #00f3ff; }
+
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-        .video-area #my-video { position: absolute; inset: 0; }
+        .video-area .video-js { position: absolute; inset: 0; width: 100%; height: 100%; }
 
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; text-align: center; }
         .status-overlay.show { display: flex; }
 
-        /* Card Snake Border Effect */
         .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; overflow: hidden; display: flex; padding: 3px; transition: 0.3s; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
         .channel-card::before, .channel-card::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); animation: rotate 3s linear infinite; z-index: 0; }
         .channel-card::after { filter: blur(20px); opacity: 0.7; }
@@ -82,13 +101,12 @@
     </nav>
 
     <main class="w-full max-w-7xl px-4 py-8 z-10">
-        
         <section class="mb-12">
-            
             <div class="unified-player-container">
-                
                 <div class="video-area">
-                    <div id="my-video"></div>
+                    <video id="my-video" class="video-js vjs-theme-fantasy vjs-big-play-centered" controls preload="auto" data-setup="{}">
+                    </video>
+
                     <div id="status-overlay" class="status-overlay">
                         <div class="p-6">
                             <i class="fas fa-exclamation-circle text-5xl text-red-500 mb-4"></i>
@@ -99,7 +117,6 @@
                 </div>
 
                 <div class="bg-slate-900/95 backdrop-blur-xl border-t border-white/10 p-3 md:p-5 flex justify-between items-center gap-2">
-                    
                     <div class="flex flex-col justify-center min-w-0">
                         <h2 class="text-base md:text-2xl font-bold text-white leading-none truncate mb-0" id="ch-name">
                             Loading...
@@ -108,7 +125,6 @@
                             <span class="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-wide" id="ch-quality"></span>
                         </div>
                     </div>
-
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <div class="px-2 py-1.5 md:px-4 md:py-2 bg-slate-800 rounded-lg border border-white/10 text-[10px] md:text-xs font-bold whitespace-nowrap flex items-center gap-1.5">
                             <i class="fas fa-server text-gray-400"></i> SERVER 1
@@ -117,10 +133,8 @@
                             HD STREAM
                         </div>
                     </div>
-
                 </div>
             </div>
-
         </section>
 
         <section>
@@ -129,28 +143,45 @@
                 <h2 class="text-2xl font-bold uppercase tracking-widest">Other <span class="text-neonBlue">Channels</span></h2>
                 <div class="flex-grow h-[1px] bg-gradient-to-r from-gray-800 to-transparent ml-4"></div>
             </div>
-
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid">
             </div>
         </section>
-
     </main>
 
     <footer class="w-full py-10 border-t border-gray-800 bg-slate-900/50 backdrop-blur-md mt-20">
         <div class="text-center text-gray-500 text-sm">© 2026 HITWicket. Professional Sports Network.</div>
     </footer>
 
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@5.3.0/dist/videojs-contrib-eme.min.js"></script>
+
     <script>
+        // Helper function to convert Hex String to Uint8Array (Required for Video.js Keys)
+        function hexToBytes(hex) {
+            let bytes = [];
+            for (let c = 0; c < hex.length; c += 2)
+                bytes.push(parseInt(hex.substr(c, 2), 16));
+            return new Uint8Array(bytes);
+        }
+
         async function initialize() {
             const params = new URLSearchParams(window.location.search);
             const channelId = params.get('id');
             const overlay = document.getElementById('status-overlay');
             const errorMsg = document.getElementById('error-msg');
+            
+            // Initialize Player
+            const player = videojs('my-video', {
+                fluid: true,
+                html5: {
+                    vhs: { overrideNative: true }
+                }
+            });
 
             try {
                 const res = await fetch('data.json');
                 const data = await res.json();
-                
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
                 if (currentChannel) {
@@ -161,63 +192,81 @@
 
                     console.log("Loading Channel:", currentChannel.name);
 
-                    // Setup JW Player Config
-                    let playerConfig = {
-                        width: "100%",
-                        aspectratio: "16:9",
-                        autostart: true,
-                        stretching: "uniform",
-                    };
+                    // --- VIDEO.JS SOURCE LOGIC ---
 
-                    // === PLAYER LOGIC ===
-                    
-                    // Option 1: DASH (.mpd) with optional DRM
+                    // 1. DASH (.mpd) Logic
                     if (currentChannel.mpdUrl && currentChannel.mpdUrl !== "") {
-                        console.log("Mode: DASH Detected");
-                        
-                        let playlistEntry = {
-                            file: currentChannel.mpdUrl,
-                            type: "dash"  // Important: Explicitly tell JW this is DASH
+                        let srcObj = {
+                            src: currentChannel.mpdUrl,
+                            type: 'application/dash+xml'
                         };
 
-                        // Check for ClearKeys
+                        // Add Keys if available
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
-                            console.log("DRM Keys Detected");
-                            playlistEntry.drm = {
-                                clearkey: currentChannel.drm.clearKeys
+                            console.log("Applying DRM Keys...");
+                            
+                            // Convert keys for Video.js format
+                            let keyObj = {};
+                            for (const [keyId, keyVal] of Object.entries(currentChannel.drm.clearKeys)) {
+                                // Important: Video.js expects keys in a specific format for EME
+                                // This is a simplified implementation for ClearKey
+                                srcObj.keySystems = {
+                                    'org.w3.clearkey': {
+                                        videoContentType: 'video/webm; codecs="vp9"', 
+                                        audioContentType: 'audio/webm; codecs="vorbis"',
+                                        getLicense: function (emeOptions, keyMessage, callback) {
+                                            // Directly create license object
+                                            let licenseObj = { keys: [] };
+                                            // Add the key pairs
+                                            licenseObj.keys.push({
+                                                kty: 'oct',
+                                                k: keyVal.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('').replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, ""), // Convert to Base64URL
+                                                kid: keyId.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('').replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "")
+                                            });
+                                            callback(null, new TextEncoder().encode(JSON.stringify(licenseObj)));
+                                        }
+                                    }
+                                };
+                            }
+                            
+                            // *** SIMPLIFIED CLEARKEY FOR VIDEO.JS ***
+                            // Video.js EME plugin is complex. 
+                            // Using a simpler direct approach often works better for common ClearKey streams.
+                             srcObj.keySystems = {
+                                'org.w3.clearkey': {
+                                    audio: hexToBytes(Object.values(currentChannel.drm.clearKeys)[0]),
+                                    video: hexToBytes(Object.values(currentChannel.drm.clearKeys)[0])
+                                }
                             };
                         }
+                        
+                        // Detect iOS
+                        if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+                            overlay.classList.add('show');
+                            errorMsg.innerHTML = "iOS (iPhone) does not support DASH streams.<br>Please use HLS (.m3u8).";
+                            return;
+                        }
 
-                        playerConfig.playlist = [playlistEntry];
+                        player.src(srcObj);
                     }
-                    // Option 2: HLS (.m3u8)
+                    // 2. HLS (.m3u8) Logic
                     else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
-                        console.log("Mode: HLS Detected");
-                        playerConfig.file = currentChannel.streamUrl;
-                        playerConfig.type = "hls";
+                        console.log("Loading HLS...");
+                        player.src({
+                            src: currentChannel.streamUrl,
+                            type: 'application/x-mpegURL'
+                        });
                     } 
                     else {
-                        throw new Error("No video URL found");
+                        throw new Error("No URL found");
                     }
 
-                    // Initialize Player
-                    const player = jwplayer("my-video").setup(playerConfig);
+                    player.play();
 
-                    // Event Listeners
-                    player.on('ready', () => console.log("Player Ready"));
-                    
-                    player.on('error', (e) => {
-                        console.error("Player Error:", e);
+                    player.on('error', function() {
+                        console.error("VideoJS Error:", player.error());
                         overlay.classList.add('show');
-                        
-                        // User Friendly Error Messages
-                        let msg = "Stream Offline";
-                        if(e.message) {
-                            if(e.message.includes("manifest") || e.message.includes("403")) msg = "Stream Access Denied (Check Link)";
-                            if(e.message.includes("key")) msg = "DRM Key Mismatch (Check Keys)";
-                            if(e.message.includes("network")) msg = "Network Error";
-                        }
-                        errorMsg.innerHTML = `${msg}<br><span class="text-xs text-gray-500">${e.message}</span>`;
+                        errorMsg.innerText = "Stream Error (Check Keys/Link)";
                     });
 
                 } else {
@@ -225,7 +274,7 @@
                     errorMsg.innerText = "Channel Not Found";
                 }
 
-                // Load Grid
+                // Grid Loading
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
                     .filter(ch => (ch.streamUrl || ch.mpdUrl))
@@ -240,9 +289,9 @@
                     `).join('');
 
             } catch (err) {
-                console.error("Init Error:", err);
+                console.error(err);
                 overlay.classList.add('show');
-                errorMsg.innerText = "Failed to load data";
+                errorMsg.innerText = "App Error";
             }
         }
 
