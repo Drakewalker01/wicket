@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
     <script src="https://cdn.jwplayer.com/libraries/KB5zFt7A.js"></script>
+    
+    <script src="https://ssl.p.jwpcdn.com/player/v/8.26.2/provider.shaka.js"></script>
 
     <script>
         tailwind.config = {
@@ -154,14 +156,14 @@
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
                 if (currentChannel) {
-                    // Update UI info
+                    // Update UI Info
                     document.getElementById('page-title').innerText = currentChannel.name + " | Live Streaming";
                     document.getElementById('ch-name').innerText = currentChannel.name;
                     document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
 
-                    console.log("Attempting to load:", currentChannel.name);
+                    console.log("Loading Channel:", currentChannel.name);
 
-                    // Player Setup Configuration
+                    // --- Player Configuration ---
                     let playerSetup = {
                         width: "100%",
                         aspectratio: "16:9",
@@ -171,71 +173,81 @@
                         playbackRateControls: true,
                     };
 
-                    // ---- LOGIC: DASH (with DRM) vs HLS (Normal) ----
-
-                    // 1. DASH (.mpd) Link
+                    // === LOGIC START: DRM vs Normal ===
+                    
+                    // 1. DASH (.mpd) Link Check
                     if (currentChannel.mpdUrl && currentChannel.mpdUrl !== "") {
-                        console.log("Mode: DASH");
+                        console.log("Status: DASH Mode Detected");
                         
-                        // DASH සඳහා 'playlist' array එකක් භාවිතා කිරීම අනිවාර්යයි DRM වැඩ කිරීමට
-                        let playlistItem = {
+                        // DASH සඳහා Playlist Object එක හැදීම
+                        let playlistEntry = {
                             file: currentChannel.mpdUrl,
-                            type: "dash"
+                            type: "dash" // අනිවාර්යයෙන් type එක dash විය යුතුයි
                         };
 
-                        // Keys තිබේදැයි පරීක්ෂා කිරීම
+                        // Keys තිබේදැයි බැලීම
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
-                            console.log("DRM Detected: Apply ClearKeys");
-                            playlistItem.drm = {
+                            console.log("Status: DRM Keys Found");
+                            playlistEntry.drm = {
                                 clearkey: currentChannel.drm.clearKeys
                             };
                         }
 
-                        playerSetup.playlist = [playlistItem];
-                        
+                        // Player Setup එකට දැමීම
+                        playerSetup.playlist = [playlistEntry];
                     } 
-                    // 2. HLS (.m3u8) Link
+                    // 2. Normal HLS (.m3u8) Link Check
                     else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
-                        console.log("Mode: HLS");
+                        console.log("Status: HLS Mode Detected");
                         playerSetup.file = currentChannel.streamUrl;
                         playerSetup.type = "hls";
-                    } 
-                    else {
-                        throw new Error("No valid Stream URL found");
+                    } else {
+                        throw new Error("No valid stream link found in data.json");
                     }
+                    // === LOGIC END ===
 
-                    // Player එක Run කිරීම
+                    // Player Initialize
                     const player = jwplayer("my-video").setup(playerSetup);
 
-                    // Error Handling (වැරදි සොයා ගැනීම)
-                    player.on('error', function(e) {
-                        console.error("JW Player Error Event:", e);
-                        overlay.classList.add('show');
-                        
-                        let msg = "Stream Offline.";
-                        if(e.message) {
-                            if(e.message.includes("manifest")) msg = "Stream Source Error (Link Broken)";
-                            if(e.message.includes("key") || e.message.includes("drm")) msg = "DRM Key Error (Expired)";
-                            if(e.message.includes("network")) msg = "Network Error";
-                        }
-                        
-                        errorMsg.innerHTML = `${msg}<br><span class="text-sm text-gray-500 mt-2">Code: ${e.code}</span>`;
+                    // --- Event Listeners for Debugging ---
+                    
+                    player.on('ready', () => { console.log("Player Ready."); });
+                    
+                    player.on('play', () => { 
+                        console.log("Playback Started!");
+                        overlay.classList.remove('show'); // Hide overlay if it was shown
                     });
 
-                    // Success Event
-                    player.on('play', function() {
-                        console.log("Stream Playing Successfully");
+                    player.on('error', function(e) {
+                        console.error("JW Player Error:", e);
+                        overlay.classList.add('show');
+                        
+                        // Error Message Customization
+                        let msg = "Stream Offline";
+                        if (e.message) {
+                            if (e.message.includes("manifest")) msg = "Stream Source Error (Check Link)";
+                            if (e.message.includes("key") || e.message.includes("drm")) msg = "DRM Key Error (Expired)";
+                            if (e.message.includes("network")) msg = "Network Connection Error";
+                            // Error 246007 Specific Handling
+                            if (e.code === 246007 || e.message.includes("246007")) msg = "Format/DRM Not Supported (Check Keys)";
+                        }
+                        
+                        errorMsg.innerHTML = `
+                            ${msg}<br>
+                            <span class="text-sm text-gray-500 mt-2 block">Code: ${e.code || 'N/A'}</span>
+                            <span class="text-xs text-red-900/50 mt-1 block">${e.message || ''}</span>
+                        `;
                     });
 
                 } else {
                     overlay.classList.add('show');
-                    errorMsg.innerText = "Channel not found.";
+                    errorMsg.innerText = "Channel Not Found";
                 }
 
-                // Grid එක Update කිරීම
+                // Grid Loading
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
-                    .filter(ch => (ch.streamUrl && ch.streamUrl !== "") || (ch.mpdUrl && ch.mpdUrl !== ""))
+                    .filter(ch => (ch.streamUrl || ch.mpdUrl))
                     .map(ch => `
                         <a href="player.html?id=${ch.id}" class="channel-card">
                             <div class="card-content">
@@ -247,9 +259,9 @@
                     `).join('');
 
             } catch (err) {
-                console.error("Initialization Crash:", err);
+                console.error("System Error:", err);
                 overlay.classList.add('show');
-                errorMsg.innerText = "Error loading channel data.";
+                errorMsg.innerText = "System Error: Check Console";
             }
         }
 
