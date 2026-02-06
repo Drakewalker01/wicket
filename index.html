@@ -25,12 +25,14 @@
         @keyframes blob { 0% { transform: translate(0,0) scale(1) } 33% { transform: translate(30px,-50px) scale(1.1) } 100% { transform: translate(0,0) scale(1) } }
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         
+        /* Slider */
         .slider-blend-overlay { position: absolute; inset: 0; z-index: 5; background: linear-gradient(to bottom, transparent 60%, #0b1120 100%); pointer-events: none; }
         .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease-in-out; }
         .slide.active { opacity: 1; z-index: 2; }
         .nav-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); transition: 0.3s; z-index: 20; }
         .nav-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
 
+        /* Card Fast Running Effect */
         .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; }
         .channel-card::before, .channel-card::after { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
@@ -38,7 +40,10 @@
             animation: rotate 3s linear infinite; 
         }
         .channel-card::after { filter: blur(20px); opacity: 0.7; }
+        
+        /* HOVER FAST SPEED */
         .channel-card:hover::before, .channel-card:hover::after { animation-duration: 1.2s; }
+        
         .card-content { background: #111827; border-radius: 0.85rem; width: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; }
         .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
@@ -50,14 +55,14 @@
 
     <nav class="w-full glass-panel sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-2">
+            <a href="index.html" class="flex items-center gap-2 hover:opacity-90 transition-opacity">
                 <i class="fas fa-cricket text-3xl text-neonBlue"></i>
                 <h1 class="text-3xl font-bold italic uppercase tracking-wider">Hit<span class="text-neonBlue">Wicket</span></h1>
-            </div>
+            </a>
             <div class="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50 flex items-center gap-2">
                 <span class="relative flex h-2 w-2">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600 shadow-[0_0_8px_#ef4444]"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600 shadow-[0_0_10px_#ef4444]"></span>
                 </span>
                 <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Live Now</span>
             </div>
@@ -69,6 +74,9 @@
             <div class="slider-blend-overlay"></div>
             <div id="imageSlider" class="relative w-full h-full"></div>
             
+            <div id="sliderDots" class="absolute bottom-4 right-5 md:bottom-8 md:right-10 z-20 flex gap-2">
+                </div>
+
             <button onclick="changeSlide(-1)" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-left"></i></button>
             <button onclick="changeSlide(1)" class="nav-btn absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-right"></i></button>
         </section>
@@ -96,6 +104,9 @@
                 const data = await res.json();
                 
                 const slider = document.getElementById('imageSlider');
+                const dotsContainer = document.getElementById('sliderDots');
+
+                // Generate Slides
                 slider.innerHTML = data.slider.map((s, i) => `
                     <div class="slide ${i===0?'active':''}">
                         <img src="${s.image}" class="w-full h-full object-cover">
@@ -105,6 +116,13 @@
                             <h2 class="text-3xl md:text-5xl font-bold text-white mb-2">${s.title}</h2>
                             <p class="text-gray-300 text-sm md:text-lg max-w-md">${s.desc}</p>
                         </div>
+                    </div>
+                `).join('');
+
+                // Generate Dots
+                dotsContainer.innerHTML = data.slider.map((_, i) => `
+                    <div onclick="jumpToSlide(${i})" 
+                         class="h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i===0 ? 'w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]' : 'w-1.5 bg-white/40 hover:bg-white'}">
                     </div>
                 `).join('');
 
@@ -120,15 +138,39 @@
                 `).join('');
 
                 startTimer();
-            } catch (e) { console.log("JSON Load Error"); }
+            } catch (error) {
+                console.error("Error loading data:", error);
+            }
+        }
+
+        function updateSliderUI() {
+            // Update Slides
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(s => s.classList.remove('active'));
+            slides[slideIndex].classList.add('active');
+
+            // Update Dots
+            const dots = document.getElementById('sliderDots').children;
+            Array.from(dots).forEach((dot, i) => {
+                if(i === slideIndex) {
+                    dot.className = 'h-1.5 rounded-full transition-all duration-300 cursor-pointer w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]';
+                } else {
+                    dot.className = 'h-1.5 w-1.5 rounded-full transition-all duration-300 cursor-pointer bg-white/40 hover:bg-white';
+                }
+            });
         }
 
         function changeSlide(n) {
             const slides = document.querySelectorAll('.slide');
             if(slides.length === 0) return;
-            slides[slideIndex].classList.remove('active');
             slideIndex = (slideIndex + n + slides.length) % slides.length;
-            slides[slideIndex].classList.add('active');
+            updateSliderUI();
+            resetTimer();
+        }
+
+        function jumpToSlide(n) {
+            slideIndex = n;
+            updateSliderUI();
             resetTimer();
         }
 
