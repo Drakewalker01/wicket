@@ -50,23 +50,36 @@
 
         /* --- Custom Shaka Player UI Design --- */
 
-        /* 1. Control Bar - UPDATED: REMOVED GLASS BACKGROUND */
+        /* 1. Control Bar - Floating Glass Style on HOVER ONLY */
+        
+        /* Default State: Transparent Background (No Glass Effect) */
         .shaka-bottom-controls {
-            background: transparent !important; /* Glass effect removed */
-            backdrop-filter: none !important;   /* Blur removed */
-            border: none !important;            /* Border removed */
-            box-shadow: none !important;        /* Shadow removed */
-            padding-bottom: 10px !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            border: 1px solid transparent;
+            box-shadow: none;
             
-            /* Optional: Add a subtle gradient so buttons are visible on white videos */
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%) !important;
+            /* Layout settings remain */
+            margin: 15px !important; 
+            width: calc(100% - 30px) !important; 
+            border-radius: 16px !important;
+            padding: 5px 10px !important;
+            transition: all 0.4s ease;
         }
+
+        /* Hover State: Apply Glass Effect when hovering the container */
+        .unified-player-container:hover .shaka-bottom-controls {
+            background: rgba(15, 23, 42, 0.75) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
 
         /* 2. Seek Bar (Timeline) - Neon Blue */
         .shaka-seek-bar-container {
             height: 6px !important;
             border-radius: 10px;
-            margin-bottom: 10px !important; /* Add space above buttons */
         }
         
         .shaka-ad-marker-container, 
@@ -99,46 +112,48 @@
             border: 1px solid rgba(0, 243, 255, 0.3);
         }
 
-        /* 5. Settings Menu (Overflow Menu) - Colors Fixed */
+        /* 5. Settings Menu (Overflow Menu) - FIXED COLORS & DEFAULT FONT */
         .shaka-overflow-menu {
-            background-color: rgba(11, 17, 32, 0.98) !important;
-            border: 1px solid #00f3ff !important;
+            background-color: rgba(11, 17, 32, 0.98) !important; /* Dark Background */
+            border: 1px solid #00f3ff !important; /* Neon Border */
             border-radius: 12px !important;
             box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
             padding: 8px 0 !important;
-            bottom: 60px !important; /* Adjusted position since control bar is transparent */
         }
 
+        /* Menu Text Color Fix - No Custom Font Size/Weight */
         .shaka-overflow-menu button {
-            color: #ffffff !important;
+            color: #ffffff !important; /* White Text Default */
             font-family: 'Rajdhani', sans-serif !important;
-            font-weight: 600 !important;
-            font-size: 14px !important;
+            /* Font Size & Weight removed to use Default */
             transition: all 0.2s ease;
             display: flex !important;
             align-items: center !important;
         }
 
+        /* Icons Color Fix - Neon Blue Default */
         .shaka-overflow-menu button i, 
         .shaka-overflow-menu .material-icons-round {
             color: #00f3ff !important;
             margin-right: 10px !important;
         }
 
+        /* Hover Effect: Blue Background, Black Text */
         .shaka-overflow-menu button:hover {
             background-color: #00f3ff !important;
             color: #000000 !important;
             box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
         }
 
+        /* Hover Icons: Black */
         .shaka-overflow-menu button:hover i,
         .shaka-overflow-menu button:hover .material-icons-round {
             color: #000000 !important;
         }
 
+        /* Selected Values (e.g., "Auto", "Off") */
         .shaka-current-selection-span {
             color: rgba(255, 255, 255, 0.6) !important;
-            font-size: 12px !important;
             margin-left: auto !important;
         }
 
@@ -267,6 +282,7 @@
 
     <script>
         async function initApp() {
+            // Install built-in polyfills to patch browser incompatibilities.
             shaka.polyfill.installAll();
 
             if (shaka.Player.isBrowserSupported()) {
@@ -287,6 +303,7 @@
             const params = new URLSearchParams(window.location.search);
             const channelId = params.get('id');
 
+            // Handle Errors
             player.addEventListener('error', (event) => {
                 console.error('Error code', event.detail.code, 'object', event.detail);
                 showError("Stream Error: " + event.detail.code);
@@ -298,6 +315,7 @@
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
                 if (currentChannel) {
+                    // Update UI
                     document.getElementById('page-title').innerText = currentChannel.name + " | Live Streaming";
                     document.getElementById('ch-name').innerText = currentChannel.name;
                     document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
@@ -305,14 +323,20 @@
                     const videoUrl = currentChannel.mpdUrl || currentChannel.streamUrl;
 
                     if (videoUrl) {
+                        // Configuration Object
                         let playerConfig = {};
+
+                        // Add DRM (ClearKey) configuration if keys exist
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
                             playerConfig.drm = {
                                 clearKeys: currentChannel.drm.clearKeys
                             };
                         }
+
+                        // Apply Config
                         player.configure(playerConfig);
 
+                        // Try to load
                         try {
                             await player.load(videoUrl);
                             console.log('The video has now been loaded!');
@@ -327,6 +351,7 @@
                     showError("Channel Not Found");
                 }
 
+                // Load Grid
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
                     .filter(ch => (ch.streamUrl || ch.mpdUrl)) 
@@ -351,7 +376,9 @@
             }
         }
 
+        // Wait for UI library to load
         document.addEventListener('shaka-ui-loaded', initApp);
+        // Fallback if UI event doesn't fire immediately (DOMContentLoaded)
         document.addEventListener('DOMContentLoaded', initApp);
 
     </script>
