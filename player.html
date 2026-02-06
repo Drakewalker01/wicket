@@ -159,48 +159,72 @@
                     document.getElementById('ch-name').innerText = currentChannel.name;
                     document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
 
-                    // *** වැදගත් Logic එක: Link වර්ගය හඳුනා ගැනීම ***
-                    
+                    console.log("Attempting to load:", currentChannel.name);
+
+                    // Player Setup Configuration
                     let playerSetup = {
                         width: "100%",
                         aspectratio: "16:9",
                         autostart: true,
                         stretching: "uniform",
-                        primary: "html5", // Force HTML5
-                        hlshtml: true     // Enable HLS in HTML5
+                        primary: "html5",
+                        playbackRateControls: true,
                     };
 
-                    // 1. DASH + DRM Link එකක් නම්
+                    // ---- LOGIC: DASH (with DRM) vs HLS (Normal) ----
+
+                    // 1. DASH (.mpd) Link
                     if (currentChannel.mpdUrl && currentChannel.mpdUrl !== "") {
+                        console.log("Mode: DASH");
                         
-                        // NOTE: iOS වල .mpd වැඩ කරන්නේ නැත.
-                        playerSetup.playlist = [{
+                        // DASH සඳහා 'playlist' array එකක් භාවිතා කිරීම අනිවාර්යයි DRM වැඩ කිරීමට
+                        let playlistItem = {
                             file: currentChannel.mpdUrl,
-                            type: "dash",
-                            drm: {
+                            type: "dash"
+                        };
+
+                        // Keys තිබේදැයි පරීක්ෂා කිරීම
+                        if (currentChannel.drm && currentChannel.drm.clearKeys) {
+                            console.log("DRM Detected: Apply ClearKeys");
+                            playlistItem.drm = {
                                 clearkey: currentChannel.drm.clearKeys
-                            }
-                        }];
+                            };
+                        }
+
+                        playerSetup.playlist = [playlistItem];
                         
                     } 
-                    // 2. Normal HLS (.m3u8) Link එකක් නම්
+                    // 2. HLS (.m3u8) Link
                     else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
+                        console.log("Mode: HLS");
                         playerSetup.file = currentChannel.streamUrl;
                         playerSetup.type = "hls";
-                    } else {
-                         // Link එකක් නැත්නම්
-                        throw new Error("No URL Found");
+                    } 
+                    else {
+                        throw new Error("No valid Stream URL found");
                     }
 
                     // Player එක Run කිරීම
-                    jwplayer("my-video").setup(playerSetup).on('error', function(e) {
-                        console.log("JW Error:", e);
+                    const player = jwplayer("my-video").setup(playerSetup);
+
+                    // Error Handling (වැරදි සොයා ගැනීම)
+                    player.on('error', function(e) {
+                        console.error("JW Player Error Event:", e);
                         overlay.classList.add('show');
-                        // Error message එක ලස්සනට පෙන්වමු
+                        
                         let msg = "Stream Offline.";
-                        if(e.message && e.message.includes("manifest")) msg = "Stream Source Error";
-                        if(e.message && e.message.includes("key")) msg = "DRM Key Expired";
-                        errorMsg.innerText = msg;
+                        if(e.message) {
+                            if(e.message.includes("manifest")) msg = "Stream Source Error (Link Broken)";
+                            if(e.message.includes("key") || e.message.includes("drm")) msg = "DRM Key Error (Expired)";
+                            if(e.message.includes("network")) msg = "Network Error";
+                        }
+                        
+                        errorMsg.innerHTML = `${msg}<br><span class="text-sm text-gray-500 mt-2">Code: ${e.code}</span>`;
+                    });
+
+                    // Success Event
+                    player.on('play', function() {
+                        console.log("Stream Playing Successfully");
                     });
 
                 } else {
@@ -208,7 +232,7 @@
                     errorMsg.innerText = "Channel not found.";
                 }
 
-                // Grid එක Load කිරීම
+                // Grid එක Update කිරීම
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
                     .filter(ch => (ch.streamUrl && ch.streamUrl !== "") || (ch.mpdUrl && ch.mpdUrl !== ""))
@@ -223,9 +247,9 @@
                     `).join('');
 
             } catch (err) {
-                console.error("Initialization failed", err);
+                console.error("Initialization Crash:", err);
                 overlay.classList.add('show');
-                errorMsg.innerText = "Error loading channel.";
+                errorMsg.innerText = "Error loading channel data.";
             }
         }
 
