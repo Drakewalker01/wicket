@@ -135,10 +135,8 @@
             const errorMsg = document.getElementById('error-msg');
             
             // --- FIX: Safely Initialize Video.js ---
-            // If player exists (due to data-setup error), dispose it first
             if (videojs.getPlayer('my-video')) {
                 videojs.getPlayer('my-video').dispose();
-                // Re-create video tag in memory (worst case fix)
                 document.querySelector('.video-area').innerHTML = `
                     <video id="my-video" class="video-js vjs-theme-fantasy vjs-big-play-centered" controls preload="auto"></video>
                     <div id="status-overlay" class="status-overlay"><div class="p-6"><p class="text-2xl font-bold">Reloading...</p></div></div>
@@ -207,18 +205,25 @@
                     errorMsg.innerText = "Channel Not Found";
                 }
 
+                // --- FIX: Safe Channel Grid Generation ---
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
                     .filter(ch => (ch.streamUrl || ch.mpdUrl))
-                    .map(ch => `
+                    .map(ch => {
+                        // FIX: Use fallback image if logo is missing or invalid
+                        const logoSrc = ch.logo ? ch.logo : 'https://placehold.co/400x400/111827/ffffff?text=No+Logo';
+                        
+                        return `
                         <a href="player.html?id=${ch.id}" class="channel-card">
                             <div class="card-content">
-                                <img src="${ch.logo}" class="w-full rounded-lg mb-3 aspect-square object-cover bg-slate-900">
+                                <img src="${logoSrc}" 
+                                     class="w-full rounded-lg mb-3 aspect-square object-cover bg-slate-900"
+                                     onerror="this.src='https://placehold.co/400x400/111827/ffffff?text=Error'">
                                 <p class="text-lg font-bold text-gray-100">${ch.name}</p>
-                                <span class="text-xs text-gray-500 font-medium">${ch.quality}</span>
+                                <span class="text-xs text-gray-500 font-medium">${ch.quality || 'LIVE'}</span>
                             </div>
                         </a>
-                    `).join('');
+                    `}).join('');
 
             } catch (err) {
                 console.error(err);
