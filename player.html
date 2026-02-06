@@ -24,58 +24,30 @@
 
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
-        
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
-        
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1) }
             33% { transform: translate(30px, -50px) scale(1.1) }
             66% { transform: translate(-20px, 20px) scale(0.9) }
             100% { transform: translate(0px, 0px) scale(1) }
         }
-
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-
         .unified-player-container {
-            border-radius: 1.5rem; 
-            overflow: hidden; 
-            background: #000; 
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); 
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
+            border-radius: 1.5rem; overflow: hidden; background: #000; 
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative;
         }
-
-        /* Customizing Video.js */
         .video-js .vjs-big-play-button {
-            background-color: rgba(0, 243, 255, 0.7);
-            border-color: #00f3ff;
-            color: black;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            line-height: 80px;
-            font-size: 40px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            background-color: rgba(0, 243, 255, 0.7); border-color: #00f3ff; color: black; border-radius: 50%;
+            width: 80px; height: 80px; line-height: 80px; font-size: 40px; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
-        .video-js .vjs-control-bar { background: rgba(0,0,0,0.8); }
-        .video-js .vjs-play-progress { background-color: #00f3ff; }
-
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
         .video-area .video-js { position: absolute; inset: 0; width: 100%; height: 100%; }
-
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; text-align: center; }
         .status-overlay.show { display: flex; }
-
         .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; overflow: hidden; display: flex; padding: 3px; transition: 0.3s; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
-        .channel-card::before, .channel-card::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); animation: rotate 3s linear infinite; z-index: 0; }
-        .channel-card::after { filter: blur(20px); opacity: 0.7; }
         .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
-        .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
-        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -103,6 +75,7 @@
         <section class="mb-12">
             <div class="unified-player-container">
                 <div class="video-area">
+                    
                     <video id="my-video" class="video-js vjs-theme-fantasy vjs-big-play-centered" controls preload="auto">
                     </video>
 
@@ -117,20 +90,14 @@
 
                 <div class="bg-slate-900/95 backdrop-blur-xl border-t border-white/10 p-3 md:p-5 flex justify-between items-center gap-2">
                     <div class="flex flex-col justify-center min-w-0">
-                        <h2 class="text-base md:text-2xl font-bold text-white leading-none truncate mb-0" id="ch-name">
-                            Loading...
-                        </h2>
-                        <div class="">
-                            <span class="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-wide" id="ch-quality"></span>
-                        </div>
+                        <h2 class="text-base md:text-2xl font-bold text-white leading-none truncate mb-0" id="ch-name">Loading...</h2>
+                        <div><span class="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-wide" id="ch-quality"></span></div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <div class="px-2 py-1.5 md:px-4 md:py-2 bg-slate-800 rounded-lg border border-white/10 text-[10px] md:text-xs font-bold whitespace-nowrap flex items-center gap-1.5">
                             <i class="fas fa-server text-gray-400"></i> SERVER 1
                         </div>
-                        <div class="px-2 py-1.5 md:px-4 md:py-2 bg-neonBlue text-black rounded-lg text-[10px] md:text-xs font-bold shadow-[0_0_10px_#00f3ff] whitespace-nowrap">
-                            HD STREAM
-                        </div>
+                        <div class="px-2 py-1.5 md:px-4 md:py-2 bg-neonBlue text-black rounded-lg text-[10px] md:text-xs font-bold shadow-[0_0_10px_#00f3ff] whitespace-nowrap">HD STREAM</div>
                     </div>
                 </div>
             </div>
@@ -142,8 +109,7 @@
                 <h2 class="text-2xl font-bold uppercase tracking-widest">Other <span class="text-neonBlue">Channels</span></h2>
                 <div class="flex-grow h-[1px] bg-gradient-to-r from-gray-800 to-transparent ml-4"></div>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid">
-            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid"></div>
         </section>
     </main>
 
@@ -155,7 +121,6 @@
     <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@5.3.0/dist/videojs-contrib-eme.min.js"></script>
 
     <script>
-        // Key Conversion Helper
         function hexToBytes(hex) {
             let bytes = [];
             for (let c = 0; c < hex.length; c += 2)
@@ -169,7 +134,18 @@
             const overlay = document.getElementById('status-overlay');
             const errorMsg = document.getElementById('error-msg');
             
-            // Player Initialization (JS ONLY)
+            // --- FIX: Safely Initialize Video.js ---
+            // If player exists (due to data-setup error), dispose it first
+            if (videojs.getPlayer('my-video')) {
+                videojs.getPlayer('my-video').dispose();
+                // Re-create video tag in memory (worst case fix)
+                document.querySelector('.video-area').innerHTML = `
+                    <video id="my-video" class="video-js vjs-theme-fantasy vjs-big-play-centered" controls preload="auto"></video>
+                    <div id="status-overlay" class="status-overlay"><div class="p-6"><p class="text-2xl font-bold">Reloading...</p></div></div>
+                `;
+            }
+
+            // Correct Initialization
             const player = videojs('my-video', {
                 fluid: true,
                 html5: {
@@ -183,23 +159,18 @@
                 const currentChannel = data.channels.find(c => c.id === channelId);
 
                 if (currentChannel) {
-                    // Update UI
                     document.getElementById('page-title').innerText = currentChannel.name + " | Live Streaming";
                     document.getElementById('ch-name').innerText = currentChannel.name;
                     document.getElementById('ch-quality').innerText = currentChannel.quality || "HD Live";
 
                     console.log("Loading Channel:", currentChannel.name);
 
-                    // --- VIDEO.JS SOURCE LOGIC ---
-
-                    // 1. DASH (.mpd)
-                    if (currentChannel.mpdUrl && currentChannel.mpdUrl !== "") {
+                    if (currentChannel.mpdUrl) {
                         let srcObj = {
                             src: currentChannel.mpdUrl,
                             type: 'application/dash+xml'
                         };
 
-                        // DRM Configuration
                         if (currentChannel.drm && currentChannel.drm.clearKeys) {
                             console.log("Applying DRM Keys...");
                             srcObj.keySystems = {
@@ -210,32 +181,23 @@
                             };
                         }
                         
-                        // iOS Check
                         if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
                             overlay.classList.add('show');
-                            errorMsg.innerHTML = "iOS (iPhone) does not support DASH.<br>Please use a HLS stream.";
+                            errorMsg.innerHTML = "iOS requires HLS (.m3u8) stream.";
                             return;
                         }
 
                         player.src(srcObj);
-                    }
-                    // 2. HLS (.m3u8)
-                    else if (currentChannel.streamUrl && currentChannel.streamUrl !== "") {
-                        console.log("Loading HLS...");
-                        player.src({
-                            src: currentChannel.streamUrl,
-                            type: 'application/x-mpegURL'
-                        });
-                    } 
-                    else {
+                    } else if (currentChannel.streamUrl) {
+                        player.src({ src: currentChannel.streamUrl, type: 'application/x-mpegURL' });
+                    } else {
                         throw new Error("No URL found");
                     }
 
                     player.play();
 
                     player.on('error', function() {
-                        const error = player.error();
-                        console.error("VideoJS Error:", error);
+                        console.error("VideoJS Error:", player.error());
                         overlay.classList.add('show');
                         errorMsg.innerText = "Playback Error (Check Console)";
                     });
@@ -245,7 +207,6 @@
                     errorMsg.innerText = "Channel Not Found";
                 }
 
-                // Grid
                 const grid = document.getElementById('channelGrid');
                 grid.innerHTML = data.channels
                     .filter(ch => (ch.streamUrl || ch.mpdUrl))
