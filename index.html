@@ -3,181 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HIT Wicket | Premium Sports Streaming</title>
+    <title id="page-title">Stream Loading... | HIT Wicket</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/controls.min.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { sans: ['Rajdhani', 'sans-serif'] },
-                    colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' }
+                    colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' },
                 }
             }
         }
     </script>
+
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
+        
+        /* Background Orbs */
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
-        @keyframes blob { 0% { transform: translate(0,0) scale(1) } 33% { transform: translate(30px,-50px) scale(1.1) } 100% { transform: translate(0,0) scale(1) } }
-        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        
-        /* Slider */
-        .slider-blend-overlay { position: absolute; inset: 0; z-index: 5; background: linear-gradient(to bottom, transparent 60%, #0b1120 100%); pointer-events: none; }
-        .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease-in-out; }
-        .slide.active { opacity: 1; z-index: 2; }
-        .nav-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); transition: 0.3s; z-index: 20; }
-        .nav-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
+        @keyframes blob { 0% { transform: translate(0,0) scale(1) } 100% { transform: translate(0,0) scale(1) } }
 
-        /* Card Fast Running Effect */
-        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; }
-        .channel-card::before, .channel-card::after { 
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .unified-player-container {
+            border-radius: 1.5rem; overflow: hidden; background: #000; 
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); 
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        /* SHAKA PLAYER STYLES */
+        .shaka-overflow-menu, .shaka-settings-menu {
+            background-color: rgba(11, 17, 32, 0.9) !important;
+            backdrop-filter: blur(15px) !important;
+            border: 1px solid rgba(0, 243, 255, 0.4) !important;
+            border-radius: 12px !important;
+            padding: 6px !important;
+        }
+        .shaka-overflow-menu-button i, .shaka-settings-menu-button i,
+        .shaka-back-to-overflow-button i, .material-icons-round { color: #00f3ff !important; }
+        .shaka-overflow-button-label { color: #00f3ff !important; font-weight: 700 !important; font-size: 15px !important; }
+        .shaka-current-selection-span { color: #ffffff !important; font-weight: 500 !important; font-size: 12px !important; }
+        .shaka-settings-menu button span { color: #ffffff !important; font-weight: 500 !important; }
+        .shaka-back-to-overflow-button span { color: #00f3ff !important; font-weight: 700 !important; }
+        .shaka-settings-menu-button[aria-selected="true"] i { color: #00f3ff !important; }
+        .shaka-range-element { color: #00f3ff !important; }
+        
+        /* CHANNEL CARDS */
+        .channel-card { 
+            position: relative; background: #0c4a6e; border-radius: 1rem; overflow: hidden; 
+            display: flex; padding: 3px; transition: 0.3s all ease-in-out; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .channel-card::before { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
-            animation: rotate 3s linear infinite; 
+            animation: rotate 3s linear infinite; z-index: 0; 
         }
-        .channel-card::after { filter: blur(20px); opacity: 0.7; }
-        
-        /* HOVER FAST SPEED */
-        .channel-card:hover::before, .channel-card:hover::after { animation-duration: 1.2s; }
-        
-        .card-content { background: #111827; border-radius: 0.85rem; width: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; }
+        .card-content { 
+            background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; 
+            position: relative; z-index: 1; display: flex; flex-direction: column; 
+            align-items: center; padding: 1rem; 
+        }
         .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Video Area */
+        .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+        .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+        .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
+        .status-overlay.show { display: flex; }
+
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
+
     <div class="bg-gradient-orb orb-1"></div>
     <div class="bg-gradient-orb orb-2"></div>
 
     <nav class="w-full glass-panel sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-            <a href="index.html" class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <a href="index.html" class="flex items-center gap-2">
                 <i class="fas fa-cricket text-3xl text-neonBlue"></i>
-                <h1 class="text-3xl font-bold italic uppercase tracking-wider">Hit<span class="text-neonBlue">Wicket</span></h1>
+                <h1 class="text-3xl font-bold uppercase italic tracking-wider">Hit<span class="text-neonBlue">Wicket</span></h1>
             </a>
-            <div class="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50 flex items-center gap-2">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600 shadow-[0_0_10px_#ef4444]"></span>
+            
+            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span class="relative h-3 w-3 bg-red-600 rounded-full"></span>
                 </span>
-                <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Live Now</span>
+                <span class="text-xs font-bold text-red-400">LIVE NOW</span>
             </div>
         </div>
     </nav>
 
-    <main class="w-full max-w-7xl px-4 py-8 z-10 flex flex-col gap-12">
-        <section class="relative w-full h-[250px] md:h-[500px] overflow-hidden rounded-3xl bg-slate-900 shadow-2xl">
-            <div class="slider-blend-overlay"></div>
-            <div id="imageSlider" class="relative w-full h-full"></div>
-            
-            <div id="sliderDots" class="absolute bottom-4 right-5 md:bottom-8 md:right-10 z-20 flex gap-2">
-                </div>
+    <main class="w-full max-w-7xl px-4 py-8 z-10">
+        
+        <section class="mb-12">
+            <div class="unified-player-container">
+                <div class="video-area">
+                    <div data-shaka-player-container>
+                        <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
+                    </div>
 
-            <button onclick="changeSlide(-1)" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-left"></i></button>
-            <button onclick="changeSlide(1)" class="nav-btn absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-right"></i></button>
+                    <div id="status-overlay" class="status-overlay">
+                        <div class="text-center">
+                            <i class="fas fa-circle-notch fa-spin text-4xl text-neonBlue mb-3"></i>
+                            <p class="text-xl font-bold" id="error-msg">Initializing Stream...</p>
+                            <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-neonBlue/20 text-neonBlue rounded hover:bg-neonBlue/30 transition">
+                                Retry Connection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900/95 backdrop-blur-xl border-t border-white/10 p-4 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white" id="ch-name">Select a Channel</h2>
+                        <span class="text-xs font-medium text-gray-400 uppercase" id="ch-quality">Waiting...</span>
+                    </div>
+                    <div class="px-4 py-2 bg-neonBlue text-black rounded-lg text-xs font-black shadow-[0_0_15px_#00f3ff]">LIVE HD</div>
+                </div>
+            </div>
         </section>
 
         <section>
             <div class="flex items-center gap-4 mb-8">
                 <div class="h-8 w-1 bg-neonBlue rounded-full shadow-[0_0_10px_#00f3ff]"></div>
-                <h2 class="text-2xl font-bold uppercase tracking-widest">Live <span class="text-neonBlue">Streaming</span></h2>
+                <h2 class="text-2xl font-bold uppercase tracking-widest">More <span class="text-neonBlue">Channels</span></h2>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid">
+                </div>
         </section>
+
     </main>
 
-    <footer class="w-full py-10 border-t border-gray-800 bg-slate-900/50 backdrop-blur-md mt-20">
-        <div class="text-center text-gray-500 text-sm">© 2026 HITWicket. Professional Sports Network.</div>
+    <footer class="w-full py-10 border-t border-gray-800 bg-slate-900/50 backdrop-blur-md mt-20 text-center text-gray-500 text-sm">
+        © 2026 HITWicket Sports Network.
     </footer>
 
     <script>
-        let slideIndex = 0;
-        let slideTimer;
+        async function initApp() {
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                initPlayer();
+            } else {
+                console.error('Browser not supported!');
+            }
+        }
 
-        async function init() {
+        async function initPlayer() {
+            const video = document.getElementById('video');
+            const ui = video['ui'];
+            const controls = ui.getControls();
+            const player = controls.getPlayer();
+            const overlay = document.getElementById('status-overlay');
+            
+            const params = new URLSearchParams(window.location.search);
+            // Default to first channel if no ID is present, or handle empty state
+            const channelId = params.get('id'); 
+
+            // Error Listener
+            player.addEventListener('error', (e) => {
+                console.error('Shaka Error Code:', e.detail.code);
+                showError("Stream Error: " + e.detail.code);
+            });
+
             try {
+                // 1. Fetch Data
                 const res = await fetch('data.json');
                 const data = await res.json();
-                
-                const slider = document.getElementById('imageSlider');
-                const dotsContainer = document.getElementById('sliderDots');
 
-                // Generate Slides
-                slider.innerHTML = data.slider.map((s, i) => `
-                    <div class="slide ${i===0?'active':''}">
-                        <img src="${s.image}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
-                            <span class="px-3 py-1 text-[10px] font-bold bg-neonBlue text-black rounded mb-3 inline-block uppercase">${s.tag}</span>
-                            <h2 class="text-3xl md:text-5xl font-bold text-white mb-2">${s.title}</h2>
-                            <p class="text-gray-300 text-sm md:text-lg max-w-md">${s.desc}</p>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Generate Dots
-                dotsContainer.innerHTML = data.slider.map((_, i) => `
-                    <div onclick="jumpToSlide(${i})" 
-                         class="h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i===0 ? 'w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]' : 'w-1.5 bg-white/40 hover:bg-white'}">
-                    </div>
-                `).join('');
-
-                const grid = document.getElementById('channelGrid');
-                grid.innerHTML = data.channels.filter(ch => ch.streamUrl !== "").map(ch => `
-                    <a href="player.html?id=${ch.id}" class="channel-card">
+                // 2. RENDER GRID FIRST (FIXED)
+                // This ensures the list appears even if the video below fails.
+                const gridContainer = document.getElementById('channelGrid');
+                gridContainer.innerHTML = data.channels.map(c => `
+                    <a href="?id=${c.id}" class="channel-card cursor-pointer">
                         <div class="card-content">
-                            <img src="${ch.logo}" class="w-full rounded-lg mb-3 aspect-square object-cover bg-slate-900">
-                            <p class="text-lg font-bold">${ch.name}</p>
-                            <span class="text-xs text-gray-500">${ch.quality}</span>
+                            <img src="${c.logo}" class="w-full aspect-square rounded-lg object-cover mb-3 bg-slate-800" 
+                                 onerror="this.src='https://via.placeholder.com/200?text=No+Logo'">
+                            <p class="font-bold text-center text-sm text-gray-100">${c.name}</p>
+                            <span class="text-xs text-gray-400 mt-1">${c.quality || 'Live'}</span>
                         </div>
                     </a>
                 `).join('');
 
-                startTimer();
-            } catch (error) {
-                console.error("Error loading data:", error);
+                // 3. Setup Video
+                const ch = data.channels.find(c => c.id === channelId);
+
+                if (ch) {
+                    // Update Titles
+                    document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
+                    document.getElementById('ch-name').innerText = ch.name;
+                    document.getElementById('ch-quality').innerText = ch.quality || "HD Stream";
+
+                    // Determine URL (Dash or HLS)
+                    const videoUrl = ch.mpdUrl || ch.streamUrl;
+
+                    if (videoUrl) {
+                        // Configure DRM if keys exist
+                        if (ch.drm && ch.drm.clearKeys) {
+                            player.configure({ 
+                                drm: { clearKeys: ch.drm.clearKeys } 
+                            });
+                        } else {
+                            // Reset configuration for non-DRM channels to avoid conflicts
+                            player.configure({ drm: {} });
+                        }
+
+                        // Load the video
+                        // If this fails, the catch block runs, but the grid is already visible.
+                        console.log("Loading stream:", videoUrl);
+                        await player.load(videoUrl);
+                        
+                    } else {
+                        showError("No Stream Source Available");
+                    }
+                } else {
+                    // If no ID selected, maybe show a welcome message or load first channel
+                    if(!channelId) {
+                         document.getElementById('ch-name').innerText = "Select a Channel";
+                         document.getElementById('ch-quality').innerText = "To Start Watching";
+                    } else {
+                        showError("Channel Not Found");
+                    }
+                }
+
+            } catch (err) {
+                console.error("App Error:", err);
+                // Only show overlay error if we were trying to play something
+                if(channelId) {
+                    showError("Stream Failed to Load");
+                }
+            }
+
+            function showError(msg) {
+                overlay.classList.add('show');
+                document.getElementById('error-msg').innerText = msg;
             }
         }
 
-        function updateSliderUI() {
-            // Update Slides
-            const slides = document.querySelectorAll('.slide');
-            slides.forEach(s => s.classList.remove('active'));
-            slides[slideIndex].classList.add('active');
-
-            // Update Dots
-            const dots = document.getElementById('sliderDots').children;
-            Array.from(dots).forEach((dot, i) => {
-                if(i === slideIndex) {
-                    dot.className = 'h-1.5 rounded-full transition-all duration-300 cursor-pointer w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]';
-                } else {
-                    dot.className = 'h-1.5 w-1.5 rounded-full transition-all duration-300 cursor-pointer bg-white/40 hover:bg-white';
-                }
-            });
-        }
-
-        function changeSlide(n) {
-            const slides = document.querySelectorAll('.slide');
-            if(slides.length === 0) return;
-            slideIndex = (slideIndex + n + slides.length) % slides.length;
-            updateSliderUI();
-            resetTimer();
-        }
-
-        function jumpToSlide(n) {
-            slideIndex = n;
-            updateSliderUI();
-            resetTimer();
-        }
-
-        function startTimer() { slideTimer = setInterval(() => changeSlide(1), 5000); }
-        function resetTimer() { clearInterval(slideTimer); startTimer(); }
-
-        window.onload = init;
+        document.addEventListener('shaka-ui-loaded', initApp);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Backup init if shaka-ui-loaded doesn't fire for some reason
+            if (!window.shaka) initApp();
+        });
     </script>
 </body>
 </html>
