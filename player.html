@@ -41,67 +41,72 @@
             position: relative;
         }
 
-        /* =========================================
-           FIXED SHAKA PLAYER COLORS (CORRECTED)
-           ========================================= */
+        /* ======================================================
+           SHAKA PLAYER CUSTOMIZATION - NO BLACK & NEON BLUE ICONS
+           ====================================================== */
 
-        /* 1. Menu Background */
-        .shaka-overflow-menu, .shaka-settings-menu {
-            background: rgba(11, 17, 32, 0.9) !important;
-            backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(0, 243, 255, 0.4) !important;
+        /* 1. Menu Panel Background (Dark Blue, NOT Black) */
+        .shaka-overflow-menu, 
+        .shaka-settings-menu {
+            background-color: rgba(11, 17, 32, 0.95) !important; /* Deep Dark Blue */
+            backdrop-filter: blur(15px) !important;
+            border: 1px solid rgba(0, 243, 255, 0.3) !important;
             border-radius: 12px !important;
-            padding: 8px !important;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1) !important;
+            padding: 5px !important;
         }
 
-        /* 2. FORCE EVERYTHING TO NEON BLUE FIRST (Icons & Main Text) */
-        .shaka-overflow-menu-button, 
-        .shaka-settings-menu-button,
-        .shaka-back-to-overflow-button {
-            color: #00f3ff !important; /* Neon Blue */
-            font-weight: 700 !important;
-            font-size: 16px !important;
-        }
-
-        /* 3. Specific Target for Text Labels to ensure Blue */
-        .shaka-overflow-button-label {
-            color: #00f3ff !important;
-        }
-
-        /* 4. Icons Color */
+        /* 2. Target ALL Icons inside the menu to be Neon Blue */
+        .shaka-overflow-menu i,
+        .shaka-settings-menu i,
         .shaka-overflow-menu-button i,
         .shaka-settings-menu-button i,
-        .shaka-back-to-overflow-button i {
+        .shaka-back-to-overflow-button i,
+        .material-icons-round {
+            color: #00f3ff !important; /* Force Neon Blue */
+        }
+
+        /* 3. Main Text Labels (Quality, Captions) - Neon Blue */
+        .shaka-overflow-menu-button, 
+        .shaka-settings-menu-button,
+        .shaka-back-to-overflow-button span {
             color: #00f3ff !important;
+            background-color: transparent !important; /* Remove any black background */
+            font-weight: 700 !important;
         }
 
-        /* 5. FORCE SUB-TEXT (Current Selection) TO WHITE */
+        /* 4. Sub-Text (Selections like "720p") - White */
         .shaka-current-selection-span {
-            color: #ffffff !important; /* Pure White */
+            color: #ffffff !important;
             font-weight: 500 !important;
-            font-size: 13px !important;
-            opacity: 0.9 !important;
-            display: block !important; /* Ensure it stays separate */
-            margin-top: 2px !important;
+            font-size: 0.8rem !important;
         }
 
-        /* 6. Hover Effects */
+        /* 5. Hover Effects (Remove Black on Hover) */
         .shaka-overflow-menu-button:hover, 
         .shaka-settings-menu-button:hover,
         .shaka-back-to-overflow-button:hover {
-            background: rgba(0, 243, 255, 0.15) !important;
-            cursor: pointer !important;
+            background-color: rgba(0, 243, 255, 0.15) !important; /* Blue Glow */
+            color: #00f3ff !important;
         }
 
-        /* 7. Checkmarks in Settings */
+        /* 6. Selected Checkmarks in Settings */
         .shaka-settings-menu-button[aria-selected="true"]::before {
             color: #00f3ff !important;
         }
 
-        /* 8. Seek Bar Color */
-        .shaka-range-element { color: #00f3ff !important; }
+        /* 7. Remove any default black borders/outlines */
+        .shaka-overflow-menu button:focus, 
+        .shaka-settings-menu button:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(0, 243, 255, 0.5) !important;
+            background-color: rgba(0, 243, 255, 0.1) !important;
+        }
 
-        /* ========================================= */
+        /* 8. Seek Bar & Volume Bar Colors */
+        .shaka-range-element { color: #00f3ff !important; }
+        
+        /* ====================================================== */
 
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
         .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
