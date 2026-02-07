@@ -235,57 +235,66 @@
 
         // --- CORE FUNCTION TO FETCH CHANNELS FROM LINKS.JSON ---
         async function fetchChannels() {
-            const loader = document.getElementById('loader');
-            const grid = document.getElementById('channelGrid');
-            const countLabel = document.getElementById('channelCount');
-            
-            try {
-                const response = await fetch('links.json');
-                const config = await response.json();
-                
-                let tempChannels = []; 
+    const loader = document.getElementById('loader');
+    const grid = document.getElementById('channelGrid');
+    const countLabel = document.getElementById('channelCount');
+    
+    try {
+        const response = await fetch('links.json');
+        const config = await response.json();
+        
+        let tempChannels = []; 
 
-                if (config.manual_channels && Array.isArray(config.manual_channels)) {
-                    const manualCh = config.manual_channels.map(ch => ({
-                        id: ch.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
-                        name: ch.name,
-                        logo: ch.logo,
-                        streamUrl: ch.url,
-                        drm: ch.drm
-                    }));
-                    tempChannels.push(...manualCh);
-                }
-
-                if (config.playlists && Array.isArray(config.playlists)) {
-                    const playlistPromises = config.playlists.map(async (url) => {
-                        try {
-                            const res = await fetch(url);
-                            const text = await res.text();
-                            return parseM3U(text);
-                        } catch (err) {
-                            console.error(`Failed to load playlist: ${url}`, err);
-                            return [];
-                        }
-                    });
-                    
-                    const playlistResults = await Promise.all(playlistPromises);
-                    playlistResults.forEach(channels => {
-                        tempChannels.push(...channels);
-                    });
-                }
-
-                allChannels = tempChannels.filter(ch => ch.streamUrl && ch.streamUrl.trim() !== "");
-
-                countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
-                loader.classList.add('hidden');
-                // Removed grid.classList.remove('hidden') as we removed the class from HTML
-                loadMoreChannels();
-
-            } catch (error) {
-                console.error("Error fetching channels:", error);
-                loader.innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
-            }
+        // 1. Manual Channels 
+        if (config.manual_channels) {
+            tempChannels.push(...config.manual_channels.map(ch => ({
+                id: ch.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                name: ch.name,
+                logo: ch.logo,
+                streamUrl: ch.url,
+                drm: ch.drm
+            })));
         }
+
+        // 2. Playlists Fetch 
+        if (config.playlists) {
+            const playlistResults = await Promise.all(config.playlists.map(async (url) => {
+                try {
+                    const res = await fetch(url);
+                    const text = await res.text();
+                    return parseM3U(text);
+                } catch (err) { return []; }
+            }));
+            playlistResults.forEach(channels => tempChannels.push(...channels));
+        }
+
+        // 3. --- Whitelist Logic 
+        if (config.allowed_channels && Array.isArray(config.allowed_channels)) {
+            // 
+            const whiteList = config.allowed_channels.map(name => name.toLowerCase().trim());
+
+            allChannels = tempChannels.filter(ch => {
+                const cleanedChannelName = ch.name.toLowerCase().trim();
+                // 
+                return whiteList.includes(cleanedChannelName);
+            });
+        } else {
+            // 
+            allChannels = tempChannels;
+        }
+
+        // 4. Final Clean
+        allChannels = allChannels.filter(ch => ch.streamUrl && ch.streamUrl.trim() !== "");
+
+        countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
+        loader.classList.add('hidden');
+        loadMoreChannels();
+
+    } catch (error) {
+        console.error("Error:", error);
+        loader.innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
+    }
+}
 
         function parseM3U(content) {
             const lines = content.split('\n');
