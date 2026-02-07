@@ -69,9 +69,19 @@
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
         .status-overlay.show { display: flex; }
 
+        /* Loading Spinner Overlay CSS */
+        .loading-overlay { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.8); 
+            display: none; justify-content: center; align-items: center; z-index: 40; 
+            backdrop-filter: blur(2px);
+        }
+
         /* Skeleton Animation */
         .skeleton { background: #1f2937; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        
+        /* Hide big play button when spinner is active */
+        .shaka-play-button-container { z-index: 30 !important; }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -99,6 +109,14 @@
                     <div data-shaka-player-container>
                         <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
                     </div>
+
+                    <div id="loading-spinner" class="loading-overlay">
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 border-4 border-t-neonBlue border-r-transparent border-b-neonBlue border-l-transparent rounded-full animate-spin shadow-[0_0_20px_#00f3ff]"></div>
+                            <p class="mt-4 text-neonBlue font-bold tracking-widest text-sm uppercase animate-pulse">Connecting Live Stream...</p>
+                        </div>
+                    </div>
+
                     <div id="status-overlay" class="status-overlay">
                         <div class="text-center">
                             <i class="fas fa-circle-notch fa-spin text-4xl text-neonBlue mb-3"></i>
@@ -131,27 +149,9 @@
                         <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
                     </div>
                 </div>
-                <div class="channel-card opacity-50 pointer-events-none">
-                    <div class="card-content">
-                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
-                        <div class="h-4 w-3/4 skeleton rounded"></div>
-                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
-                    </div>
-                </div>
-                <div class="channel-card opacity-50 pointer-events-none">
-                    <div class="card-content">
-                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
-                        <div class="h-4 w-3/4 skeleton rounded"></div>
-                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
-                    </div>
-                </div>
-                <div class="channel-card opacity-50 pointer-events-none">
-                    <div class="card-content">
-                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
-                        <div class="h-4 w-3/4 skeleton rounded"></div>
-                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
-                    </div>
-                </div>
+                <div class="channel-card opacity-50 pointer-events-none"><div class="card-content"><div class="w-full aspect-square mb-3 skeleton rounded-lg"></div><div class="h-4 w-3/4 skeleton rounded"></div><div class="mt-2 h-3 w-1/2 skeleton rounded"></div></div></div>
+                <div class="channel-card opacity-50 pointer-events-none"><div class="card-content"><div class="w-full aspect-square mb-3 skeleton rounded-lg"></div><div class="h-4 w-3/4 skeleton rounded"></div><div class="mt-2 h-3 w-1/2 skeleton rounded"></div></div></div>
+                <div class="channel-card opacity-50 pointer-events-none"><div class="card-content"><div class="w-full aspect-square mb-3 skeleton rounded-lg"></div><div class="h-4 w-3/4 skeleton rounded"></div><div class="mt-2 h-3 w-1/2 skeleton rounded"></div></div></div>
             </div>
             
             <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
@@ -203,7 +203,6 @@
         }
 
         async function parseM3U(text) {
-             // ... Same Parsing Logic ...
              try {
                 const lines = text.split('\n');
                 const channels = [];
@@ -239,7 +238,6 @@
             const gridContainer = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
             
-            // CLEAR SKELETONS ON FIRST LOAD
             if (displayedCount === 0) {
                 gridContainer.innerHTML = ''; 
             }
@@ -249,7 +247,6 @@
             if (nextBatch.length > 0) {
                 const batchHTML = nextBatch.map((c, index) => {
                     const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp`;
-                    // Eager load first few images
                     const isLCP = displayedCount === 0 && index < 4;
                     const loadingType = isLCP ? "eager" : "lazy";
                     const fetchPriority = isLCP ? "high" : "auto";
@@ -293,15 +290,25 @@
             const controls = ui.getControls();
             const player = controls.getPlayer();
             const overlay = document.getElementById('status-overlay');
+            const loadingSpinner = document.getElementById('loading-spinner'); // NEW SPINNER
             const params = new URLSearchParams(window.location.search);
             const channelId = params.get('id'); 
 
             player.addEventListener('error', (e) => {
+                loadingSpinner.style.display = 'none'; // Hide spinner on error
                 if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
             });
 
+            // LOGIC FOR NEON SPINNER
+            player.addEventListener('buffering', (event) => {
+                if (event.buffering) {
+                    loadingSpinner.style.display = 'flex'; // Show spinner, covers play button
+                } else {
+                    loadingSpinner.style.display = 'none'; // Hide when playing
+                }
+            });
+
             try {
-                // WAIT FOR THE PROMISE STARTED IN <HEAD>
                 const m3uText = await window.m3uPromise; 
                 allChannels = await parseM3U(m3uText);
                 
@@ -314,7 +321,6 @@
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
                 }
 
-                // ... (Player logic remains same) ...
                 const ch = allChannels.find(c => c.id === channelId);
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
@@ -330,8 +336,16 @@
                         if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
                         request.uris[0] = proxyUrl;
                     });
+                    
                     player.configure({ streaming: { bufferingGoal: 10, rebufferingGoal: 2, retryParameters: { maxAttempts: 5, baseDelay: 1000 } } });
+                    
+                    // Show spinner before load
+                    loadingSpinner.style.display = 'flex';
+                    
                     await player.load(ch.streamUrl);
+                    
+                    // Note: buffering event will handle hiding it, but we can safety hide if needed
+                    // loadingSpinner.style.display = 'none'; 
                     document.getElementById('ch-quality').innerText = "Live";
                 } else {
                     if(!channelId) {
@@ -341,6 +355,7 @@
                 }
             } catch (err) {
                 console.error("App Error:", err);
+                loadingSpinner.style.display = 'none';
                 if(channelId) showError("Failed to Load Stream");
             }
 
