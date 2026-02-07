@@ -362,24 +362,33 @@
                     m3uChannels = results.flat();
                 }
 
-                // --- WHITELIST FILTERING START ---
+                // --- ORDERED WHITELIST LOGIC START ---
         let combinedChannels = [...manualChannels, ...m3uChannels];
 
         if (data && data.allowed_channels && Array.isArray(data.allowed_channels)) {
-            // 
-            const whiteList = data.allowed_channels.map(name => name.toLowerCase().trim());
+            let orderedChannels = [];
+            
+            // JSON 
+            data.allowed_channels.forEach(allowedName => {
+                const targetName = allowedName.toLowerCase().trim();
+                
+                // 
+                const match = combinedChannels.find(ch => 
+                    ch.name.toLowerCase().trim() === targetName
+                );
 
-            allChannels = combinedChannels.filter(ch => {
-                const cleanedName = ch.name.toLowerCase().trim();
-                return whiteList.includes(cleanedName);
+                if (match) {
+                    orderedChannels.push(match);
+                }
             });
+            allChannels = orderedChannels;
         } else {
             allChannels = combinedChannels;
         }
 
-        // URL 
+        // 
         allChannels = allChannels.filter(c => c.streamUrl && c.streamUrl.trim() !== "");
-        // --- WHITELIST FILTERING END ---
+        // --- ORDERED WHITELIST LOGIC END ---
                 
                 const gridContainer = document.getElementById('channelGrid');
 
