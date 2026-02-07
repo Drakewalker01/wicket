@@ -135,7 +135,7 @@
         // --- CONFIGURATION ---
         const M3U_URL = 'https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u';
         const DEFAULT_LOGO = 'https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS';
-        const CHANNELS_PER_PAGE = 8; // Keep performance high
+        const CHANNELS_PER_PAGE = 8; 
 
         // --- STATE VARIABLES ---
         let allChannels = [];
@@ -214,7 +214,6 @@
                 
                 allChannels = parseM3U(text);
                 
-                // Set total count ONCE immediately
                 countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
                 
                 loader.classList.add('hidden');
@@ -259,11 +258,27 @@
             return channels;
         }
 
+        // --- NEW FUNCTION: Resize Images on the fly ---
+        function getResizedImageUrl(originalUrl) {
+            // If there is no URL or it's the default placeholder, return the default
+            if (!originalUrl || originalUrl === DEFAULT_LOGO) {
+                return DEFAULT_LOGO;
+            }
+
+            // Use a free image resizing proxy (weserv.nl)
+            // w=150: Resize width to 150px (enough for the small circle)
+            // q=60: Set quality to 60% (good compression)
+            // output=webp: Convert to modern, small webp format
+            // url=: The original image URL encoded
+            const encodedUrl = encodeURIComponent(originalUrl);
+            return `https://images.weserv.nl/?url=${encodedUrl}&w=150&q=60&fit=contain&output=webp`;
+        }
+
+
         function loadMoreChannels() {
             const grid = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
 
-            // Get next batch
             const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
 
             if (nextBatch.length === 0) {
@@ -271,11 +286,12 @@
                 return;
             }
 
+            // UPDATED: Uses getResizedImageUrl() for the src attribute
             const html = nextBatch.map(ch => `
                 <div onclick="playChannel('${ch.id}')" class="channel-card group">
                     <div class="card-content">
                         <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                            <img src="${ch.logo}" onerror="this.src='${DEFAULT_LOGO}'" loading="lazy" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                            <img src="${getResizedImageUrl(ch.logo)}" onerror="this.src='${DEFAULT_LOGO}'" loading="lazy" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
                         </div>
                         <p class="text-center font-bold text-sm md:text-base leading-tight line-clamp-2">${ch.name}</p>
                         <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
@@ -288,7 +304,6 @@
             grid.insertAdjacentHTML('beforeend', html);
             displayedCount += nextBatch.length;
 
-            // Handle Button Visibility
             if (displayedCount >= allChannels.length) {
                 loadMoreContainer.classList.add('hidden');
             } else {
