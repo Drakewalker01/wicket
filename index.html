@@ -33,7 +33,7 @@
         .nav-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
 
         /* Card Fast Running Effect */
-        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; }
+        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; cursor: pointer; }
         .channel-card::before, .channel-card::after { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
@@ -44,9 +44,12 @@
         /* HOVER FAST SPEED */
         .channel-card:hover::before, .channel-card:hover::after { animation-duration: 1.2s; }
         
-        .card-content { background: #111827; border-radius: 0.85rem; width: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; }
+        .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
         .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        /* Fallback logo style */
+        .channel-logo { object-fit: contain; background: transparent; }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -75,18 +78,26 @@
             <div id="imageSlider" class="relative w-full h-full"></div>
             
             <div id="sliderDots" class="absolute bottom-4 right-5 md:bottom-8 md:right-10 z-20 flex gap-2">
-                </div>
+            </div>
 
             <button onclick="changeSlide(-1)" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-left"></i></button>
             <button onclick="changeSlide(1)" class="nav-btn absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-right"></i></button>
         </section>
 
         <section>
-            <div class="flex items-center gap-4 mb-8">
-                <div class="h-8 w-1 bg-neonBlue rounded-full shadow-[0_0_10px_#00f3ff]"></div>
-                <h2 class="text-2xl font-bold uppercase tracking-widest">Live <span class="text-neonBlue">Streaming</span></h2>
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="h-8 w-1 bg-neonBlue rounded-full shadow-[0_0_10px_#00f3ff]"></div>
+                    <h2 class="text-2xl font-bold uppercase tracking-widest">Live <span class="text-neonBlue">Channels</span></h2>
+                </div>
+                <div class="text-xs text-gray-400" id="channelCount">Loading...</div>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="channelGrid"></div>
+            
+            <div id="loader" class="flex justify-center py-20">
+                <i class="fas fa-circle-notch fa-spin text-4xl text-neonBlue"></i>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 hidden" id="channelGrid"></div>
         </section>
     </main>
 
@@ -95,62 +106,133 @@
     </footer>
 
     <script>
+        // M3U URL
+        const M3U_URL = 'https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u';
+        const DEFAULT_LOGO = 'https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS';
+
         let slideIndex = 0;
         let slideTimer;
 
         async function init() {
+            // 1. Load Slider from data.json
             try {
                 const res = await fetch('data.json');
                 const data = await res.json();
-                
-                const slider = document.getElementById('imageSlider');
-                const dotsContainer = document.getElementById('sliderDots');
-
-                // Generate Slides
-                slider.innerHTML = data.slider.map((s, i) => `
-                    <div class="slide ${i===0?'active':''}">
-                        <img src="${s.image}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
-                            <span class="px-3 py-1 text-[10px] font-bold bg-neonBlue text-black rounded mb-3 inline-block uppercase">${s.tag}</span>
-                            <h2 class="text-3xl md:text-5xl font-bold text-white mb-2">${s.title}</h2>
-                            <p class="text-gray-300 text-sm md:text-lg max-w-md">${s.desc}</p>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Generate Dots
-                dotsContainer.innerHTML = data.slider.map((_, i) => `
-                    <div onclick="jumpToSlide(${i})" 
-                         class="h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i===0 ? 'w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]' : 'w-1.5 bg-white/40 hover:bg-white'}">
-                    </div>
-                `).join('');
-
-                const grid = document.getElementById('channelGrid');
-                grid.innerHTML = data.channels.filter(ch => ch.streamUrl !== "").map(ch => `
-                    <a href="player.html?id=${ch.id}" class="channel-card">
-                        <div class="card-content">
-                            <img src="${ch.logo}" class="w-full rounded-lg mb-3 aspect-square object-cover bg-slate-900">
-                            <p class="text-lg font-bold">${ch.name}</p>
-                            <span class="text-xs text-gray-500">${ch.quality}</span>
-                        </div>
-                    </a>
-                `).join('');
-
-                startTimer();
+                renderSlider(data.slider);
             } catch (error) {
-                console.error("Error loading data:", error);
+                console.error("Error loading slider JSON:", error);
+            }
+
+            // 2. Load Channels from M3U
+            await fetchAndParseM3U();
+        }
+
+        function renderSlider(sliderData) {
+            const slider = document.getElementById('imageSlider');
+            const dotsContainer = document.getElementById('sliderDots');
+
+            if (!sliderData) return;
+
+            // Generate Slides
+            slider.innerHTML = sliderData.map((s, i) => `
+                <div class="slide ${i===0?'active':''}">
+                    <img src="${s.image}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
+                        <span class="px-3 py-1 text-[10px] font-bold bg-neonBlue text-black rounded mb-3 inline-block uppercase">${s.tag}</span>
+                        <h2 class="text-3xl md:text-5xl font-bold text-white mb-2">${s.title}</h2>
+                        <p class="text-gray-300 text-sm md:text-lg max-w-md">${s.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Generate Dots
+            dotsContainer.innerHTML = sliderData.map((_, i) => `
+                <div onclick="jumpToSlide(${i})" 
+                     class="h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i===0 ? 'w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]' : 'w-1.5 bg-white/40 hover:bg-white'}">
+                </div>
+            `).join('');
+
+            startTimer();
+        }
+
+        async function fetchAndParseM3U() {
+            try {
+                const response = await fetch(M3U_URL);
+                const text = await response.text();
+                const channels = parseM3U(text);
+                
+                renderChannels(channels);
+            } catch (error) {
+                console.error("Error fetching M3U:", error);
+                document.getElementById('loader').innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
             }
         }
 
-        function updateSliderUI() {
-            // Update Slides
-            const slides = document.querySelectorAll('.slide');
-            slides.forEach(s => s.classList.remove('active'));
-            slides[slideIndex].classList.add('active');
+        function parseM3U(content) {
+            const lines = content.split('\n');
+            const channels = [];
+            let currentChannel = {};
 
-            // Update Dots
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    // Extract Logo
+                    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                    const logo = logoMatch ? logoMatch[1] : DEFAULT_LOGO;
+                    
+                    // Extract Name
+                    const nameParts = line.split(',');
+                    const name = nameParts.length > 1 ? nameParts[nameParts.length - 1].trim() : 'Unknown Channel';
+
+                    currentChannel = { name, logo };
+                } else if (line.startsWith('http')) {
+                    currentChannel.streamUrl = line;
+                    channels.push(currentChannel);
+                    currentChannel = {};
+                }
+            }
+            return channels;
+        }
+
+        function renderChannels(channels) {
+            const grid = document.getElementById('channelGrid');
+            const loader = document.getElementById('loader');
+            const countLabel = document.getElementById('channelCount');
+
+            loader.classList.add('hidden');
+            grid.classList.remove('hidden');
+            countLabel.textContent = `${channels.length} CHANNELS LIVE`;
+
+            grid.innerHTML = channels.map((ch, index) => `
+                <div onclick="playChannel('${ch.streamUrl}')" class="channel-card group">
+                    <div class="card-content">
+                        <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
+                            <img src="${ch.logo}" onerror="this.src='${DEFAULT_LOGO}'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                        </div>
+                        <p class="text-center font-bold text-sm md:text-base leading-tight">${ch.name}</p>
+                        <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
+                            <i class="fas fa-circle text-[6px]"></i> LIVE
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function playChannel(url) {
+            window.location.href = `player.html?source=${encodeURIComponent(url)}`;
+        }
+
+        // --- Slider Logic ---
+        function updateSliderUI() {
+            const slides = document.querySelectorAll('.slide');
             const dots = document.getElementById('sliderDots').children;
+            
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === slideIndex);
+            });
+            
             Array.from(dots).forEach((dot, i) => {
                 if(i === slideIndex) {
                     dot.className = 'h-1.5 rounded-full transition-all duration-300 cursor-pointer w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]';
