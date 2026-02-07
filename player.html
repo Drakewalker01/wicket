@@ -12,6 +12,12 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://images.weserv.nl">
 
+    <script>
+        window.m3uPromise = fetch("https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u")
+            .then(response => response.text())
+            .catch(err => console.error("Pre-fetch failed", err));
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,6 +34,7 @@
                 extend: {
                     fontFamily: { sans: ['Rajdhani', 'sans-serif'] },
                     colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' },
+                    animation: { 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
                 }
             }
         }
@@ -36,7 +43,6 @@
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
         
-        /* Optimized animations with will-change */
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; will-change: transform; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
@@ -45,7 +51,6 @@
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
         
-        /* Card Styles */
         .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; cursor: pointer; display: block; will-change: transform; }
         .channel-card::before, .channel-card::after { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
@@ -63,6 +68,10 @@
         .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
         .status-overlay.show { display: flex; }
+
+        /* Skeleton Animation */
+        .skeleton { background: #1f2937; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -83,7 +92,7 @@
         </div>
     </nav>
 
-    <main class="w-full max-w-7xl px-4 py-8 z-10">
+    <main class="w-full max-w-7xl px-4 py-8 z-10 flex-grow">
         <section class="mb-12">
             <div class="unified-player-container">
                 <div class="video-area">
@@ -114,7 +123,36 @@
                 <h2 class="text-2xl font-bold uppercase tracking-widest">More <span class="text-neonBlue">Channels</span></h2>
             </div>
             
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6" id="channelGrid"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 min-h-[400px]" id="channelGrid">
+                <div class="channel-card opacity-50 pointer-events-none">
+                    <div class="card-content">
+                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
+                        <div class="h-4 w-3/4 skeleton rounded"></div>
+                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
+                    </div>
+                </div>
+                <div class="channel-card opacity-50 pointer-events-none">
+                    <div class="card-content">
+                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
+                        <div class="h-4 w-3/4 skeleton rounded"></div>
+                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
+                    </div>
+                </div>
+                <div class="channel-card opacity-50 pointer-events-none">
+                    <div class="card-content">
+                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
+                        <div class="h-4 w-3/4 skeleton rounded"></div>
+                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
+                    </div>
+                </div>
+                <div class="channel-card opacity-50 pointer-events-none">
+                    <div class="card-content">
+                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
+                        <div class="h-4 w-3/4 skeleton rounded"></div>
+                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
+                    </div>
+                </div>
+            </div>
             
             <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
                 <button id="loadMoreBtn" class="px-8 py-3 bg-neonBlue/10 border border-neonBlue text-neonBlue rounded-full hover:bg-neonBlue hover:text-black transition-all duration-300 font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]">
@@ -129,9 +167,7 @@
     </footer>
 
     <script>
-        // ==========================================
-        // AD CONFIGURATION (10 MINUTE TIMER)
-        // ==========================================
+        // ... (Ad Manager code remains same) ...
         const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
         const AD_COOLDOWN_MINUTES = 1; 
         
@@ -139,26 +175,16 @@
             const lastShown = localStorage.getItem('ad_last_shown_time');
             const now = Date.now();
             const cooldownMs = AD_COOLDOWN_MINUTES * 60 * 1000;
-
             if (!lastShown || (now - parseInt(lastShown) > cooldownMs)) {
-                console.log("Injecting Ad Script (Cooldown passed)");
                 const script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = AD_URL;
-                script.async = true;
+                script.type = 'text/javascript'; script.src = AD_URL; script.async = true;
                 document.body.appendChild(script);
                 localStorage.setItem('ad_last_shown_time', now.toString());
-            } else {
-                const timeLeft = Math.ceil((cooldownMs - (now - parseInt(lastShown))) / 60000);
-                console.log(`Ad skipped. Cooldown active. Next ad in approx ${timeLeft} mins.`);
             }
         }
         manageAds();
 
-        // ==========================================
-        // PLAYER CONFIGURATION
-        // ==========================================
-        const M3U_URL = "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u";
+        // PLAYER CONFIG
         const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
         
         let allChannels = [];
@@ -173,35 +199,24 @@
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) {
                 initPlayer();
-            } else {
-                console.error('Browser not supported!');
             }
         }
 
-        async function parseM3U(url) {
-            try {
-                const response = await fetch(url); 
-                const text = await response.text();
-                
+        async function parseM3U(text) {
+             // ... Same Parsing Logic ...
+             try {
                 const lines = text.split('\n');
                 const channels = [];
                 let currentChannel = { headers: {} }; 
-
                 for (let line of lines) {
                     line = line.trim();
-
                     if (line.startsWith('#EXTINF:')) {
                         const logoMatch = line.match(/tvg-logo="([^"]*)"/);
                         const logo = logoMatch ? logoMatch[1] : "https://via.placeholder.com/200?text=Sports";
                         const parts = line.split(',');
                         const name = parts[parts.length - 1].trim();
                         const id = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-
-                        currentChannel.id = id;
-                        currentChannel.name = name;
-                        currentChannel.logo = logo;
-                        currentChannel.quality = "Live";
-
+                        currentChannel.id = id; currentChannel.name = name; currentChannel.logo = logo; currentChannel.quality = "Live";
                     } else if (line.startsWith('#EXTVLCOPT:http-referrer=')) {
                         currentChannel.headers['Referer'] = line.split('http-referrer=')[1].trim();
                     } else if (line.startsWith('#EXTVLCOPT:http-origin=')) {
@@ -217,24 +232,24 @@
                     }
                 }
                 return channels;
-            } catch (error) {
-                console.error("Error parsing M3U:", error);
-                return [];
-            }
+            } catch (error) { return []; }
         }
 
         function renderChannelBatch() {
             const gridContainer = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
             
+            // CLEAR SKELETONS ON FIRST LOAD
+            if (displayedCount === 0) {
+                gridContainer.innerHTML = ''; 
+            }
+            
             const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
             
             if (nextBatch.length > 0) {
                 const batchHTML = nextBatch.map((c, index) => {
                     const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp`;
-                    
-                    // LCP FIX: Eager load the first 4 images (Above the fold), Lazy load the rest
-                    // Also added 'alt' attribute for Accessibility and SEO
+                    // Eager load first few images
                     const isLCP = displayedCount === 0 && index < 4;
                     const loadingType = isLCP ? "eager" : "lazy";
                     const fetchPriority = isLCP ? "high" : "auto";
@@ -244,7 +259,7 @@
                         <div class="card-content">
                             <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
                                 <img src="${optimizedLogo}" 
-                                     alt="${c.name} Logo"
+                                     alt="${c.name}"
                                      loading="${loadingType}" 
                                      fetchpriority="${fetchPriority}" 
                                      decoding="async" 
@@ -262,24 +277,15 @@
                 gridContainer.insertAdjacentHTML('beforeend', batchHTML);
                 displayedCount += nextBatch.length;
                 
-                if (displayedCount < allChannels.length) {
-                    loadMoreContainer.classList.remove('hidden');
-                } else {
-                    loadMoreContainer.classList.add('hidden');
-                }
+                if (displayedCount < allChannels.length) loadMoreContainer.classList.remove('hidden');
+                else loadMoreContainer.classList.add('hidden');
             }
         }
 
         async function initPlayer() {
             const video = document.getElementById('video');
-            
             if (!video['ui']) {
-               const checkUI = setInterval(() => {
-                   if (video['ui']) {
-                       clearInterval(checkUI);
-                       initPlayer();
-                   }
-               }, 100);
+               const checkUI = setInterval(() => { if (video['ui']) { clearInterval(checkUI); initPlayer(); } }, 100);
                return;
             }
 
@@ -291,14 +297,14 @@
             const channelId = params.get('id'); 
 
             player.addEventListener('error', (e) => {
-                if(e.detail.code != 7000) { 
-                    console.error('Error Code:', e.detail.code);
-                    showError("Stream Error: " + e.detail.code);
-                }
+                if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
             });
 
             try {
-                allChannels = await parseM3U(M3U_URL);
+                // WAIT FOR THE PROMISE STARTED IN <HEAD>
+                const m3uText = await window.m3uPromise; 
+                allChannels = await parseM3U(m3uText);
+                
                 const gridContainer = document.getElementById('channelGrid');
 
                 if (allChannels.length > 0) {
@@ -308,8 +314,8 @@
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
                 }
 
+                // ... (Player logic remains same) ...
                 const ch = allChannels.find(c => c.id === channelId);
-
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
                     document.getElementById('ch-name').innerText = ch.name;
@@ -324,24 +330,14 @@
                         if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
                         request.uris[0] = proxyUrl;
                     });
-
-                    player.configure({
-                        streaming: { 
-                            bufferingGoal: 10, 
-                            rebufferingGoal: 2, 
-                            retryParameters: { maxAttempts: 5, baseDelay: 1000 } 
-                        }
-                    });
-
+                    player.configure({ streaming: { bufferingGoal: 10, rebufferingGoal: 2, retryParameters: { maxAttempts: 5, baseDelay: 1000 } } });
                     await player.load(ch.streamUrl);
                     document.getElementById('ch-quality').innerText = "Live HD";
                 } else {
                     if(!channelId) {
                          document.getElementById('ch-name').innerText = "Select a Channel";
                          document.getElementById('ch-quality').innerText = "Ready";
-                    } else {
-                        showError("Channel Not Found");
-                    }
+                    } else { showError("Channel Not Found"); }
                 }
             } catch (err) {
                 console.error("App Error:", err);
@@ -354,11 +350,8 @@
             }
         }
 
-        if (document.readyState === 'loading') {  
-            document.addEventListener('DOMContentLoaded', initApp);
-        } else {  
-            initApp();
-        }
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initApp); } 
+        else { initApp(); }
     </script>
 </body>
 </html>
