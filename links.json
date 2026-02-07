@@ -4,6 +4,12 @@
     "https://raw.githubusercontent.com/abusaeeidx/T-Sports-Playlist-Auto-Update/refs/heads/main/combine_playlist.m3u",
     "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u"
   ],
+ "allowed_channels": [
+    "T Sports",
+    "Star Sports 1",
+    "Sony Ten 2 HD",
+    "Astro Cricket"
+  ],
   "manual_channels": [
     {
       "name": "Sony Ten 5 (MPD + Key)",
