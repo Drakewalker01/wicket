@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://raw.githubusercontent.com">
 
     <link rel="preload" href="data.json" as="fetch" crossorigin>
+    <link rel="preload" href="links.json" as="fetch" crossorigin>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -137,7 +138,6 @@
     </footer>
 
     <script>
-        const M3U_URL = 'https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u';
         const DEFAULT_LOGO = 'https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS';
         const CHANNELS_PER_PAGE = 4; 
 
@@ -165,7 +165,9 @@
                 const data = await res.json();
                 renderSlider(data.slider);
             } catch (error) { console.error("Error loading slider JSON:", error); }
-            await fetchAndParseM3U();
+            
+            // New function to fetch from links.json
+            await fetchChannels();
         }
 
         function renderSlider(sliderData) {
@@ -227,20 +229,60 @@
         function startTimer() { slideTimer = setInterval(() => changeSlide(1), 5000); }
         function resetTimer() { clearInterval(slideTimer); startTimer(); }
 
-        async function fetchAndParseM3U() {
+        // Updated function to fetch from links.json
+        async function fetchChannels() {
             const loader = document.getElementById('loader');
             const grid = document.getElementById('channelGrid');
             const countLabel = document.getElementById('channelCount');
+            
             try {
-                const response = await fetch(M3U_URL);
-                const text = await response.text();
-                allChannels = parseM3U(text);
+                // 1. Fetch the links.json file
+                const response = await fetch('links.json');
+                const config = await response.json();
+                
+                allChannels = [];
+
+                // 2. Process Manual Channels
+                if (config.manual_channels && Array.isArray(config.manual_channels)) {
+                    const manualCh = config.manual_channels.map(ch => ({
+                        id: ch.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                        name: ch.name,
+                        logo: ch.logo,
+                        streamUrl: ch.url,
+                        // Store DRM info if present, can be passed to player later
+                        drm: ch.drm
+                    }));
+                    allChannels.push(...manualCh);
+                }
+
+                // 3. Process Playlists (M3U Links)
+                if (config.playlists && Array.isArray(config.playlists)) {
+                    // Fetch all playlists in parallel
+                    const playlistPromises = config.playlists.map(async (url) => {
+                        try {
+                            const res = await fetch(url);
+                            const text = await res.text();
+                            return parseM3U(text);
+                        } catch (err) {
+                            console.error(`Failed to load playlist: ${url}`, err);
+                            return [];
+                        }
+                    });
+                    
+                    const playlistResults = await Promise.all(playlistPromises);
+                    playlistResults.forEach(channels => {
+                        allChannels.push(...channels);
+                    });
+                }
+
+                // 4. Update UI
                 countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
                 loader.classList.add('hidden');
                 grid.classList.remove('hidden');
                 loadMoreChannels();
+
             } catch (error) {
-                console.error("Error fetching M3U:", error);
+                console.error("Error fetching channels:", error);
                 loader.innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
             }
         }
@@ -307,7 +349,17 @@
             else loadMoreContainer.classList.remove('hidden');
         }
 
-        function playChannel(id) { window.location.href = `player.html?id=${id}`; }
+        // Modified to pass the object or ID properly. 
+        // NOTE: Since we are storing all data in memory (allChannels), passing ID is fine.
+        // The player page will need to handle finding the channel details or you might need to use localStorage.
+        function playChannel(id) { 
+            // Save the selected channel to localStorage to handle manual channels (DRM) which don't just have a simple ID
+            const channel = allChannels.find(c => c.id === id);
+            if(channel) {
+                localStorage.setItem('currentChannel', JSON.stringify(channel));
+                window.location.href = `player.html?id=${id}`; 
+            }
+        }
         window.onload = init;
     </script>
 </body>
