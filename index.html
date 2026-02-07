@@ -186,7 +186,16 @@
                     const nameParts = line.split(',');
                     const name = nameParts.length > 1 ? nameParts[nameParts.length - 1].trim() : 'Unknown Channel';
 
-                    currentChannel = { name, logo };
+                    // Extract ID (tvg-id) OR Generate slug from name
+                    const idMatch = line.match(/tvg-id="([^"]*)"/);
+                    let id = idMatch ? idMatch[1] : null;
+
+                    // If no tvg-id is present, create one from the name (e.g. "Star Sports 1" -> "starsports1")
+                    if (!id || id.trim() === "") {
+                        id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    }
+
+                    currentChannel = { id, name, logo };
                 } else if (line.startsWith('http')) {
                     currentChannel.streamUrl = line;
                     channels.push(currentChannel);
@@ -206,7 +215,7 @@
             countLabel.textContent = `${channels.length} CHANNELS LIVE`;
 
             grid.innerHTML = channels.map((ch, index) => `
-                <div onclick="playChannel('${ch.streamUrl}')" class="channel-card group">
+                <div onclick="playChannel('${ch.id}')" class="channel-card group">
                     <div class="card-content">
                         <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
                             <img src="${ch.logo}" onerror="this.src='${DEFAULT_LOGO}'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
@@ -220,8 +229,9 @@
             `).join('');
         }
 
-        function playChannel(url) {
-            window.location.href = `player.html?source=${encodeURIComponent(url)}`;
+        function playChannel(id) {
+            // New Link format: player.html?id=starsports1
+            window.location.href = `player.html?id=${id}`;
         }
 
         // --- Slider Logic ---
