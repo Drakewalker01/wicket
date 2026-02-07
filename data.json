@@ -50,7 +50,7 @@
         }
       }
     },
-    { "id": "tv1", "name": "TV1", "logo": "https://api3.viu.lk/api/client/v1/global/images/25669?accessKey=WkVjNWNscFhORDBLCg==", "streamUrl": "https://example.com/tv1.m3u8", "quality": "Live Feed" },
+    { "id": "tv1", "name": "TV1", "logo": "https://api3.viu.lk/api/client/v1/global/images/25669?accessKey=WkVjNWNscFhORDBLCg==", "streamUrl": "https://d10.merichunidya.com:1686/hls/willowextra.m3u8?md5=-BqmITkMnBaGEFmjsZaIVg&expires=1770444802", "quality": "Live Feed" },
     { "id": "tamashahd", "name": "Tamasha HD", "logo": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/fa/36/79/fa3679ae-6a1b-8714-37de-93995becfd3c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/1200x600wa.png", "streamUrl": "https://example.com/tamasha.m3u8", "quality": "Live Feed" },
     { "id": "sonysports1", "name": "Sony Sports 1", "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGE6O710SDHMpr580b_kjyRj2XD4fUMDc2gg&s", "streamUrl": "https://dtvxtream.com/sonyliv2/300256.m3u8", "quality": "Exclusive" },
     { "id": "sonysports3", "name": "Sony Sports 3", "logo": "https://stmify.com/wp-content/uploads/2024/10/172-s.webp", "streamUrl": "", "quality": "Exclusive" },
