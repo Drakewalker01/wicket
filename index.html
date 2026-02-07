@@ -11,23 +11,10 @@
     <link rel="preconnect" href="https://images.weserv.nl" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-
+    
     <link rel="preload" href="data.json" as="fetch" crossorigin>
     <link rel="preload" href="links.json" as="fetch" crossorigin>
 
-    <script>
-        tailwind = {
-            config: {
-                theme: {
-                    extend: {
-                        fontFamily: { sans: ['Rajdhani', 'sans-serif'] },
-                        colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' }
-                    }
-                }
-            }
-        }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -35,11 +22,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" /></noscript>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Rajdhani', 'sans-serif'] },
+                    colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' }
+                }
+            }
+        }
+    </script>
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
         
         /* GPU Accelerated Animations */
-        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; will-change: transform; animation: blob 10s infinite alternate; pointer-events: none; }
+        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; will-change: transform; animation: blob 10s infinite alternate; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
         @keyframes blob { 0% { transform: translate(0,0) scale(1) } 33% { transform: translate(30px,-50px) scale(1.1) } 100% { transform: translate(0,0) scale(1) } }
@@ -53,7 +50,7 @@
         .nav-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); transition: 0.3s; z-index: 20; }
         .nav-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
 
-        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 2px; overflow: hidden; transition: 0.3s; cursor: pointer; will-change: transform; contain: content; }
+        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 2px; overflow: hidden; transition: 0.3s; cursor: pointer; will-change: transform; }
         .channel-card::before, .channel-card::after { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
@@ -80,6 +77,8 @@
         .dot-inactive { background-color: rgba(255,255,255,0.4); transform: scaleX(1); }
         .dot-inactive:hover { background-color: #ffffff; }
 
+        /* Min-height to prevent Layout Shift */
+        #channelGrid { min-height: 200px; }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center min-h-screen">
@@ -105,7 +104,9 @@
     <main class="w-full max-w-7xl px-4 py-8 z-10 flex flex-col gap-12 flex-grow">
         <section class="relative w-full h-[250px] md:h-[500px] overflow-hidden rounded-3xl bg-slate-900 shadow-2xl">
             <div class="slider-blend-overlay"></div>
-            <div id="imageSlider" class="relative w-full h-full"></div>
+            <div id="imageSlider" class="relative w-full h-full">
+                <div class="w-full h-full bg-slate-800 animate-pulse"></div>
+            </div>
             <div id="sliderDots" class="absolute bottom-4 right-5 md:bottom-8 md:right-10 z-20 flex gap-4"></div>
 
             <button onclick="changeSlide(-1)" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white" aria-label="Previous Slide"><i class="fas fa-chevron-left"></i></button>
@@ -125,7 +126,7 @@
                 <i class="fas fa-circle-notch fa-spin text-4xl text-neonBlue"></i>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 hidden" id="channelGrid"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6" id="channelGrid"></div>
 
             <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
                 <button onclick="loadMoreChannels()" class="load-more-btn">
@@ -162,15 +163,14 @@
         }
 
         async function init() {
-            // Run both fetches in parallel
-            const p1 = fetch('data.json').then(res => res.json()).catch(e => null);
-            const p2 = fetchChannels();
+            // Start fetching data immediately
+            const sliderPromise = fetch('data.json').then(res => res.json()).catch(err => console.error(err));
+            const channelsPromise = fetchChannels();
 
-            const [sliderData] = await Promise.all([p1, p2]);
-            
-            if(sliderData && sliderData.slider) {
-                renderSlider(sliderData.slider);
-            }
+            try {
+                const data = await sliderPromise;
+                if(data && data.slider) renderSlider(data.slider);
+            } catch (error) { console.error("Error loading slider:", error); }
         }
 
         function renderSlider(sliderData) {
@@ -187,7 +187,6 @@
                         class="w-full h-full object-cover" 
                         alt="${s.title}" 
                         ${i===0 ? 'fetchpriority="high"' : 'loading="lazy"'}
-                        width="1200" height="500"
                     >
                     <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
                     <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
@@ -240,13 +239,11 @@
             const countLabel = document.getElementById('channelCount');
             
             try {
-                // 1. Fetch links.json
                 const response = await fetch('links.json');
                 const config = await response.json();
                 
-                let tempChannels = [];
+                let tempChannels = []; 
 
-                // 2. Process Manual Channels
                 if (config.manual_channels && Array.isArray(config.manual_channels)) {
                     const manualCh = config.manual_channels.map(ch => ({
                         id: ch.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
@@ -258,7 +255,6 @@
                     tempChannels.push(...manualCh);
                 }
 
-                // 3. Process Playlists (M3U Links)
                 if (config.playlists && Array.isArray(config.playlists)) {
                     const playlistPromises = config.playlists.map(async (url) => {
                         try {
@@ -277,13 +273,11 @@
                     });
                 }
 
-                // 4. FILTERING
                 allChannels = tempChannels.filter(ch => ch.streamUrl && ch.streamUrl.trim() !== "");
 
-                // 5. Update UI
                 countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
                 loader.classList.add('hidden');
-                grid.classList.remove('hidden');
+                // Removed grid.classList.remove('hidden') as we removed the class from HTML
                 loadMoreChannels();
 
             } catch (error) {
@@ -336,8 +330,7 @@
                                 sizes="(max-width: 640px) 150px, 200px"
                                 onerror="this.src='${DEFAULT_LOGO}'" 
                                 alt="${ch.name}" 
-                                loading="lazy"
-                                width="200" height="200"
+                                loading="lazy" 
                                 class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                             >
                         </div>
@@ -363,7 +356,7 @@
             }
         }
         
-        // Use DOMContentLoaded instead of window.onload for faster interactive time
+        // Use DOMContentLoaded instead of window.onload for faster execution
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
