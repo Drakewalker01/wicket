@@ -202,10 +202,7 @@
                     } else if (line.startsWith('http')) {
                         if (currentChannel.name) {
                             currentChannel.streamUrl = line;
-                            if(!currentChannel.headers['Referer']) {
-                                currentChannel.headers['Referer'] = "https://profamouslife.com/";
-                                currentChannel.headers['Origin'] = "https://profamouslife.com";
-                            }
+                        
                             channels.push(currentChannel);
                             currentChannel = { headers: {} }; 
                         }
