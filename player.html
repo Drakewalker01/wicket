@@ -332,7 +332,7 @@
                     });
                     player.configure({ streaming: { bufferingGoal: 10, rebufferingGoal: 2, retryParameters: { maxAttempts: 5, baseDelay: 1000 } } });
                     await player.load(ch.streamUrl);
-                    document.getElementById('ch-quality').innerText = "Streaming...";
+                    document.getElementById('ch-quality').innerText = "Live";
                 } else {
                     if(!channelId) {
                          document.getElementById('ch-name').innerText = "Select a Channel";
