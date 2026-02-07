@@ -1,6 +1,7 @@
 {
   "playlists": [
-    "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u"
+    "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u",
+    "https://iptv-org.github.io/iptv/countries/lk.m3u"
   ],
   "manual_channels": [
     {
