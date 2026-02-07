@@ -268,18 +268,25 @@
             playlistResults.forEach(channels => tempChannels.push(...channels));
         }
 
-        // 3. --- Whitelist Logic 
+        // 3. --- ORDERED WHITELIST LOGIC ---
         if (config.allowed_channels && Array.isArray(config.allowed_channels)) {
-            // 
-            const whiteList = config.allowed_channels.map(name => name.toLowerCase().trim());
-
-            allChannels = tempChannels.filter(ch => {
-                const cleanedChannelName = ch.name.toLowerCase().trim();
+            let orderedChannels = [];
+            
+            // JSON
+            config.allowed_channels.forEach(allowedName => {
+                const targetName = allowedName.toLowerCase().trim();
+                
                 // 
-                return whiteList.includes(cleanedChannelName);
+                const match = tempChannels.find(ch => 
+                    ch.name.toLowerCase().trim() === targetName
+                );
+
+                if (match) {
+                    orderedChannels.push(match);
+                }
             });
+            allChannels = orderedChannels;
         } else {
-            // 
             allChannels = tempChannels;
         }
 
