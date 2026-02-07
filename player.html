@@ -362,7 +362,24 @@
                     m3uChannels = results.flat();
                 }
 
-                allChannels = [...manualChannels, ...m3uChannels].filter(c => c.streamUrl && c.streamUrl.trim() !== "");
+                // --- WHITELIST FILTERING START ---
+        let combinedChannels = [...manualChannels, ...m3uChannels];
+
+        if (data && data.allowed_channels && Array.isArray(data.allowed_channels)) {
+            // 
+            const whiteList = data.allowed_channels.map(name => name.toLowerCase().trim());
+
+            allChannels = combinedChannels.filter(ch => {
+                const cleanedName = ch.name.toLowerCase().trim();
+                return whiteList.includes(cleanedName);
+            });
+        } else {
+            allChannels = combinedChannels;
+        }
+
+        // URL 
+        allChannels = allChannels.filter(c => c.streamUrl && c.streamUrl.trim() !== "");
+        // --- WHITELIST FILTERING END ---
                 
                 const gridContainer = document.getElementById('channelGrid');
 
