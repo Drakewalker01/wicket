@@ -139,21 +139,7 @@
             </div>
             
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 min-h-[400px]" id="channelGrid">
-                <div class="channel-card opacity-50 pointer-events-none">
-                    <div class="card-content">
-                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
-                        <div class="h-4 w-3/4 skeleton rounded"></div>
-                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
-                    </div>
                 </div>
-                 <div class="channel-card opacity-50 pointer-events-none">
-                    <div class="card-content">
-                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
-                        <div class="h-4 w-3/4 skeleton rounded"></div>
-                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
-                    </div>
-                </div>
-            </div>
             
             <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
                 <button id="loadMoreBtn" class="px-8 py-3 bg-neonBlue/10 border border-neonBlue text-neonBlue rounded-full hover:bg-neonBlue hover:text-black transition-all duration-300 font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]">
@@ -321,21 +307,19 @@
                 const response = await fetch('links.json');
                 const data = await response.json();
                 
-                // 1. Process Manual Channels from JSON
                 let manualChannels = [];
                 if (data.manual_channels) {
                     manualChannels = data.manual_channels.map(c => ({
                         id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
                         name: c.name,
                         logo: c.logo,
-                        quality: "HD", // Default
+                        quality: "HD", 
                         streamUrl: c.url,
                         headers: {}, 
-                        drm: c.drm // Include DRM info
+                        drm: c.drm 
                     }));
                 }
 
-                // 2. Fetch and Parse all M3U Playlists
                 let m3uChannels = [];
                 if (data.playlists) {
                     const promises = data.playlists.map(async (url) => {
@@ -352,7 +336,6 @@
                     m3uChannels = results.flat();
                 }
 
-                // Merge all channels
                 allChannels = [...manualChannels, ...m3uChannels];
                 // --- END NEW DATA FETCHING LOGIC ---
                 
@@ -374,7 +357,6 @@
                     connectSpinner.style.display = "flex";
                     videoWrapper.classList.add("loading-state");
 
-                    // Configure Network Filters (Proxy)
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
                         const originalUrl = request.uris[0];
@@ -385,13 +367,11 @@
                         request.uris[0] = proxyUrl;
                     });
                     
-                    // --- DRM CONFIGURATION LOGIC ---
                     if (ch.drm) {
                         player.configure({
                             drm: ch.drm
                         });
                     } else {
-                        // Reset DRM to avoid issues with non-DRM streams after a DRM stream
                         player.configure({
                             drm: { clearKeys: {} }
                         });
@@ -411,7 +391,6 @@
                     await player.load(ch.streamUrl);
                     
                 } else {
-                    // Default State (No Channel Selected)
                     if(!channelId) {
                          document.getElementById('ch-name').innerText = "Select a Channel";
                          document.getElementById('ch-quality').innerText = "Ready";
