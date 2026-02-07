@@ -7,7 +7,7 @@
       "name": "Sony Ten 5 (MPD + Key)",
       "logo": "https://via.placeholder.com/200?text=SonyTen",
       "group": "Sports",
-      "url": "https://example.com/manifest.mpd",
+      "url": "",
       "drm": {
         "clearKeys": {
           "KEY_ID_HERE": "KEY_VALUE_HERE"
@@ -18,7 +18,7 @@
       "name": "Star Sports (HLS)",
       "logo": "https://via.placeholder.com/200?text=Star",
       "group": "Sports",
-      "url": "https://example.com/stream.m3u8"
+      "url": ""
     }
   ]
 }
