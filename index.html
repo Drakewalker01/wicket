@@ -146,7 +146,7 @@
         let slideIndex = 0;
         let slideTimer;
 
-        // OPTIMIZED: Quality reduced to 60 for faster load
+        // Image Optimization
         function generateSrcSet(url) {
             if (!url || url.includes('placeholder')) return '';
             const encoded = encodeURIComponent(url);
@@ -166,7 +166,6 @@
                 renderSlider(data.slider);
             } catch (error) { console.error("Error loading slider JSON:", error); }
             
-            // New function to fetch from links.json
             await fetchChannels();
         }
 
@@ -229,35 +228,33 @@
         function startTimer() { slideTimer = setInterval(() => changeSlide(1), 5000); }
         function resetTimer() { clearInterval(slideTimer); startTimer(); }
 
-        // Updated function to fetch from links.json
+        // --- CORE FUNCTION TO FETCH CHANNELS FROM LINKS.JSON ---
         async function fetchChannels() {
             const loader = document.getElementById('loader');
             const grid = document.getElementById('channelGrid');
             const countLabel = document.getElementById('channelCount');
             
             try {
-                // 1. Fetch the links.json file
+                // 1. Fetch links.json
                 const response = await fetch('links.json');
                 const config = await response.json();
                 
-                allChannels = [];
+                let tempChannels = []; // Temp array to hold all before filtering
 
-                // 2. Process Manual Channels
+                // 2. Process Manual Channels (from json)
                 if (config.manual_channels && Array.isArray(config.manual_channels)) {
                     const manualCh = config.manual_channels.map(ch => ({
                         id: ch.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
                         name: ch.name,
                         logo: ch.logo,
                         streamUrl: ch.url,
-                        // Store DRM info if present, can be passed to player later
                         drm: ch.drm
                     }));
-                    allChannels.push(...manualCh);
+                    tempChannels.push(...manualCh);
                 }
 
                 // 3. Process Playlists (M3U Links)
                 if (config.playlists && Array.isArray(config.playlists)) {
-                    // Fetch all playlists in parallel
                     const playlistPromises = config.playlists.map(async (url) => {
                         try {
                             const res = await fetch(url);
@@ -271,11 +268,14 @@
                     
                     const playlistResults = await Promise.all(playlistPromises);
                     playlistResults.forEach(channels => {
-                        allChannels.push(...channels);
+                        tempChannels.push(...channels);
                     });
                 }
 
-                // 4. Update UI
+                // 4. FILTERING: Only keep channels that have a valid stream URL
+                allChannels = tempChannels.filter(ch => ch.streamUrl && ch.streamUrl.trim() !== "");
+
+                // 5. Update UI
                 countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
                 loader.classList.add('hidden');
                 grid.classList.remove('hidden');
@@ -349,11 +349,9 @@
             else loadMoreContainer.classList.remove('hidden');
         }
 
-        // Modified to pass the object or ID properly. 
-        // NOTE: Since we are storing all data in memory (allChannels), passing ID is fine.
-        // The player page will need to handle finding the channel details or you might need to use localStorage.
         function playChannel(id) { 
-            // Save the selected channel to localStorage to handle manual channels (DRM) which don't just have a simple ID
+            // We save the channel object to localStorage because DRM keys/Manual URLs
+            // might not be retrievable just by ID on the next page if they aren't in a global list
             const channel = allChannels.find(c => c.id === id);
             if(channel) {
                 localStorage.setItem('currentChannel', JSON.stringify(channel));
