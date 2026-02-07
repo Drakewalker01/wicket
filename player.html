@@ -107,7 +107,7 @@
         // ==========================================
         // CONFIGURATION
         // ==========================================
-        const M3U_URL = "https://iptv-org.github.io/iptv/categories/sports.m3u";
+        const M3U_URL = "https://iptv-org.github.io/iptv/countries/lk.m3u";
         
         // පහළ "YOUR_CLOUDFLARE_WORKER_LINK_HERE" වෙනුවට ඔයාගේ Worker Link එක දාන්න
         const WORKER_BASE_URL = "https://rough-frog-286d.shehanmadhusith1999.workers.dev"; 
@@ -206,7 +206,7 @@
                     let finalVideoUrl = ch.streamUrl;
 
                     // Proxy Logic
-                    if (WORKER_BASE_URL && WORKER_BASE_URL !== "https://rough-frog-286d.shehanmadhusith1999.workers.dev" && (ch.headers.Referer || ch.headers.Origin)) {
+                    if (WORKER_BASE_URL && WORKER_BASE_URL !== "YOUR_CLOUDFLARE_WORKER_LINK_HERE" && (ch.headers.Referer || ch.headers.Origin)) {
                         console.log("Using Proxy...");
                         const encodedUrl = encodeURIComponent(ch.streamUrl);
                         let proxyUrl = `${WORKER_BASE_URL}?url=${encodedUrl}`;
