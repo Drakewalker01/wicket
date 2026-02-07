@@ -5,12 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">Stream Loading... | HIT Wicket</title>
     
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://images.weserv.nl">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" defer></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 
     <script>
         tailwind.config = {
@@ -25,15 +34,18 @@
 
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
-        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; }
+        
+        /* 4. SPEED: optimized animations with will-change */
+        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; will-change: transform; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
         @keyframes blob { 0% { transform: translate(0,0) scale(1) } 100% { transform: translate(0,0) scale(1) } }
-        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
         
         /* Card Styles */
-        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; cursor: pointer; display: block; }
+        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; cursor: pointer; display: block; will-change: transform; }
         .channel-card::before, .channel-card::after { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
@@ -46,7 +58,7 @@
         @keyframes rotate { 100% { transform: rotate(360deg); } }
         .channel-logo { object-fit: contain; background: transparent; }
 
-        .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+        .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
         .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
         .status-overlay.show { display: flex; }
@@ -127,7 +139,6 @@
             const now = Date.now();
             const cooldownMs = AD_COOLDOWN_MINUTES * 60 * 1000;
 
-            // Check if ad was never shown OR if time gap > 10 mins
             if (!lastShown || (now - parseInt(lastShown) > cooldownMs)) {
                 console.log("Injecting Ad Script (Cooldown passed)");
                 
@@ -153,16 +164,21 @@
         // PLAYER CONFIGURATION
         // ==========================================
         const M3U_URL = "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u";
-        //const M3U_URL = "https://iptv-org.github.io/iptv/countries/lk.m3u";
-
         const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
         
         // Globals for Pagination
         let allChannels = [];
         let displayedCount = 0;
-        const CHANNELS_PER_PAGE = 4; // Number of cards to load at once
+        const CHANNELS_PER_PAGE = 4; 
 
         async function initApp() {
+            // Check if Shaka is ready (since we deferred it)
+            if (typeof shaka === 'undefined') {
+                // Wait for script to load if it hasn't yet
+                setTimeout(initApp, 100);
+                return;
+            }
+
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) {
                 initPlayer();
@@ -204,7 +220,6 @@
                     } else if (line.startsWith('http')) {
                         if (currentChannel.name) {
                             currentChannel.streamUrl = line;
-                        
                             channels.push(currentChannel);
                             currentChannel = { headers: {} }; 
                         }
@@ -221,21 +236,18 @@
             const gridContainer = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
             
-            // Get the next slice of channels
             const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
             
             if (nextBatch.length > 0) {
-                // Generate HTML string for the batch
                 const batchHTML = nextBatch.map(c => {
-                    // Optimized Image URL via weserv.nl
-                    // Resize to 200px width, webp format
                     const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp`;
                     
+                    // 5. SPEED: Added loading="lazy" and decoding="async"
                     return `
                     <a href="?id=${c.id}" class="channel-card group">
                         <div class="card-content">
                             <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                                <img src="${optimizedLogo}" onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                                <img src="${optimizedLogo}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
                             </div>
                             <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
                             <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
@@ -245,13 +257,9 @@
                     </a>
                 `}).join('');
                 
-                // Append to grid instead of replacing
                 gridContainer.insertAdjacentHTML('beforeend', batchHTML);
-                
-                // Update count
                 displayedCount += nextBatch.length;
                 
-                // Show/Hide Load More Button
                 if (displayedCount < allChannels.length) {
                     loadMoreContainer.classList.remove('hidden');
                 } else {
@@ -262,6 +270,18 @@
 
         async function initPlayer() {
             const video = document.getElementById('video');
+            
+            // Wait for UI to bind (since script is deferred)
+            if (!video['ui']) {
+               const checkUI = setInterval(() => {
+                   if (video['ui']) {
+                       clearInterval(checkUI);
+                       initPlayer();
+                   }
+               }, 100);
+               return;
+            }
+
             const ui = video['ui'];
             const controls = ui.getControls();
             const player = controls.getPlayer();
@@ -277,21 +297,16 @@
             });
 
             try {
-                // Fetch and store all channels globally
                 allChannels = await parseM3U(M3U_URL);
                 const gridContainer = document.getElementById('channelGrid');
 
                 if (allChannels.length > 0) {
-                    // Initial Render (First 8)
                     renderChannelBatch();
-                    
-                    // Setup Load More Button Listener
                     document.getElementById('loadMoreBtn').addEventListener('click', renderChannelBatch);
                 } else {
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
                 }
 
-                // Logic to find current channel for player
                 const ch = allChannels.find(c => c.id === channelId);
 
                 if (ch) {
@@ -338,8 +353,12 @@
             }
         }
 
-        document.addEventListener('shaka-ui-loaded', initApp);
-        document.addEventListener('DOMContentLoaded', () => { if (!window.shaka) initApp(); });
+        // Initialize wrapper to handle deferred scripts
+        if (document.readyState === 'loading') {  
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {  
+            initApp();
+        }
     </script>
 </body>
 </html>
