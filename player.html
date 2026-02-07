@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Watch live cricket streaming on HIT Wicket. High quality sports channels available for free.">
     <title id="page-title">Stream Loading... | HIT Wicket</title>
     
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
@@ -35,7 +36,7 @@
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
         
-        /* 4. SPEED: optimized animations with will-change */
+        /* Optimized animations with will-change */
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; will-change: transform; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
@@ -141,23 +142,17 @@
 
             if (!lastShown || (now - parseInt(lastShown) > cooldownMs)) {
                 console.log("Injecting Ad Script (Cooldown passed)");
-                
-                // Inject the Script
                 const script = document.createElement('script');
                 script.type = 'text/javascript';
                 script.src = AD_URL;
                 script.async = true;
                 document.body.appendChild(script);
-
-                // Save current time
                 localStorage.setItem('ad_last_shown_time', now.toString());
             } else {
                 const timeLeft = Math.ceil((cooldownMs - (now - parseInt(lastShown))) / 60000);
                 console.log(`Ad skipped. Cooldown active. Next ad in approx ${timeLeft} mins.`);
             }
         }
-
-        // Run Ad Manager on Page Load
         manageAds();
 
         // ==========================================
@@ -166,19 +161,15 @@
         const M3U_URL = "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u";
         const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
         
-        // Globals for Pagination
         let allChannels = [];
         let displayedCount = 0;
         const CHANNELS_PER_PAGE = 4; 
 
         async function initApp() {
-            // Check if Shaka is ready (since we deferred it)
             if (typeof shaka === 'undefined') {
-                // Wait for script to load if it hasn't yet
                 setTimeout(initApp, 100);
                 return;
             }
-
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) {
                 initPlayer();
@@ -239,15 +230,26 @@
             const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
             
             if (nextBatch.length > 0) {
-                const batchHTML = nextBatch.map(c => {
+                const batchHTML = nextBatch.map((c, index) => {
                     const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp`;
                     
-                    // 5. SPEED: Added loading="lazy" and decoding="async"
+                    // LCP FIX: Eager load the first 4 images (Above the fold), Lazy load the rest
+                    // Also added 'alt' attribute for Accessibility and SEO
+                    const isLCP = displayedCount === 0 && index < 4;
+                    const loadingType = isLCP ? "eager" : "lazy";
+                    const fetchPriority = isLCP ? "high" : "auto";
+                    
                     return `
                     <a href="?id=${c.id}" class="channel-card group">
                         <div class="card-content">
                             <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                                <img src="${optimizedLogo}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                                <img src="${optimizedLogo}" 
+                                     alt="${c.name} Logo"
+                                     loading="${loadingType}" 
+                                     fetchpriority="${fetchPriority}" 
+                                     decoding="async" 
+                                     onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" 
+                                     class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
                             </div>
                             <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
                             <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
@@ -271,7 +273,6 @@
         async function initPlayer() {
             const video = document.getElementById('video');
             
-            // Wait for UI to bind (since script is deferred)
             if (!video['ui']) {
                const checkUI = setInterval(() => {
                    if (video['ui']) {
@@ -353,7 +354,6 @@
             }
         }
 
-        // Initialize wrapper to handle deferred scripts
         if (document.readyState === 'loading') {  
             document.addEventListener('DOMContentLoaded', initApp);
         } else {  
