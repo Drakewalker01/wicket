@@ -12,42 +12,6 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://images.weserv.nl">
 
-    <script>
-        window.m3uPromise = fetch("links.json")
-            .then(response => {
-                if (!response.ok) throw new Error("Could not load links.json");
-                return response.json();
-            })
-            .then(async (data) => {
-                // 1. Load External M3U Playlists
-                const playlistPromises = (data.playlists || []).map(url => 
-                    fetch(url)
-                        .then(res => res.text())
-                        .catch(e => {
-                            console.error("Failed to load playlist:", url);
-                            return ""; 
-                        })
-                );
-
-                const playlistTexts = await Promise.all(playlistPromises);
-
-                // 2. Convert Manual JSON Channels to M3U Format (Supports both mpd and m3u8)
-                let manualM3U = "";
-                if (data.manual_channels && Array.isArray(data.manual_channels)) {
-                    manualM3U = data.manual_channels.map(ch => {
-                        return `#EXTINF:-1 tvg-logo="${ch.logo}" group-title="${ch.group || 'General'}", ${ch.name}\n${ch.url}`;
-                    }).join('\n');
-                }
-
-                // 3. Combine everything
-                return playlistTexts.join('\n') + '\n' + manualM3U;
-            })
-            .catch(err => {
-                console.error("Error loading channels source:", err);
-                return ""; 
-            });
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -104,6 +68,7 @@
         /* LOADING SPINNER OVERLAY */
         .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; pointer-events: none; }
         
+        /* Hide Shaka Controls when in Loading State */
         .loading-state .shaka-controls-container,
         .loading-state .shaka-play-button-container,
         .loading-state .shaka-scrim-container {
@@ -111,6 +76,7 @@
             opacity: 0 !important;
         }
 
+        /* Skeleton Animation */
         .skeleton { background: #1f2937; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
@@ -180,6 +146,13 @@
                         <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
                     </div>
                 </div>
+                <div class="channel-card opacity-50 pointer-events-none">
+                    <div class="card-content">
+                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
+                        <div class="h-4 w-3/4 skeleton rounded"></div>
+                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
+                    </div>
+                </div>
             </div>
             
             <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
@@ -230,7 +203,8 @@
             }
         }
 
-        async function parseM3U(text) {
+        // --- DATA LOADING LOGIC ---
+        function parseM3U(text) {
              try {
                 if(!text) return [];
                 const lines = text.split('\n');
@@ -254,10 +228,7 @@
                     } else if (line.startsWith('http')) {
                         if (currentChannel.name) {
                             currentChannel.streamUrl = line;
-                            // Basic check to see if it's MPD (Optional, Shaka handles it, but good for debugging)
-                            if(line.includes('.mpd')) {
-                                currentChannel.type = 'dash';
-                            }
+                            if(line.includes('.mpd')) currentChannel.type = 'dash';
                             channels.push(currentChannel);
                             currentChannel = { headers: {} }; 
                         }
@@ -267,13 +238,53 @@
             } catch (error) { console.error(error); return []; }
         }
 
+        async function loadChannelsData() {
+            try {
+                const response = await fetch("links.json");
+                if (!response.ok) throw new Error("Could not load links.json");
+                const data = await response.json();
+
+                // 1. Fetch External M3U Playlists
+                const playlistPromises = (data.playlists || []).map(url => 
+                    fetch(url).then(res => res.text()).catch(e => "")
+                );
+                const playlistTexts = await Promise.all(playlistPromises);
+                
+                let parsedM3UChannels = [];
+                playlistTexts.forEach(text => {
+                    parsedM3UChannels = [...parsedM3UChannels, ...parseM3U(text)];
+                });
+
+                // 2. Process Manual JSON Channels (With DRM Support)
+                let manualChannels = [];
+                if (data.manual_channels && Array.isArray(data.manual_channels)) {
+                    manualChannels = data.manual_channels.map(ch => ({
+                        id: ch.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
+                        name: ch.name,
+                        logo: ch.logo || "https://via.placeholder.com/200?text=Manual",
+                        group: ch.group || "General",
+                        streamUrl: ch.url,
+                        quality: "Live",
+                        headers: {},
+                        type: ch.url.includes('.mpd') ? 'dash' : 'hls',
+                        drm: ch.drm // DRM Info from JSON
+                    }));
+                }
+
+                // Merge All
+                return [...parsedM3UChannels, ...manualChannels];
+
+            } catch (err) {
+                console.error("Error loading channels:", err);
+                return [];
+            }
+        }
+
         function renderChannelBatch() {
             const gridContainer = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
             
-            if (displayedCount === 0) {
-                gridContainer.innerHTML = ''; 
-            }
+            if (displayedCount === 0) gridContainer.innerHTML = ''; 
             
             const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
             
@@ -283,8 +294,12 @@
                     const isLCP = displayedCount === 0 && index < 4;
                     const loadingType = isLCP ? "eager" : "lazy";
                     const fetchPriority = isLCP ? "high" : "auto";
-                    const badgeText = c.type === 'dash' ? 'MPD LIVE' : (c.quality || 'LIVE');
                     
+                    // Logic to display badge based on stream type
+                    let badgeText = c.quality || 'LIVE';
+                    if (c.drm) badgeText = 'DRM HD';
+                    else if (c.type === 'dash') badgeText = 'MPD LIVE';
+
                     return `
                     <a href="?id=${c.id}" class="channel-card group">
                         <div class="card-content">
@@ -313,6 +328,7 @@
             }
         }
 
+        // --- PLAYER LOGIC ---
         async function initPlayer() {
             const video = document.getElementById('video');
             if (!video['ui']) {
@@ -324,7 +340,6 @@
             const controls = ui.getControls();
             const player = controls.getPlayer();
             
-            // DOM ELEMENTS
             const overlay = document.getElementById('status-overlay');
             const connectSpinner = document.getElementById('connect-spinner');
             const videoWrapper = document.getElementById('video-wrapper');
@@ -336,7 +351,6 @@
                 if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
             });
 
-            // Buffering Event Listener
             player.addEventListener('buffering', (event) => {
                 if (event.buffering) {
                     connectSpinner.style.display = "flex";
@@ -350,8 +364,8 @@
             });
 
             try {
-                const m3uText = await window.m3uPromise; 
-                allChannels = await parseM3U(m3uText);
+                // 1. Load Data
+                allChannels = await loadChannelsData();
                 
                 const gridContainer = document.getElementById('channelGrid');
 
@@ -362,6 +376,7 @@
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found. Check links.json</p>`;
                 }
 
+                // 2. Select Channel
                 const ch = allChannels.find(c => c.id === channelId);
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
@@ -371,12 +386,10 @@
                     connectSpinner.style.display = "flex";
                     videoWrapper.classList.add("loading-state");
 
+                    // 3. Configure Proxy
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
                         const originalUrl = request.uris[0];
-                        
-                        // Proxy logic remains same for both m3u8 and mpd
-                        // Note: If MPD has relative segments, Shaka handles them against the manifest URL
                         let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(originalUrl)}`;
                         if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
                         if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
@@ -384,21 +397,27 @@
                         request.uris[0] = proxyUrl;
                     });
                     
-                    // --- UPDATED CONFIG FOR MPD/DASH ---
-                    player.configure({ 
+                    // 4. Configure Player (DRM + Streaming)
+                    let config = { 
                         streaming: { 
                             bufferingGoal: 15, 
                             rebufferingGoal: 2, 
                             retryParameters: { maxAttempts: 5, baseDelay: 1000 } 
                         },
-                        manifest: {
-                            dash: {
-                                // Helps with some MPD streams that have clock sync issues
-                                ignoreMinBufferTime: true
-                            }
-                        }
-                    });
+                        manifest: { dash: { ignoreMinBufferTime: true } }
+                    };
+
+                    if (ch.drm) {
+                        // Apply ClearKeys from JSON
+                        config.drm = ch.drm;
+                    } else {
+                        // Reset DRM if channel is free
+                        config.drm = { clearKeys: {} };
+                    }
+
+                    player.configure(config);
                     
+                    // 5. Load Stream
                     const hideSpinner = () => {
                         connectSpinner.style.display = "none";
                         videoWrapper.classList.remove("loading-state");
@@ -408,7 +427,6 @@
                     video.addEventListener('canplay', hideSpinner, { once: true });
                     video.addEventListener('playing', hideSpinner, { once: true });
 
-                    // Shaka automatically detects if it's .m3u8 or .mpd
                     await player.load(ch.streamUrl);
                     
                 } else {
