@@ -72,7 +72,7 @@
         .status-overlay.show { display: flex; }
 
         /* LOADING SPINNER OVERLAY */
-        .connect-spinner { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 40; pointer-events: none; }
+        .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; pointer-events: none; }
         
         /* Hide Shaka Controls when in Loading State */
         .loading-state .shaka-controls-container,
@@ -108,7 +108,7 @@
     <main class="w-full max-w-7xl px-4 py-8 z-10 flex-grow">
         <section class="mb-12">
             <div class="unified-player-container">
-                <div class="video-area" id="video-wrapper">
+                <div class="video-area loading-state" id="video-wrapper">
                     <div data-shaka-player-container>
                         <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
                     </div>
@@ -174,7 +174,7 @@
     </footer>
 
     <script>
-        // ... (Ad Manager code remains same) ...
+        // AD MANAGER
         const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
         const AD_COOLDOWN_MINUTES = 1; 
         
@@ -300,13 +300,27 @@
             // DOM ELEMENTS
             const overlay = document.getElementById('status-overlay');
             const connectSpinner = document.getElementById('connect-spinner');
-            const videoWrapper = document.getElementById('video-wrapper'); // Wrapper for CSS class toggling
+            const videoWrapper = document.getElementById('video-wrapper');
             
             const params = new URLSearchParams(window.location.search);
             const channelId = params.get('id'); 
 
             player.addEventListener('error', (e) => {
                 if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
+            });
+
+            // Buffering Event Listener to handle Spinner
+            player.addEventListener('buffering', (event) => {
+                if (event.buffering) {
+                    connectSpinner.style.display = "flex";
+                    videoWrapper.classList.add("loading-state");
+                } else {
+                    // Only hide if we are already playing, otherwise wait for 'canplay'
+                    if (!video.paused) {
+                        connectSpinner.style.display = "none";
+                        videoWrapper.classList.remove("loading-state");
+                    }
+                }
             });
 
             try {
@@ -328,11 +342,9 @@
                     document.getElementById('ch-name').innerText = ch.name;
                     document.getElementById('ch-quality').innerText = "Connecting...";
 
-                    // --- MODIFIED LOGIC START ---
-                    // Show Spinner & Hide Play Button via CSS Class
+                    // Ensure spinner is visible initially
                     connectSpinner.style.display = "flex";
                     videoWrapper.classList.add("loading-state");
-                    // --- MODIFIED LOGIC END ---
 
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
@@ -346,24 +358,37 @@
                     
                     player.configure({ streaming: { bufferingGoal: 10, rebufferingGoal: 2, retryParameters: { maxAttempts: 5, baseDelay: 1000 } } });
                     
+                    // --- UPDATED LOADING LOGIC ---
+                    
+                    const hideSpinner = () => {
+                        connectSpinner.style.display = "none";
+                        videoWrapper.classList.remove("loading-state");
+                        document.getElementById('ch-quality').innerText = "Live";
+                    };
+
+                    // Wait for 'canplay' or 'playing' event to hide spinner
+                    // This ensures video is ready to play immediately when spinner hides
+                    video.addEventListener('canplay', hideSpinner, { once: true });
+                    video.addEventListener('playing', hideSpinner, { once: true });
+
                     await player.load(ch.streamUrl);
                     
-                    // --- MODIFIED LOGIC START ---
-                    // Stream Loaded: Hide Spinner, Show Controls, Update Text
-                    document.getElementById('ch-quality').innerText = "Live";
-                    connectSpinner.style.display = "none";
-                    videoWrapper.classList.remove("loading-state");
-                    // --- MODIFIED LOGIC END ---
+                    // --- END UPDATED LOGIC ---
                     
                 } else {
+                    // Default State (No Channel Selected)
                     if(!channelId) {
                          document.getElementById('ch-name').innerText = "Select a Channel";
                          document.getElementById('ch-quality').innerText = "Ready";
-                    } else { showError("Channel Not Found"); }
+                         connectSpinner.style.display = "none";
+                         videoWrapper.classList.remove("loading-state");
+                    } else { 
+                        showError("Channel Not Found"); 
+                        connectSpinner.style.display = "none";
+                    }
                 }
             } catch (err) {
                 console.error("App Error:", err);
-                // Ensure spinner is gone if there's a fatal error so we see the error msg
                 connectSpinner.style.display = "none"; 
                 if(channelId) showError("Failed to Load Stream");
             }
