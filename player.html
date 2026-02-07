@@ -8,8 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.10/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.10/controls.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <script>
@@ -104,48 +104,62 @@
         // ==========================================
         const M3U_URL = "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u";
         
-        // 🔥🔥🔥 පහළ තියෙන LINK එක මකලා ඔයාගේ WORKER LINK එක දාන්න 🔥🔥🔥
-        const WORKER_BASE_URL = "https://rough-frog-286d.shehanmadhusith1999.workers.dev"; 
+        // ⚠️ පහත "YOUR_CLOUDFLARE_WORKER_LINK_HERE" වෙනුවට ඔයාගේ Worker Link එක දාන්න ⚠️
+        const WORKER_BASE_URL = "https://rough-frog-286d.shehanmadhusith1999.workers.dev/"; 
+        // උදාහරණය: const WORKER_BASE_URL = "https://sport-proxy.oyagenama.workers.dev";
         // ==========================================
 
         async function initApp() {
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) {
-                await initPlayer();
+                initPlayer();
             } else {
                 console.error('Browser not supported!');
             }
         }
 
+        // 1. M3U Parser (With Headers Extraction)
         async function parseM3U(url) {
             try {
-                const response = await fetch(url);
+                // Fetch via proxy to avoid CORS on M3U file itself (optional but safe)
+                const response = await fetch(url); 
                 const text = await response.text();
                 
                 const lines = text.split('\n');
                 const channels = [];
-                let currentChannel = { headers: {} };
+                let currentChannel = { headers: {} }; 
 
                 for (let line of lines) {
                     line = line.trim();
+
                     if (line.startsWith('#EXTINF:')) {
                         const logoMatch = line.match(/tvg-logo="([^"]*)"/);
                         const logo = logoMatch ? logoMatch[1] : "https://via.placeholder.com/200?text=Sports";
-                        const nameParts = line.split(',');
-                        const name = nameParts[nameParts.length - 1].trim();
+                        const parts = line.split(',');
+                        const name = parts[parts.length - 1].trim();
                         const id = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
                         currentChannel.id = id;
                         currentChannel.name = name;
                         currentChannel.logo = logo;
                         currentChannel.quality = "Live Stream";
+
                     } else if (line.startsWith('#EXTVLCOPT:http-referrer=')) {
                         currentChannel.headers['Referer'] = line.split('http-referrer=')[1].trim();
                     } else if (line.startsWith('#EXTVLCOPT:http-origin=')) {
                         currentChannel.headers['Origin'] = line.split('http-origin=')[1].trim();
+                    } else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
+                        currentChannel.headers['User-Agent'] = line.split('http-user-agent=')[1].trim();
                     } else if (line.startsWith('http')) {
                         if (currentChannel.name) {
                             currentChannel.streamUrl = line;
+                            
+                            // DEFAULT HEADERS IF MISSING (For CricHD)
+                            if(!currentChannel.headers['Referer']) {
+                                currentChannel.headers['Referer'] = "https://profamouslife.com/";
+                                currentChannel.headers['Origin'] = "https://profamouslife.com";
+                            }
+
                             channels.push(currentChannel);
                             currentChannel = { headers: {} }; 
                         }
@@ -168,9 +182,86 @@
             const channelId = params.get('id'); 
 
             player.addEventListener('error', (e) => {
-                console.error('Error Code:', e.detail.code);
+                if(e.detail.code != 7000) { 
+                    console.error('Error Code:', e.detail.code);
+                    showError("Stream Error: " + e.detail.code);
+                }
             });
 
             try {
-                // 1. Load Channels
-                const
+                const channels = await parseM3U(M3U_URL);
+                const gridContainer = document.getElementById('channelGrid');
+
+                if (channels.length > 0) {
+                    gridContainer.innerHTML = channels.map(c => `
+                        <a href="?id=${c.id}" class="channel-card cursor-pointer">
+                            <div class="card-content">
+                                <img src="${c.logo}" class="w-full aspect-square rounded-lg object-cover mb-3 bg-slate-800" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
+                                <p class="font-bold text-center text-sm text-gray-100 truncate">${c.name}</p>
+                                <span class="text-xs text-gray-400 mt-1">${c.quality}</span>
+                            </div>
+                        </a>
+                    `).join('');
+                } else {
+                    gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
+                }
+
+                const ch = channels.find(c => c.id === channelId);
+
+                if (ch) {
+                    document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
+                    document.getElementById('ch-name').innerText = ch.name;
+                    document.getElementById('ch-quality').innerText = "Connecting...";
+
+                    // ============================================================
+                    //  NETWORK FILTER: Routes EVERYTHING through the Worker
+                    // ============================================================
+                    player.getNetworkingEngine().registerRequestFilter(function(type, request) {
+                        if (request.uris[0].includes(WORKER_BASE_URL)) return;
+
+                        const originalUrl = request.uris[0];
+                        let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(originalUrl)}`;
+
+                        if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
+                        if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
+                        if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
+
+                        request.uris[0] = proxyUrl;
+                    });
+
+                    console.log("Loading Channel:", ch.name);
+                    
+                    player.configure({
+                        streaming: { 
+                            bufferingGoal: 10, 
+                            rebufferingGoal: 2, 
+                            retryParameters: { maxAttempts: 5, baseDelay: 1000 } 
+                        }
+                    });
+
+                    await player.load(ch.streamUrl);
+                    document.getElementById('ch-quality').innerText = "Live HD";
+                } else {
+                    if(!channelId) {
+                         document.getElementById('ch-name').innerText = "Select a Channel";
+                         document.getElementById('ch-quality').innerText = "Ready";
+                    } else {
+                        showError("Channel Not Found");
+                    }
+                }
+            } catch (err) {
+                console.error("App Error:", err);
+                if(channelId) showError("Failed to Load Stream");
+            }
+
+            function showError(msg) {
+                overlay.classList.add('show');
+                document.getElementById('error-msg').innerText = msg;
+            }
+        }
+
+        document.addEventListener('shaka-ui-loaded', initApp);
+        document.addEventListener('DOMContentLoaded', () => { if (!window.shaka) initApp(); });
+    </script>
+</body>
+</html>
