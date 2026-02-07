@@ -214,16 +214,40 @@
                     document.getElementById('ch-name').innerText = ch.name;
                     document.getElementById('ch-quality').innerText = ch.quality || "HD Stream";
 
-                    const videoUrl = ch.mpdUrl || ch.streamUrl;
+                    let finalVideoUrl = ch.mpdUrl || ch.streamUrl;
+                    
+                    // --- Worker Proxy Logic START ---
+                    // TODO: Replace this URL with your actual Cloudflare Worker URL
+                    const WORKER_BASE_URL = "https://proxy.hitwicket.online"; 
 
-                    if (videoUrl) {
+                    // Check if headers exist in JSON
+                    if (ch.httpHeaders && (ch.httpHeaders.Referer || ch.httpHeaders.Origin)) {
+                        const encodedUrl = encodeURIComponent(finalVideoUrl);
+                        let proxyUrl = `${WORKER_BASE_URL}/?url=${encodedUrl}`;
+
+                        if (ch.httpHeaders.Referer) {
+                            proxyUrl += `&referer=${encodeURIComponent(ch.httpHeaders.Referer)}`;
+                        }
+                        if (ch.httpHeaders.Origin) {
+                            proxyUrl += `&origin=${encodeURIComponent(ch.httpHeaders.Origin)}`;
+                        }
+                        if (ch.httpHeaders['User-Agent']) {
+                            proxyUrl += `&ua=${encodeURIComponent(ch.httpHeaders['User-Agent'])}`;
+                        }
+
+                        console.log("Proxy Enabled via Headers:", proxyUrl);
+                        finalVideoUrl = proxyUrl;
+                    }
+                    // --- Worker Proxy Logic END ---
+
+                    if (finalVideoUrl) {
                         if (ch.drm && ch.drm.clearKeys) {
                             player.configure({ drm: { clearKeys: ch.drm.clearKeys } });
                         } else {
                             player.configure({ drm: {} });
                         }
-                        console.log("Loading stream:", videoUrl);
-                        await player.load(videoUrl);
+                        console.log("Loading stream:", finalVideoUrl);
+                        await player.load(finalVideoUrl);
                     } else {
                         showError("No Stream Source Available");
                     }
