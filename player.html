@@ -336,7 +336,8 @@
                     m3uChannels = results.flat();
                 }
 
-                allChannels = [...manualChannels, ...m3uChannels];
+                // Filter out channels without links (streamUrl)
+                allChannels = [...manualChannels, ...m3uChannels].filter(c => c.streamUrl && c.streamUrl.trim() !== "");
                 // --- END NEW DATA FETCHING LOGIC ---
                 
                 const gridContainer = document.getElementById('channelGrid');
