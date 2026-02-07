@@ -8,8 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/controls.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.10/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.10/controls.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <script>
@@ -109,9 +109,8 @@
         // ==========================================
         const M3U_URL = "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u";
         
-        // පහළ "YOUR_CLOUDFLARE_WORKER_LINK_HERE" වෙනුවට ඔයාගේ Worker Link එක දාන්න
+        // 🔥🔥 මෙතන ඔයාගේ Worker URL එක දාන්න 🔥🔥
         const WORKER_BASE_URL = "https://rough-frog-286d.shehanmadhusith1999.workers.dev"; 
-        // උදාහරණය: const WORKER_BASE_URL = "https://sport-proxy.oyagenama.workers.dev";
         // ==========================================
 
         async function initApp() {
@@ -175,7 +174,7 @@
 
             player.addEventListener('error', (e) => {
                 console.error('Error Code:', e.detail.code);
-                showError("Stream Error: " + e.detail.code);
+                // 4032 often means forbidden, but since we are proxying, we try to ignore visual blocking
             });
 
             try {
@@ -200,52 +199,3 @@
 
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
-                    document.getElementById('ch-name').innerText = ch.name;
-                    document.getElementById('ch-quality').innerText = "Connecting...";
-
-                    let finalVideoUrl = ch.streamUrl;
-
-                    // Proxy Logic
-                    if (WORKER_BASE_URL && WORKER_BASE_URL !== "YOUR_CLOUDFLARE_WORKER_LINK_HERE" && (ch.headers.Referer || ch.headers.Origin)) {
-                        console.log("Using Proxy...");
-                        const encodedUrl = encodeURIComponent(ch.streamUrl);
-                        let proxyUrl = `${WORKER_BASE_URL}?url=${encodedUrl}`;
-
-                        if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
-                        if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
-                        
-                        finalVideoUrl = proxyUrl;
-                    }
-
-                    console.log("Playing:", finalVideoUrl);
-                    
-                    player.configure({
-                        streaming: { bufferingGoal: 15, rebufferingGoal: 5, retryParameters: { maxAttempts: 5, baseDelay: 1000 } }
-                    });
-
-                    await player.load(finalVideoUrl);
-                    document.getElementById('ch-quality').innerText = "Live HD";
-                } else {
-                    if(!channelId) {
-                         document.getElementById('ch-name').innerText = "Select a Channel";
-                         document.getElementById('ch-quality').innerText = "Ready";
-                    } else {
-                        showError("Channel Not Found");
-                    }
-                }
-            } catch (err) {
-                console.error("App Error:", err);
-                if(channelId) showError("Failed to Load Stream");
-            }
-
-            function showError(msg) {
-                overlay.classList.add('show');
-                document.getElementById('error-msg').innerText = msg;
-            }
-        }
-
-        document.addEventListener('shaka-ui-loaded', initApp);
-        document.addEventListener('DOMContentLoaded', () => { if (!window.shaka) initApp(); });
-    </script>
-</body>
-</html>
