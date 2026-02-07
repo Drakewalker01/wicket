@@ -31,11 +31,6 @@
         @keyframes blob { 0% { transform: translate(0,0) scale(1) } 100% { transform: translate(0,0) scale(1) } }
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        .shaka-overflow-menu, .shaka-settings-menu { background-color: rgba(11, 17, 32, 0.9) !important; backdrop-filter: blur(15px) !important; border: 1px solid rgba(0, 243, 255, 0.4) !important; border-radius: 12px !important; padding: 6px !important; }
-        .shaka-overflow-menu-button i, .shaka-settings-menu-button i, .shaka-back-to-overflow-button i, .material-icons-round { color: #00f3ff !important; }
-        .shaka-overflow-button-label { color: #00f3ff !important; font-weight: 700 !important; font-size: 15px !important; }
-        .shaka-current-selection-span { color: #ffffff !important; font-weight: 500 !important; font-size: 12px !important; }
-        .shaka-settings-menu button span { color: #ffffff !important; font-weight: 500 !important; }
         .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; overflow: hidden; display: flex; padding: 3px; transition: 0.3s all ease-in-out; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
         .channel-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); animation: rotate 3s linear infinite; z-index: 0; }
         .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
@@ -109,14 +104,14 @@
         // ==========================================
         const M3U_URL = "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u";
         
-        // 🔥🔥 මෙතන ඔයාගේ Worker URL එක දාන්න 🔥🔥
+        // 🔥🔥🔥 පහළ තියෙන LINK එක මකලා ඔයාගේ WORKER LINK එක දාන්න 🔥🔥🔥
         const WORKER_BASE_URL = "https://rough-frog-286d.shehanmadhusith1999.workers.dev"; 
         // ==========================================
 
         async function initApp() {
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) {
-                initPlayer();
+                await initPlayer();
             } else {
                 console.error('Browser not supported!');
             }
@@ -174,28 +169,8 @@
 
             player.addEventListener('error', (e) => {
                 console.error('Error Code:', e.detail.code);
-                // 4032 often means forbidden, but since we are proxying, we try to ignore visual blocking
             });
 
             try {
-                const channels = await parseM3U(M3U_URL);
-                const gridContainer = document.getElementById('channelGrid');
-
-                if (channels.length > 0) {
-                    gridContainer.innerHTML = channels.map(c => `
-                        <a href="?id=${c.id}" class="channel-card cursor-pointer">
-                            <div class="card-content">
-                                <img src="${c.logo}" class="w-full aspect-square rounded-lg object-cover mb-3 bg-slate-800" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
-                                <p class="font-bold text-center text-sm text-gray-100 truncate">${c.name}</p>
-                                <span class="text-xs text-gray-400 mt-1">${c.quality}</span>
-                            </div>
-                        </a>
-                    `).join('');
-                } else {
-                    gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
-                }
-
-                const ch = channels.find(c => c.id === channelId);
-
-                if (ch) {
-                    document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
+                // 1. Load Channels
+                const
