@@ -66,22 +66,25 @@
 
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
         .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+        
+        /* ERROR OVERLAY */
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
         .status-overlay.show { display: flex; }
 
-        /* Loading Spinner Overlay CSS */
-        .loading-overlay { 
-            position: absolute; inset: 0; background: rgba(0,0,0,0.8); 
-            display: none; justify-content: center; align-items: center; z-index: 40; 
-            backdrop-filter: blur(2px);
+        /* LOADING SPINNER OVERLAY */
+        .connect-spinner { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 40; pointer-events: none; }
+        
+        /* Hide Shaka Controls when in Loading State */
+        .loading-state .shaka-controls-container,
+        .loading-state .shaka-play-button-container,
+        .loading-state .shaka-scrim-container {
+            display: none !important;
+            opacity: 0 !important;
         }
 
         /* Skeleton Animation */
         .skeleton { background: #1f2937; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        
-        /* Hide big play button when spinner is active */
-        .shaka-play-button-container { z-index: 30 !important; }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -105,21 +108,21 @@
     <main class="w-full max-w-7xl px-4 py-8 z-10 flex-grow">
         <section class="mb-12">
             <div class="unified-player-container">
-                <div class="video-area">
+                <div class="video-area" id="video-wrapper">
                     <div data-shaka-player-container>
                         <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
                     </div>
 
-                    <div id="loading-spinner" class="loading-overlay">
-                        <div class="flex flex-col items-center">
-                            <div class="w-16 h-16 border-4 border-t-neonBlue border-r-transparent border-b-neonBlue border-l-transparent rounded-full animate-spin shadow-[0_0_20px_#00f3ff]"></div>
-                            <p class="mt-4 text-neonBlue font-bold tracking-widest text-sm uppercase animate-pulse">Connecting Live Stream...</p>
+                    <div id="connect-spinner" class="connect-spinner">
+                        <div class="text-center">
+                            <i class="fas fa-circle-notch fa-spin text-5xl text-neonBlue drop-shadow-[0_0_10px_#00f3ff]"></i>
+                            <p class="mt-4 text-neonBlue font-bold tracking-widest text-sm uppercase">Loading Stream...</p>
                         </div>
                     </div>
 
                     <div id="status-overlay" class="status-overlay">
                         <div class="text-center">
-                            <i class="fas fa-circle-notch fa-spin text-4xl text-neonBlue mb-3"></i>
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-3"></i>
                             <p class="text-xl font-bold" id="error-msg">Initializing Stream...</p>
                             <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-neonBlue/20 text-neonBlue rounded hover:bg-neonBlue/30 transition">Retry</button>
                         </div>
@@ -149,9 +152,13 @@
                         <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
                     </div>
                 </div>
-                <div class="channel-card opacity-50 pointer-events-none"><div class="card-content"><div class="w-full aspect-square mb-3 skeleton rounded-lg"></div><div class="h-4 w-3/4 skeleton rounded"></div><div class="mt-2 h-3 w-1/2 skeleton rounded"></div></div></div>
-                <div class="channel-card opacity-50 pointer-events-none"><div class="card-content"><div class="w-full aspect-square mb-3 skeleton rounded-lg"></div><div class="h-4 w-3/4 skeleton rounded"></div><div class="mt-2 h-3 w-1/2 skeleton rounded"></div></div></div>
-                <div class="channel-card opacity-50 pointer-events-none"><div class="card-content"><div class="w-full aspect-square mb-3 skeleton rounded-lg"></div><div class="h-4 w-3/4 skeleton rounded"></div><div class="mt-2 h-3 w-1/2 skeleton rounded"></div></div></div>
+                 <div class="channel-card opacity-50 pointer-events-none">
+                    <div class="card-content">
+                        <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
+                        <div class="h-4 w-3/4 skeleton rounded"></div>
+                        <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
+                    </div>
+                </div>
             </div>
             
             <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
@@ -289,23 +296,17 @@
             const ui = video['ui'];
             const controls = ui.getControls();
             const player = controls.getPlayer();
+            
+            // DOM ELEMENTS
             const overlay = document.getElementById('status-overlay');
-            const loadingSpinner = document.getElementById('loading-spinner'); // NEW SPINNER
+            const connectSpinner = document.getElementById('connect-spinner');
+            const videoWrapper = document.getElementById('video-wrapper'); // Wrapper for CSS class toggling
+            
             const params = new URLSearchParams(window.location.search);
             const channelId = params.get('id'); 
 
             player.addEventListener('error', (e) => {
-                loadingSpinner.style.display = 'none'; // Hide spinner on error
                 if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
-            });
-
-            // LOGIC FOR NEON SPINNER
-            player.addEventListener('buffering', (event) => {
-                if (event.buffering) {
-                    loadingSpinner.style.display = 'flex'; // Show spinner, covers play button
-                } else {
-                    loadingSpinner.style.display = 'none'; // Hide when playing
-                }
             });
 
             try {
@@ -327,6 +328,12 @@
                     document.getElementById('ch-name').innerText = ch.name;
                     document.getElementById('ch-quality').innerText = "Connecting...";
 
+                    // --- MODIFIED LOGIC START ---
+                    // Show Spinner & Hide Play Button via CSS Class
+                    connectSpinner.style.display = "flex";
+                    videoWrapper.classList.add("loading-state");
+                    // --- MODIFIED LOGIC END ---
+
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
                         const originalUrl = request.uris[0];
@@ -339,14 +346,15 @@
                     
                     player.configure({ streaming: { bufferingGoal: 10, rebufferingGoal: 2, retryParameters: { maxAttempts: 5, baseDelay: 1000 } } });
                     
-                    // Show spinner before load
-                    loadingSpinner.style.display = 'flex';
-                    
                     await player.load(ch.streamUrl);
                     
-                    // Note: buffering event will handle hiding it, but we can safety hide if needed
-                    // loadingSpinner.style.display = 'none'; 
+                    // --- MODIFIED LOGIC START ---
+                    // Stream Loaded: Hide Spinner, Show Controls, Update Text
                     document.getElementById('ch-quality').innerText = "Live";
+                    connectSpinner.style.display = "none";
+                    videoWrapper.classList.remove("loading-state");
+                    // --- MODIFIED LOGIC END ---
+                    
                 } else {
                     if(!channelId) {
                          document.getElementById('ch-name').innerText = "Select a Channel";
@@ -355,7 +363,8 @@
                 }
             } catch (err) {
                 console.error("App Error:", err);
-                loadingSpinner.style.display = 'none';
+                // Ensure spinner is gone if there's a fatal error so we see the error msg
+                connectSpinner.style.display = "none"; 
                 if(channelId) showError("Failed to Load Stream");
             }
 
