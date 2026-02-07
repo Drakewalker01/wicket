@@ -100,7 +100,14 @@
                 <div class="h-8 w-1 bg-neonBlue rounded-full shadow-[0_0_10px_#00f3ff]"></div>
                 <h2 class="text-2xl font-bold uppercase tracking-widest">More <span class="text-neonBlue">Channels</span></h2>
             </div>
+            
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6" id="channelGrid"></div>
+            
+            <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
+                <button id="loadMoreBtn" class="px-8 py-3 bg-neonBlue/10 border border-neonBlue text-neonBlue rounded-full hover:bg-neonBlue hover:text-black transition-all duration-300 font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]">
+                    Load More Channels
+                </button>
+            </div>
         </section>
     </main>
 
@@ -148,6 +155,11 @@
         const M3U_URL = "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u";
         const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
         
+        // Globals for Pagination
+        let allChannels = [];
+        let displayedCount = 0;
+        const CHANNELS_PER_PAGE = 8; // Number of cards to load at once
+
         async function initApp() {
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) {
@@ -206,6 +218,49 @@
             }
         }
 
+        function renderChannelBatch() {
+            const gridContainer = document.getElementById('channelGrid');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+            
+            // Get the next slice of channels
+            const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
+            
+            if (nextBatch.length > 0) {
+                // Generate HTML string for the batch
+                const batchHTML = nextBatch.map(c => {
+                    // Optimized Image URL via weserv.nl
+                    // Resize to 200px width, webp format
+                    const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp`;
+                    
+                    return `
+                    <a href="?id=${c.id}" class="channel-card group">
+                        <div class="card-content">
+                            <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
+                                <img src="${optimizedLogo}" onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                            </div>
+                            <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
+                            <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
+                                <i class="fas fa-circle text-[6px]"></i> ${c.quality || 'LIVE'}
+                            </div>
+                        </div>
+                    </a>
+                `}).join('');
+                
+                // Append to grid instead of replacing
+                gridContainer.insertAdjacentHTML('beforeend', batchHTML);
+                
+                // Update count
+                displayedCount += nextBatch.length;
+                
+                // Show/Hide Load More Button
+                if (displayedCount < allChannels.length) {
+                    loadMoreContainer.classList.remove('hidden');
+                } else {
+                    loadMoreContainer.classList.add('hidden');
+                }
+            }
+        }
+
         async function initPlayer() {
             const video = document.getElementById('video');
             const ui = video['ui'];
@@ -223,28 +278,22 @@
             });
 
             try {
-                const channels = await parseM3U(M3U_URL);
+                // Fetch and store all channels globally
+                allChannels = await parseM3U(M3U_URL);
                 const gridContainer = document.getElementById('channelGrid');
 
-                if (channels.length > 0) {
-                    gridContainer.innerHTML = channels.map(c => `
-                        <a href="?id=${c.id}" class="channel-card group">
-                            <div class="card-content">
-                                <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                                    <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
-                                </div>
-                                <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
-                                <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
-                                    <i class="fas fa-circle text-[6px]"></i> ${c.quality || 'LIVE'}
-                                </div>
-                            </div>
-                        </a>
-                    `).join('');
+                if (allChannels.length > 0) {
+                    // Initial Render (First 8)
+                    renderChannelBatch();
+                    
+                    // Setup Load More Button Listener
+                    document.getElementById('loadMoreBtn').addEventListener('click', renderChannelBatch);
                 } else {
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
                 }
 
-                const ch = channels.find(c => c.id === channelId);
+                // Logic to find current channel for player
+                const ch = allChannels.find(c => c.id === channelId);
 
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
