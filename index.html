@@ -19,10 +19,14 @@
     </script>
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
+        
+        /* Background Animations */
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
         @keyframes blob { 0% { transform: translate(0,0) scale(1) } 33% { transform: translate(30px,-50px) scale(1.1) } 100% { transform: translate(0,0) scale(1) } }
+        
+        /* Glassmorphism */
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         
         /* Slider */
@@ -32,24 +36,41 @@
         .nav-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); transition: 0.3s; z-index: 20; }
         .nav-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
 
-        /* Card Fast Running Effect */
-        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 3px; overflow: hidden; transition: 0.3s; cursor: pointer; }
+        /* Card Effects */
+        .channel-card { position: relative; background: #0c4a6e; border-radius: 1rem; padding: 2px; overflow: hidden; transition: 0.3s; cursor: pointer; }
         .channel-card::before, .channel-card::after { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
-            animation: rotate 3s linear infinite; 
+            animation: rotate 4s linear infinite; 
         }
-        .channel-card::after { filter: blur(20px); opacity: 0.7; }
+        .channel-card::after { filter: blur(20px); opacity: 0.5; }
+        .channel-card:hover::before, .channel-card:hover::after { animation-duration: 1.5s; opacity: 1; }
         
-        /* HOVER FAST SPEED */
-        .channel-card:hover::before, .channel-card:hover::after { animation-duration: 1.2s; }
-        
-        .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-        .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
+        .card-content { background: #111827; border-radius: 0.9rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 25px rgba(0, 243, 255, 0.3); }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        /* Fallback logo style */
         .channel-logo { object-fit: contain; background: transparent; }
+        
+        /* Load More Button */
+        .load-more-btn {
+            background: transparent;
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+        .load-more-btn:hover {
+            background: #00f3ff;
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -76,9 +97,7 @@
         <section class="relative w-full h-[250px] md:h-[500px] overflow-hidden rounded-3xl bg-slate-900 shadow-2xl">
             <div class="slider-blend-overlay"></div>
             <div id="imageSlider" class="relative w-full h-full"></div>
-            
-            <div id="sliderDots" class="absolute bottom-4 right-5 md:bottom-8 md:right-10 z-20 flex gap-2">
-            </div>
+            <div id="sliderDots" class="absolute bottom-4 right-5 md:bottom-8 md:right-10 z-20 flex gap-2"></div>
 
             <button onclick="changeSlide(-1)" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-left"></i></button>
             <button onclick="changeSlide(1)" class="nav-btn absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full hidden md:flex items-center justify-center text-white"><i class="fas fa-chevron-right"></i></button>
@@ -97,7 +116,14 @@
                 <i class="fas fa-circle-notch fa-spin text-4xl text-neonBlue"></i>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 hidden" id="channelGrid"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 hidden" id="channelGrid">
+                </div>
+
+            <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
+                <button onclick="loadMoreChannels()" class="load-more-btn">
+                    Load More <i class="fas fa-arrow-down ml-2"></i>
+                </button>
+            </div>
         </section>
     </main>
 
@@ -106,15 +132,18 @@
     </footer>
 
     <script>
-        // M3U URL
+        // --- CONFIGURATION ---
         const M3U_URL = 'https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u';
         const DEFAULT_LOGO = 'https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS';
+        const CHANNELS_PER_PAGE = 8; // Keep performance high
 
+        // --- STATE VARIABLES ---
+        let allChannels = [];
+        let displayedCount = 0;
         let slideIndex = 0;
         let slideTimer;
 
         async function init() {
-            // 1. Load Slider from data.json
             try {
                 const res = await fetch('data.json');
                 const data = await res.json();
@@ -122,18 +151,15 @@
             } catch (error) {
                 console.error("Error loading slider JSON:", error);
             }
-
-            // 2. Load Channels from M3U
             await fetchAndParseM3U();
         }
 
+        // --- SLIDER LOGIC ---
         function renderSlider(sliderData) {
             const slider = document.getElementById('imageSlider');
             const dotsContainer = document.getElementById('sliderDots');
-
             if (!sliderData) return;
 
-            // Generate Slides
             slider.innerHTML = sliderData.map((s, i) => `
                 <div class="slide ${i===0?'active':''}">
                     <img src="${s.image}" class="w-full h-full object-cover">
@@ -146,26 +172,59 @@
                 </div>
             `).join('');
 
-            // Generate Dots
             dotsContainer.innerHTML = sliderData.map((_, i) => `
                 <div onclick="jumpToSlide(${i})" 
                      class="h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i===0 ? 'w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]' : 'w-1.5 bg-white/40 hover:bg-white'}">
                 </div>
             `).join('');
-
             startTimer();
         }
 
+        function updateSliderUI() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.getElementById('sliderDots').children;
+            slides.forEach((s, i) => s.classList.toggle('active', i === slideIndex));
+            Array.from(dots).forEach((dot, i) => {
+                dot.className = i === slideIndex 
+                    ? 'h-1.5 rounded-full transition-all duration-300 cursor-pointer w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]' 
+                    : 'h-1.5 w-1.5 rounded-full transition-all duration-300 cursor-pointer bg-white/40 hover:bg-white';
+            });
+        }
+        function changeSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if(slides.length === 0) return;
+            slideIndex = (slideIndex + n + slides.length) % slides.length;
+            updateSliderUI();
+            resetTimer();
+        }
+        function jumpToSlide(n) { slideIndex = n; updateSliderUI(); resetTimer(); }
+        function startTimer() { slideTimer = setInterval(() => changeSlide(1), 5000); }
+        function resetTimer() { clearInterval(slideTimer); startTimer(); }
+
+
+        // --- CHANNEL LOGIC ---
         async function fetchAndParseM3U() {
+            const loader = document.getElementById('loader');
+            const grid = document.getElementById('channelGrid');
+            const countLabel = document.getElementById('channelCount');
+
             try {
                 const response = await fetch(M3U_URL);
                 const text = await response.text();
-                const channels = parseM3U(text);
                 
-                renderChannels(channels);
+                allChannels = parseM3U(text);
+                
+                // Set total count ONCE immediately
+                countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
+                
+                loader.classList.add('hidden');
+                grid.classList.remove('hidden');
+                
+                loadMoreChannels();
+
             } catch (error) {
                 console.error("Error fetching M3U:", error);
-                document.getElementById('loader').innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
+                loader.innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
             }
         }
 
@@ -178,19 +237,14 @@
                 let line = lines[i].trim();
                 
                 if (line.startsWith('#EXTINF:')) {
-                    // Extract Logo
                     const logoMatch = line.match(/tvg-logo="([^"]*)"/);
                     const logo = logoMatch ? logoMatch[1] : DEFAULT_LOGO;
                     
-                    // Extract Name
                     const nameParts = line.split(',');
                     const name = nameParts.length > 1 ? nameParts[nameParts.length - 1].trim() : 'Unknown Channel';
 
-                    // Extract ID (tvg-id) OR Generate slug from name
                     const idMatch = line.match(/tvg-id="([^"]*)"/);
                     let id = idMatch ? idMatch[1] : null;
-
-                    // If no tvg-id is present, create one from the name (e.g. "Star Sports 1" -> "starsports1")
                     if (!id || id.trim() === "") {
                         id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
                     }
@@ -205,69 +259,46 @@
             return channels;
         }
 
-        function renderChannels(channels) {
+        function loadMoreChannels() {
             const grid = document.getElementById('channelGrid');
-            const loader = document.getElementById('loader');
-            const countLabel = document.getElementById('channelCount');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
 
-            loader.classList.add('hidden');
-            grid.classList.remove('hidden');
-            countLabel.textContent = `${channels.length} CHANNELS LIVE`;
+            // Get next batch
+            const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
 
-            grid.innerHTML = channels.map((ch, index) => `
+            if (nextBatch.length === 0) {
+                loadMoreContainer.classList.add('hidden');
+                return;
+            }
+
+            const html = nextBatch.map(ch => `
                 <div onclick="playChannel('${ch.id}')" class="channel-card group">
                     <div class="card-content">
                         <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                            <img src="${ch.logo}" onerror="this.src='${DEFAULT_LOGO}'" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                            <img src="${ch.logo}" onerror="this.src='${DEFAULT_LOGO}'" loading="lazy" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
                         </div>
-                        <p class="text-center font-bold text-sm md:text-base leading-tight">${ch.name}</p>
+                        <p class="text-center font-bold text-sm md:text-base leading-tight line-clamp-2">${ch.name}</p>
                         <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
-                            <i class="fas fa-circle text-[6px]"></i> LIVE
+                            <i class="fas fa-circle text-[6px] animate-pulse"></i> LIVE
                         </div>
                     </div>
                 </div>
             `).join('');
+
+            grid.insertAdjacentHTML('beforeend', html);
+            displayedCount += nextBatch.length;
+
+            // Handle Button Visibility
+            if (displayedCount >= allChannels.length) {
+                loadMoreContainer.classList.add('hidden');
+            } else {
+                loadMoreContainer.classList.remove('hidden');
+            }
         }
 
         function playChannel(id) {
-            // New Link format: player.html?id=starsports1
             window.location.href = `player.html?id=${id}`;
         }
-
-        // --- Slider Logic ---
-        function updateSliderUI() {
-            const slides = document.querySelectorAll('.slide');
-            const dots = document.getElementById('sliderDots').children;
-            
-            slides.forEach((s, i) => {
-                s.classList.toggle('active', i === slideIndex);
-            });
-            
-            Array.from(dots).forEach((dot, i) => {
-                if(i === slideIndex) {
-                    dot.className = 'h-1.5 rounded-full transition-all duration-300 cursor-pointer w-6 bg-neonBlue shadow-[0_0_8px_#00f3ff]';
-                } else {
-                    dot.className = 'h-1.5 w-1.5 rounded-full transition-all duration-300 cursor-pointer bg-white/40 hover:bg-white';
-                }
-            });
-        }
-
-        function changeSlide(n) {
-            const slides = document.querySelectorAll('.slide');
-            if(slides.length === 0) return;
-            slideIndex = (slideIndex + n + slides.length) % slides.length;
-            updateSliderUI();
-            resetTimer();
-        }
-
-        function jumpToSlide(n) {
-            slideIndex = n;
-            updateSliderUI();
-            resetTimer();
-        }
-
-        function startTimer() { slideTimer = setInterval(() => changeSlide(1), 5000); }
-        function resetTimer() { clearInterval(slideTimer); startTimer(); }
 
         window.onload = init;
     </script>
