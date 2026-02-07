@@ -5,10 +5,7 @@
     "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u"
   ],
  "allowed_channels": [
-    "T Sports",
-    "Star Sports 1",
-    "Sony Ten 2 HD",
-    "Astro Cricket"
+   
   ],
   "manual_channels": [
     {
