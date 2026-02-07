@@ -191,7 +191,7 @@
                         currentChannel.id = id;
                         currentChannel.name = name;
                         currentChannel.logo = logo;
-                        currentChannel.quality = "Live Stream";
+                        currentChannel.quality = "Live";
 
                     } else if (line.startsWith('#EXTVLCOPT:http-referrer=')) {
                         currentChannel.headers['Referer'] = line.split('http-referrer=')[1].trim();
