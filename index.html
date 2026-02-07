@@ -3,10 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hit Wicket - Watch premium sports streaming live. Cricket, Football and more.">
     <title>HIT Wicket | Premium Sports Streaming</title>
+    
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://images.weserv.nl">
+    <link rel="preconnect" href="https://raw.githubusercontent.com">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" /></noscript>
+
     <script>
         tailwind.config = {
             theme: {
@@ -160,9 +172,10 @@
             const dotsContainer = document.getElementById('sliderDots');
             if (!sliderData) return;
 
+            // Updated: Added fetchpriority for first slide and alt attributes
             slider.innerHTML = sliderData.map((s, i) => `
                 <div class="slide ${i===0?'active':''}">
-                    <img src="${s.image}" class="w-full h-full object-cover">
+                    <img src="${s.image}" class="w-full h-full object-cover" alt="${s.title}" ${i===0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
                     <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
                     <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
                         <span class="px-3 py-1 text-[10px] font-bold bg-neonBlue text-black rounded mb-3 inline-block uppercase">${s.tag}</span>
@@ -260,16 +273,9 @@
 
         // --- NEW FUNCTION: Resize Images on the fly ---
         function getResizedImageUrl(originalUrl) {
-            // If there is no URL or it's the default placeholder, return the default
             if (!originalUrl || originalUrl === DEFAULT_LOGO) {
                 return DEFAULT_LOGO;
             }
-
-            // Use a free image resizing proxy (weserv.nl)
-            // w=150: Resize width to 150px (enough for the small circle)
-            // q=60: Set quality to 60% (good compression)
-            // output=webp: Convert to modern, small webp format
-            // url=: The original image URL encoded
             const encodedUrl = encodeURIComponent(originalUrl);
             return `https://images.weserv.nl/?url=${encodedUrl}&w=200&q=60&fit=contain&output=webp`;
         }
@@ -286,12 +292,12 @@
                 return;
             }
 
-            // UPDATED: Uses getResizedImageUrl() for the src attribute
+            // Updated: Added alt attribute for better accessibility/SEO
             const html = nextBatch.map(ch => `
                 <div onclick="playChannel('${ch.id}')" class="channel-card group">
                     <div class="card-content">
                         <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                            <img src="${getResizedImageUrl(ch.logo)}" onerror="this.src='${DEFAULT_LOGO}'" loading="lazy" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                            <img src="${getResizedImageUrl(ch.logo)}" onerror="this.src='${DEFAULT_LOGO}'" alt="${ch.name}" loading="lazy" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
                         </div>
                         <p class="text-center font-bold text-sm md:text-base leading-tight line-clamp-2">${ch.name}</p>
                         <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
