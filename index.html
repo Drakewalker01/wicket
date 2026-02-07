@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hit Wicket - Watch premium sports streaming live. Cricket, Football and more.">
-    <title>HIT Wicket | Premium Sports Streaming</title>
+    <meta name="robots" content="index, follow"> <title>HIT Wicket | Premium Sports Streaming</title>
     
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://images.weserv.nl">
-    <link rel="preconnect" href="https://raw.githubusercontent.com">
-
+    <link rel="preconnect" href="https://images.weserv.nl" crossorigin> <link rel="preconnect" href="https://raw.githubusercontent.com">
+    
+    <link rel="preconnect" href="https://s3.ap-southeast-1.amazonaws.com">
+    <link rel="preconnect" href="https://www.shutterstock.com">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" />
@@ -155,6 +157,21 @@
         let slideIndex = 0;
         let slideTimer;
 
+        // --- NEW IMAGE OPTIMIZER HELPER ---
+        // This function forces all images through the proxy to resize and convert to WebP
+        function optimizeImage(url, width = 800) {
+            if (!url) return DEFAULT_LOGO;
+            // If it's already a placeholder, don't optimize
+            if (url.includes('via.placeholder.com')) return url;
+            
+            const encoded = encodeURIComponent(url);
+            // w={width}: Resize to specific width
+            // q=75: Quality 75% (Balance between quality and size)
+            // output=webp: Convert to WebP (This fixes the "Modern Image Format" issue)
+            // il: Progressive load
+            return `https://images.weserv.nl/?url=${encoded}&w=${width}&q=75&output=webp&il`;
+        }
+
         async function init() {
             try {
                 const res = await fetch('data.json');
@@ -172,10 +189,14 @@
             const dotsContainer = document.getElementById('sliderDots');
             if (!sliderData) return;
 
-            // Updated: Added fetchpriority for first slide and alt attributes
             slider.innerHTML = sliderData.map((s, i) => `
                 <div class="slide ${i===0?'active':''}">
-                    <img src="${s.image}" class="w-full h-full object-cover" alt="${s.title}" ${i===0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
+                    <img 
+                        src="${optimizeImage(s.image, 1200)}" 
+                        class="w-full h-full object-cover" 
+                        alt="${s.title}" 
+                        ${i===0 ? 'fetchpriority="high"' : 'loading="lazy"'}
+                    >
                     <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
                     <div class="absolute bottom-8 left-6 md:bottom-16 md:left-12 z-10">
                         <span class="px-3 py-1 text-[10px] font-bold bg-neonBlue text-black rounded mb-3 inline-block uppercase">${s.tag}</span>
@@ -271,16 +292,6 @@
             return channels;
         }
 
-        // --- NEW FUNCTION: Resize Images on the fly ---
-        function getResizedImageUrl(originalUrl) {
-            if (!originalUrl || originalUrl === DEFAULT_LOGO) {
-                return DEFAULT_LOGO;
-            }
-            const encodedUrl = encodeURIComponent(originalUrl);
-            return `https://images.weserv.nl/?url=${encodedUrl}&w=200&q=60&fit=contain&output=webp`;
-        }
-
-
         function loadMoreChannels() {
             const grid = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
@@ -292,12 +303,17 @@
                 return;
             }
 
-            // Updated: Added alt attribute for better accessibility/SEO
             const html = nextBatch.map(ch => `
                 <div onclick="playChannel('${ch.id}')" class="channel-card group">
                     <div class="card-content">
                         <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                            <img src="${getResizedImageUrl(ch.logo)}" onerror="this.src='${DEFAULT_LOGO}'" alt="${ch.name}" loading="lazy" class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                            <img 
+                                src="${optimizeImage(ch.logo, 200)}" 
+                                onerror="this.src='${DEFAULT_LOGO}'" 
+                                alt="${ch.name}" 
+                                loading="lazy" 
+                                class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                            >
                         </div>
                         <p class="text-center font-bold text-sm md:text-base leading-tight line-clamp-2">${ch.name}</p>
                         <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
