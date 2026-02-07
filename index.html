@@ -8,10 +8,13 @@
     <title>HIT Wicket | Premium Sports Streaming</title>
     
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <link rel="preconnect" href="https://images.weserv.nl" crossorigin="anonymous"> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://images.weserv.nl" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://raw.githubusercontent.com">
-    
+
+    <link rel="preload" href="data.json" as="fetch" crossorigin>
+
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -32,7 +35,7 @@
     <style>
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
         
-        /* Optimized Animations (GPU Accelerated) */
+        /* GPU Accelerated Animations */
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; will-change: transform; animation: blob 10s infinite alternate; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
@@ -69,7 +72,6 @@
         }
         .load-more-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 30px rgba(0, 243, 255, 0.6); }
 
-        /* 2. ANIMATION FIX: Use Scale instead of Width for dots */
         .dot { transition: transform 0.3s ease; }
         .dot-active { background-color: #00f3ff; box-shadow: 0 0 8px #00f3ff; transform: scaleX(3); }
         .dot-inactive { background-color: rgba(255,255,255,0.4); transform: scaleX(1); }
@@ -77,7 +79,7 @@
 
     </style>
 </head>
-<body class="antialiased flex flex-col items-center">
+<body class="antialiased flex flex-col items-center min-h-screen">
     <div class="bg-gradient-orb orb-1"></div>
     <div class="bg-gradient-orb orb-2"></div>
 
@@ -97,7 +99,7 @@
         </div>
     </nav>
 
-    <main class="w-full max-w-7xl px-4 py-8 z-10 flex flex-col gap-12">
+    <main class="w-full max-w-7xl px-4 py-8 z-10 flex flex-col gap-12 flex-grow">
         <section class="relative w-full h-[250px] md:h-[500px] overflow-hidden rounded-3xl bg-slate-900 shadow-2xl">
             <div class="slider-blend-overlay"></div>
             <div id="imageSlider" class="relative w-full h-full"></div>
@@ -144,19 +146,17 @@
         let slideIndex = 0;
         let slideTimer;
 
-        // 3. RESPONSIVE IMAGE GENERATOR (SRCSet)
-        // Creates a set of links for different screen sizes (Mobile: 400px, Tablet: 800px, Desktop: 1200px)
+        // OPTIMIZED: Quality reduced to 60 for faster load
         function generateSrcSet(url) {
             if (!url || url.includes('placeholder')) return '';
             const encoded = encodeURIComponent(url);
-            const base = 'https://images.weserv.nl/?url=' + encoded + '&output=webp&il&q=75';
+            const base = 'https://images.weserv.nl/?url=' + encoded + '&output=webp&il&q=60';
             return `${base}&w=400 400w, ${base}&w=800 800w, ${base}&w=1200 1200w`;
         }
         
-        // Fallback for src attribute (default to medium size)
         function getOptimizedUrl(url, width = 800) {
             if (!url || url.includes('placeholder')) return url || DEFAULT_LOGO;
-            return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&il&q=75`;
+            return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&il&q=60`;
         }
 
         async function init() {
@@ -192,7 +192,6 @@
                 </div>
             `).join('');
 
-            // UPDATED: Dots use scale instead of width (Better performance)
             dotsContainer.innerHTML = sliderData.map((_, i) => `
                 <div onclick="jumpToSlide(${i})" 
                      class="dot h-1.5 w-1.5 rounded-full cursor-pointer ${i===0 ? 'dot-active' : 'dot-inactive'}">
@@ -206,7 +205,6 @@
             const dots = document.getElementById('sliderDots').children;
             slides.forEach((s, i) => s.classList.toggle('active', i === slideIndex));
             
-            // UPDATED: Dot toggle logic using new classes
             Array.from(dots).forEach((dot, i) => {
                 if (i === slideIndex) {
                     dot.classList.add('dot-active');
