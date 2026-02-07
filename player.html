@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Watch live cricket streaming on HIT Wicket. High quality sports channels available for free.">
+    
+    <meta name="robots" content="index, follow">
+    
     <title id="page-title">1 Stream Loading... | HIT Wicket</title>
     
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://images.weserv.nl">
-    <link rel="preconnect" href="https://autoupdate.hitwicket.online">
+    <link rel="preconnect" href="https://images.weserv.nl" crossorigin> 
+    <link rel="preconnect" href="https://autoupdate.hitwicket.online" crossorigin>
 
     <link rel="preload" href="links.json" as="fetch" crossorigin>
     
@@ -321,7 +324,6 @@
 
             try {
                 // --- OPTIMIZED DATA FETCHING LOGIC ---
-                // We use the promise started in <head> instead of starting a new fetch here
                 let data = null;
                 if(window.dataFetchPromise) {
                     data = await window.dataFetchPromise;
@@ -360,7 +362,6 @@
                 }
 
                 allChannels = [...manualChannels, ...m3uChannels].filter(c => c.streamUrl && c.streamUrl.trim() !== "");
-                // --- END OPTIMIZED LOGIC ---
                 
                 const gridContainer = document.getElementById('channelGrid');
 
