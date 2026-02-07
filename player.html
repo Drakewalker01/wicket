@@ -146,7 +146,7 @@
                         <div class="mt-2 h-3 w-1/2 skeleton rounded"></div>
                     </div>
                 </div>
-                <div class="channel-card opacity-50 pointer-events-none">
+                 <div class="channel-card opacity-50 pointer-events-none">
                     <div class="card-content">
                         <div class="w-full aspect-square mb-3 skeleton rounded-lg"></div>
                         <div class="h-4 w-3/4 skeleton rounded"></div>
@@ -203,10 +203,8 @@
             }
         }
 
-        // --- DATA LOADING LOGIC ---
-        function parseM3U(text) {
+        async function parseM3U(text) {
              try {
-                if(!text) return [];
                 const lines = text.split('\n');
                 const channels = [];
                 let currentChannel = { headers: {} }; 
@@ -228,63 +226,22 @@
                     } else if (line.startsWith('http')) {
                         if (currentChannel.name) {
                             currentChannel.streamUrl = line;
-                            if(line.includes('.mpd')) currentChannel.type = 'dash';
                             channels.push(currentChannel);
                             currentChannel = { headers: {} }; 
                         }
                     }
                 }
                 return channels;
-            } catch (error) { console.error(error); return []; }
-        }
-
-        async function loadChannelsData() {
-            try {
-                const response = await fetch("links.json");
-                if (!response.ok) throw new Error("Could not load links.json");
-                const data = await response.json();
-
-                // 1. Fetch External M3U Playlists
-                const playlistPromises = (data.playlists || []).map(url => 
-                    fetch(url).then(res => res.text()).catch(e => "")
-                );
-                const playlistTexts = await Promise.all(playlistPromises);
-                
-                let parsedM3UChannels = [];
-                playlistTexts.forEach(text => {
-                    parsedM3UChannels = [...parsedM3UChannels, ...parseM3U(text)];
-                });
-
-                // 2. Process Manual JSON Channels (With DRM Support)
-                let manualChannels = [];
-                if (data.manual_channels && Array.isArray(data.manual_channels)) {
-                    manualChannels = data.manual_channels.map(ch => ({
-                        id: ch.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
-                        name: ch.name,
-                        logo: ch.logo || "https://via.placeholder.com/200?text=Manual",
-                        group: ch.group || "General",
-                        streamUrl: ch.url,
-                        quality: "Live",
-                        headers: {},
-                        type: ch.url.includes('.mpd') ? 'dash' : 'hls',
-                        drm: ch.drm // DRM Info from JSON
-                    }));
-                }
-
-                // Merge All
-                return [...parsedM3UChannels, ...manualChannels];
-
-            } catch (err) {
-                console.error("Error loading channels:", err);
-                return [];
-            }
+            } catch (error) { return []; }
         }
 
         function renderChannelBatch() {
             const gridContainer = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
             
-            if (displayedCount === 0) gridContainer.innerHTML = ''; 
+            if (displayedCount === 0) {
+                gridContainer.innerHTML = ''; 
+            }
             
             const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
             
@@ -295,11 +252,6 @@
                     const loadingType = isLCP ? "eager" : "lazy";
                     const fetchPriority = isLCP ? "high" : "auto";
                     
-                    // Logic to display badge based on stream type
-                    let badgeText = c.quality || 'LIVE';
-                    if (c.drm) badgeText = 'DRM HD';
-                    else if (c.type === 'dash') badgeText = 'MPD LIVE';
-
                     return `
                     <a href="?id=${c.id}" class="channel-card group">
                         <div class="card-content">
@@ -314,7 +266,7 @@
                             </div>
                             <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
                             <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
-                                <i class="fas fa-circle text-[6px]"></i> ${badgeText}
+                                <i class="fas fa-circle text-[6px]"></i> ${c.quality || 'LIVE'}
                             </div>
                         </div>
                     </a>
@@ -328,7 +280,6 @@
             }
         }
 
-        // --- PLAYER LOGIC ---
         async function initPlayer() {
             const video = document.getElementById('video');
             if (!video['ui']) {
@@ -340,6 +291,7 @@
             const controls = ui.getControls();
             const player = controls.getPlayer();
             
+            // DOM ELEMENTS
             const overlay = document.getElementById('status-overlay');
             const connectSpinner = document.getElementById('connect-spinner');
             const videoWrapper = document.getElementById('video-wrapper');
@@ -351,6 +303,7 @@
                 if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
             });
 
+            // Buffering Event Listener to handle Spinner
             player.addEventListener('buffering', (event) => {
                 if (event.buffering) {
                     connectSpinner.style.display = "flex";
@@ -364,8 +317,44 @@
             });
 
             try {
-                // 1. Load Data
-                allChannels = await loadChannelsData();
+                // --- NEW DATA FETCHING LOGIC ---
+                const response = await fetch('links.json');
+                const data = await response.json();
+                
+                // 1. Process Manual Channels from JSON
+                let manualChannels = [];
+                if (data.manual_channels) {
+                    manualChannels = data.manual_channels.map(c => ({
+                        id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
+                        name: c.name,
+                        logo: c.logo,
+                        quality: "HD", // Default
+                        streamUrl: c.url,
+                        headers: {}, 
+                        drm: c.drm // Include DRM info
+                    }));
+                }
+
+                // 2. Fetch and Parse all M3U Playlists
+                let m3uChannels = [];
+                if (data.playlists) {
+                    const promises = data.playlists.map(async (url) => {
+                        try {
+                            const res = await fetch(url);
+                            const text = await res.text();
+                            return await parseM3U(text);
+                        } catch (e) {
+                            console.error("Failed to load M3U:", url, e);
+                            return [];
+                        }
+                    });
+                    const results = await Promise.all(promises);
+                    m3uChannels = results.flat();
+                }
+
+                // Merge all channels
+                allChannels = [...manualChannels, ...m3uChannels];
+                // --- END NEW DATA FETCHING LOGIC ---
                 
                 const gridContainer = document.getElementById('channelGrid');
 
@@ -373,10 +362,9 @@
                     renderChannelBatch();
                     document.getElementById('loadMoreBtn').addEventListener('click', renderChannelBatch);
                 } else {
-                    gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found. Check links.json</p>`;
+                    gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
                 }
 
-                // 2. Select Channel
                 const ch = allChannels.find(c => c.id === channelId);
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
@@ -386,7 +374,7 @@
                     connectSpinner.style.display = "flex";
                     videoWrapper.classList.add("loading-state");
 
-                    // 3. Configure Proxy
+                    // Configure Network Filters (Proxy)
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
                         const originalUrl = request.uris[0];
@@ -397,27 +385,20 @@
                         request.uris[0] = proxyUrl;
                     });
                     
-                    // 4. Configure Player (DRM + Streaming)
-                    let config = { 
-                        streaming: { 
-                            bufferingGoal: 15, 
-                            rebufferingGoal: 2, 
-                            retryParameters: { maxAttempts: 5, baseDelay: 1000 } 
-                        },
-                        manifest: { dash: { ignoreMinBufferTime: true } }
-                    };
-
+                    // --- DRM CONFIGURATION LOGIC ---
                     if (ch.drm) {
-                        // Apply ClearKeys from JSON
-                        config.drm = ch.drm;
+                        player.configure({
+                            drm: ch.drm
+                        });
                     } else {
-                        // Reset DRM if channel is free
-                        config.drm = { clearKeys: {} };
+                        // Reset DRM to avoid issues with non-DRM streams after a DRM stream
+                        player.configure({
+                            drm: { clearKeys: {} }
+                        });
                     }
-
-                    player.configure(config);
                     
-                    // 5. Load Stream
+                    player.configure({ streaming: { bufferingGoal: 10, rebufferingGoal: 2, retryParameters: { maxAttempts: 5, baseDelay: 1000 } } });
+                    
                     const hideSpinner = () => {
                         connectSpinner.style.display = "none";
                         videoWrapper.classList.remove("loading-state");
@@ -430,6 +411,7 @@
                     await player.load(ch.streamUrl);
                     
                 } else {
+                    // Default State (No Channel Selected)
                     if(!channelId) {
                          document.getElementById('ch-name').innerText = "Select a Channel";
                          document.getElementById('ch-quality').innerText = "Ready";
