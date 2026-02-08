@@ -23,13 +23,13 @@
             .catch(err => { console.error("Early fetch failed", err); return null; });
     </script>
     <script>
-    // සෑම විනාඩි 10කට වරක්ම වෙනස් වන අංකයක් සාදා ගනී (Smart Cache)
+    // (Smart Cache)
     const getCacheBuster = () => Math.floor(Date.now() / (10 * 60 * 1000));
     
     window.dataFetchPromise = fetch('links.json?v=' + getCacheBuster())
         .then(response => response.json())
         .catch(err => { console.error("Early fetch failed", err); return null; });
-        // සෑම විනාඩි 15කට වරක්ම මුළු පේජ් එකම refresh කර අලුත් links ලබා ගනී
+        // 
 setTimeout(() => {
     location.reload();
 }, 15 * 60 * 1000);
@@ -44,7 +44,7 @@ setTimeout(() => {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* --- CSS VARIABLES (Tailwind Config එක වෙනුවට) --- */
+        /* --- CSS VARIABLES (Tailwind Config ) --- */
         :root {
             --neonBlue: #00f3ff;
             --neonPurple: #bc13fe;
@@ -272,7 +272,7 @@ setTimeout(() => {
                 const batchHTML = nextBatch.map((c, index) => {
     const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&h=200&fit=contain&output=webp`;
     
-    // මුල්ම චැනල් 4 image එකට priority එක දෙනවා (LCP Speed)
+    //  (LCP Speed)
     const isPriority = (displayedCount === 0 && index < 4);
     const loadingAttr = isPriority ? "eager" : "lazy";
     const priorityAttr = isPriority ? "high" : "auto";
@@ -371,7 +371,7 @@ let m3uChannels = [];
 if (data && data.playlists) {
     const promises = data.playlists.map(async (url) => {
         try {
-            // Playlist URL එකට cache buster එක එකතු කිරීම
+            // Playlist URL
             const finalM3uUrl = url + (url.includes('?') ? '&' : '?') + 'update=' + cacheBuster;
             
             const res = await fetch(finalM3uUrl);
