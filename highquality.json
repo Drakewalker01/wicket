@@ -16,12 +16,12 @@
     {
       "id": "willow-hd-new",
       "name": "Willow HD",
-      "logo": "https://play-lh.googleusercontent.com/fmz6L0mlFDCRRudZ01RUk_DOLF6ITxEyRYysb2DRDp-mhle4cnsyi5QGF00tSNjPR_B2",
+      "logo": "https://a122aivottlinear-a.akamaihd.net/OTTB/iad-nitro/live/clients/dash/enc/81voamn3cf/out/v1/aa29590b17dc455e8cf570f6655c7d11/cenc.mpd",
       "mpdUrl": "",
       "quality": "1080p HQ",
       "drm": {
         "clearKeys": {
-          "1779c27b9d077a3ba0c9cc1bb9a94b9f": "cc5cf3b7928fb9e0a1ee6a8b566f0a8e"
+          "3f1d41c4a51639460c9d4eac1cad8e07": "ab0cf870f856067a3ebcea54ca3791b2"
         }
       }
     },
