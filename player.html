@@ -194,7 +194,7 @@
                 localStorage.setItem('ad_last_shown_time', now.toString());
             }
         }
-        manageAds();
+        setTimeout(manageAds, 3000);
 
         // PLAYER CONFIG
         const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
