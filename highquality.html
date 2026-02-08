@@ -13,6 +13,8 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mux.js/6.3.0/mux.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js"></script>
 
     <script>
@@ -195,45 +197,58 @@
             const controls = ui.getControls();
             const player = controls.getPlayer();
 
-            const params = new URLSearchParams(window.location.search);
-            const channelId = params.get('id'); 
-
+            // Handle Errors
             player.addEventListener('error', (e) => {
                 console.error('Shaka Error:', e.detail);
-                showStatus("Stream Error (Check Console)", true);
+                showStatus("Stream Error (Check Console for CORS/Network issues)", true);
             });
 
+            // GET Channel ID from URL
+            const params = new URLSearchParams(window.location.search);
+            // Default to 'tsports' if no ID provided for easy testing
+            const channelId = params.get('id') || 'tsports'; 
+
             try {
-                // 1. Fetch Data
-                // 
-                const res = await fetch('highquality.json');
-                const data = await res.json();
+                // ---------------------------------------------------------
+                // 1. DATA SOURCE (HARDCODED FOR TESTING)
+                // ---------------------------------------------------------
+                // Instead of fetching JSON, I put your link here directly.
+                const data = {
+                    channels: [
+                        {
+                            id: "tsports",
+                            name: "T Sports HD",
+                            logo: "https://via.placeholder.com/150/000000/FFFFFF/?text=TSports",
+                            streamUrl: "https://aynaott.unosottor.workers.dev/bpk-tv/tsportshd.m3u8",
+                            quality: "FHD"
+                        },
+                        {
+                            id: "dummy1",
+                            name: "Test Channel 2",
+                            logo: "https://via.placeholder.com/150",
+                            streamUrl: "",
+                            quality: "SD"
+                        }
+                    ]
+                };
 
                 // 2. RENDER GRID
-                const activeChannels = data.channels.filter(c => 
-                    (c.mpdUrl && c.mpdUrl.trim() !== "") || 
-                    (c.streamUrl && c.streamUrl.trim() !== "")
-                );
-
+                const activeChannels = data.channels;
                 const gridContainer = document.getElementById('channelGrid');
 
                 if (activeChannels.length > 0) {
-                    // .join('') is very important here!
                     gridContainer.innerHTML = activeChannels.map(c => `
                         <a href="?id=${c.id}" class="channel-card cursor-pointer group no-underline">
                             <div class="card-content">
                                 <div class="w-full aspect-square rounded-lg mb-3 bg-slate-800 overflow-hidden relative">
                                     <img src="${c.logo}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
-                                         onerror="this.style.display='none';">
+                                         onerror="this.src='https://via.placeholder.com/150'">
                                 </div>
                                 <p class="font-bold text-center text-sm text-gray-100 truncate w-full">${c.name}</p>
                                 <span class="text-[10px] uppercase tracking-wider text-neonBlue mt-1 bg-neonBlue/10 px-2 py-0.5 rounded">${c.quality || 'LIVE'}</span>
                             </div>
                         </a>
                     `).join(''); 
-                } else {
-                    // --- CHANGED THIS SECTION AS REQUESTED ---
-                    gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center py-10 text-lg">No high quality channels available at the moment.</p>`;
                 }
 
                 // 3. Play Video
@@ -255,21 +270,24 @@
                     }
 
                     console.log("Loading:", videoUrl);
-                    await player.load(videoUrl);
-                } else {
-                    // No Channel Selected (Homepage Mode)
-                    if(!channelId) {
-                         showStatus("Select a Channel from below", false);
-                         statusIcon.className = "fas fa-arrow-down text-4xl text-neonBlue mb-3 animate-bounce";
+
+                    // ---------------------------------------------------------
+                    // FIX FOR .m3u8 (HLS)
+                    // ---------------------------------------------------------
+                    if (videoUrl.includes('.m3u8')) {
+                        // Force HLS mime type
+                        await player.load(videoUrl, null, 'application/x-mpegurl');
                     } else {
-                        showStatus("Channel Not Found", true);
+                        await player.load(videoUrl);
                     }
+                    
+                } else {
+                    showStatus("Channel Not Found", true);
                 }
 
             } catch (err) {
                 console.error("App Error:", err);
-                // JSON Fetch Failed
-                showStatus("Error Loading Data. Use Live Server!", true);
+                showStatus("Error Loading Data.", true);
             }
 
             function showStatus(msg, isError) {
@@ -283,10 +301,9 @@
         }
 
         document.addEventListener('shaka-ui-loaded', initApp);
-        // Fallback incase UI event missed
         window.addEventListener('load', () => {
              if(window.shaka && !document.getElementById('channelGrid').hasChildNodes()) {
-                 // initApp(); // Optional redundancy
+                 // initApp(); 
              }
         });
     </script>
