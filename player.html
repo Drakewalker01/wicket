@@ -458,7 +458,7 @@
                         });
                     }
                     
-                    player.configure({ streaming: { bufferingGoal: 10, rebufferingGoal: 2, retryParameters: { maxAttempts: 5, baseDelay: 1000 } } });
+                    player.configure({ streaming: { bufferingGoal: 5, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 },lowLatencyMode: true} });
                     
                     const hideSpinner = () => {
                         connectSpinner.style.display = "none";
