@@ -4,80 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Watch live cricket streaming on HIT Wicket. High quality sports channels available for free.">
+    
     <meta name="robots" content="index, follow">
     
-    <title id="page-title">HIT Wicket | High Quality Sports Streaming</title>
-    
+    <title id="page-title">Stream Loading... | HIT Wicket</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2300f3ff'/></svg>">
     
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://images.weserv.nl" crossorigin> 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://images.weserv.nl" crossorigin> 
+    <link rel="preconnect" href="https://autoupdate.hitwicket.online" crossorigin>
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="preload" href="links.json" as="fetch" crossorigin>
+    
+    <script>
+        window.dataFetchPromise = fetch('links.json')
+            .then(response => response.json())
+            .catch(err => { console.error("Early fetch failed", err); return null; });
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css"></noscript>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
-    <style>
-        :root { --neonBlue: #00f3ff; --neonPurple: #bc13fe; --darkBg: #0b1120; }
-        body { background-color: var(--darkBg); color: #ffffff; min-height: 100vh; overflow-x: hidden; font-family: 'Rajdhani', sans-serif; }
-        
-        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.2; pointer-events: none; }
-        .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--neonBlue); }
-        .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: var(--neonPurple); }
-
-        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.1); border: 1px solid rgba(255,255,255,0.05); position: relative; }
-
-        .channel-card { 
-            position: relative; background: #0c4a6e; border-radius: 1rem; padding: 2px; overflow: hidden; 
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .channel-card::before { 
-            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
-            background: conic-gradient(transparent, transparent, var(--neonBlue), #fff); 
-            animation: rotate 2s linear infinite; opacity: 0; transition: opacity 0.3s;
-        }
-        .channel-card:hover::before { opacity: 1; }
-        .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 25px rgba(0, 243, 255, 0.3); }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .card-content { background: #111827; border-radius: 0.9rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; }
-        .video-area { position: relative; padding-bottom: 56.25%; background: #000; }
-        .video-area video { position: absolute; inset: 0; width: 100%; height: 100%; }
-        
-        .status-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 50; }
-        .status-overlay.show { display: flex; }
-        .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 
     <script>
-        // API Configuration
-        const WORKER_API_URL = "https://fetchchannels.hitwicket.online"; 
-        const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
-        const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
-
-        // Early Data Fetch
-        window.dataFetchPromise = fetch(WORKER_API_URL).then(r => r.json()).catch(() => null);
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Rajdhani', 'sans-serif'] },
+                    colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' },
+                    animation: { 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+                }
+            }
+        }
     </script>
-</head>
 
+   <style>
+    body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; font-display: swap; }
+    
+    .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.3; will-change: transform; transform: translateZ(0); }
+    .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
+    .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; }
+
+    .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
+
+    /* --- FIXED & OPTIMIZED CHANNEL CARD --- */
+    .channel-card { 
+        position: relative; 
+        background: #0c4a6e; 
+        border-radius: 1rem; 
+        padding: 3px; 
+        overflow: hidden; 
+        cursor: pointer; 
+        display: block; 
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        transform: translateZ(0); 
+        backface-visibility: hidden;
+    }
+
+    /* Animation එක කලින්ම සෙට් කරලා, පෝස් (Paused) කරලා තියෙන්නේ */
+    .channel-card::before, 
+    .channel-card::after { 
+        content: ""; 
+        position: absolute; 
+        top: -50%; 
+        left: -50%; 
+        width: 200%; 
+        height: 200%; 
+        background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
+        
+        /* Animation Configuration */
+        animation: rotate 1.5s linear infinite; 
+        animation-play-state: paused; /* මුලින් නවත්තලයි තියෙන්නේ */
+        
+        opacity: 0; 
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+        transform: translateZ(0);
+    }
+
+    .channel-card::after { filter: blur(20px); }
+
+    /* Hover කළ විට පමණක් Play වීම ආරම්භ වේ */
+    .channel-card:hover::before, 
+    .channel-card:hover::after { 
+        animation-play-state: running; /* දැන් ප්ලේ වෙනවා */
+        opacity: 1; 
+        visibility: visible;
+    }
+
+    .channel-card:hover::after { opacity: 0.7; }
+
+    .channel-card:hover { 
+        transform: translateY(-5px) translateZ(0); 
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); 
+    }
+
+    @keyframes rotate { 
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); } 
+    }
+
+    .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+    .channel-logo { object-fit: contain; background: transparent; transition: transform 0.3s ease; }
+    .channel-card:hover .channel-logo { transform: scale(1.1); }
+
+    .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
+    .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+    .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
+    .status-overlay.show { display: flex; }
+    .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; pointer-events: none; }
+    .skeleton { background: #1f2937; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+</style>
+</head>
 <body class="antialiased flex flex-col items-center">
+
     <div class="bg-gradient-orb orb-1"></div>
     <div class="bg-gradient-orb orb-2"></div>
 
     <nav class="w-full glass-panel sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-2">
-                <i class="fas fa-cricket text-2xl text-blue-400"></i>
-                <h1 class="text-2xl font-bold uppercase italic tracking-tighter">Hit<span class="text-blue-400">Wicket</span></h1>
+                <i class="fas fa-cricket text-3xl text-neonBlue"></i>
+                <h1 class="text-3xl font-bold uppercase italic tracking-wider">Hit<span class="text-neonBlue">Wicket</span></h1>
             </a>
-            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30">
-                <span class="relative flex h-2 w-2"><span class="animate-ping absolute h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative h-2 w-2 bg-red-600 rounded-full"></span></span>
+            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50">
+                <span class="relative flex h-3 w-3"><span class="animate-ping absolute h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative h-3 w-3 bg-red-600 rounded-full"></span></span>
                 <span class="text-xs font-bold text-red-400">LIVE NOW</span>
             </div>
         </div>
@@ -86,156 +150,343 @@
     <main class="w-full max-w-7xl px-4 py-8 z-10 flex-grow">
         <section class="mb-12">
             <div class="unified-player-container">
-                <div class="video-area" id="video-wrapper">
+                <div class="video-area loading-state" id="video-wrapper">
                     <div data-shaka-player-container>
-                        <video data-shaka-player id="video" autoplay></video>
+                        <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
                     </div>
 
                     <div id="connect-spinner" class="connect-spinner">
                         <div class="text-center">
-                            <i class="fas fa-circle-notch fa-spin text-5xl text-blue-400"></i>
-                            <p class="mt-4 text-blue-400 font-bold tracking-widest text-xs uppercase">Connecting Stream...</p>
+                            <i class="fas fa-circle-notch fa-spin text-5xl text-neonBlue drop-shadow-[0_0_10px_#00f3ff]"></i>
+                            <p class="mt-4 text-neonBlue font-bold tracking-widest text-sm uppercase">Loading Stream...</p>
                         </div>
                     </div>
 
                     <div id="status-overlay" class="status-overlay">
                         <div class="text-center">
-                            <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-3"></i>
-                            <p class="text-lg font-bold" id="error-msg">Error Loading Stream</p>
-                            <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30 hover:bg-blue-500/40 transition">Retry</button>
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-3"></i>
+                            <p class="text-xl font-bold" id="error-msg">Initializing Stream...</p>
+                            <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-neonBlue/20 text-neonBlue rounded hover:bg-neonBlue/30 transition">Retry</button>
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-900/95 p-5 flex justify-between items-center border-t border-white/5">
+                <div class="bg-slate-900/95 backdrop-blur-xl border-t border-white/10 p-4 flex justify-between items-center">
                     <div>
-                        <h2 class="text-xl font-bold text-white" id="ch-name">Select a Channel</h2>
-                        <span class="text-xs font-medium text-gray-500 uppercase tracking-widest" id="ch-quality">Ready to play</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-white" id="ch-name">Selected a Channel</h2>
+                        <span class="text-xs font-medium text-gray-400 uppercase" id="ch-quality">Waiting...</span>
                     </div>
-                    <div class="px-4 py-1.5 bg-blue-500 text-black rounded-md text-xs font-black">LIVE HD</div>
+                    <div class="px-4 py-2 bg-neonBlue text-black rounded-lg text-xs font-black shadow-[0_0_15px_#00f3ff]">LIVE HD</div>
                 </div>
             </div>
         </section>
 
         <section>
-            <div class="flex items-center gap-3 mb-8">
-                <div class="h-6 w-1 bg-blue-400 rounded-full"></div>
-                <h2 class="text-xl font-bold uppercase tracking-widest">Available <span class="text-blue-400">Channels</span></h2>
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-8 w-1 bg-neonBlue rounded-full shadow-[0_0_10px_#00f3ff]"></div>
+                <h2 class="text-2xl font-bold uppercase tracking-widest">More <span class="text-neonBlue">Channels</span></h2>
             </div>
             
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6" id="channelGrid">
-                <div class="animate-pulse bg-gray-800/50 h-48 rounded-2xl"></div>
-                <div class="animate-pulse bg-gray-800/50 h-48 rounded-2xl"></div>
-                <div class="animate-pulse bg-gray-800/50 h-48 rounded-2xl"></div>
-                <div class="animate-pulse bg-gray-800/50 h-48 rounded-2xl"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 min-h-[400px]" id="channelGrid">
+                <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-3 bg-gray-800 rounded-lg animate-pulse"></div><div class="h-4 bg-gray-800 rounded w-3/4 mx-auto animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-3 bg-gray-800 rounded-lg animate-pulse"></div><div class="h-4 bg-gray-800 rounded w-3/4 mx-auto animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-3 bg-gray-800 rounded-lg animate-pulse"></div><div class="h-4 bg-gray-800 rounded w-3/4 mx-auto animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-3 bg-gray-800 rounded-lg animate-pulse"></div><div class="h-4 bg-gray-800 rounded w-3/4 mx-auto animate-pulse"></div></div></div>
             </div>
             
             <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
-                <button id="loadMoreBtn" class="px-10 py-3 bg-blue-500/10 border border-blue-500/50 text-blue-400 rounded-full hover:bg-blue-400 hover:text-black transition-all font-bold uppercase tracking-widest text-xs">
-                    Load More
+                <button id="loadMoreBtn" class="px-8 py-3 bg-neonBlue/10 border border-neonBlue text-neonBlue rounded-full hover:bg-neonBlue hover:text-black transition-all duration-300 font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]">
+                    Load More Channels
                 </button>
             </div>
         </section>
     </main>
 
-    <footer class="w-full py-8 border-t border-gray-800/50 text-center text-gray-600 text-xs">
-        © 2026 HITWicket Sports Network. Optimized for performance.
+    <footer class="w-full py-10 border-t border-gray-800 bg-slate-900/50 backdrop-blur-md mt-20 text-center text-gray-500 text-sm">
+        © 2026 HITWicket Sports Network.
     </footer>
 
     <script>
-        let allChannels = [];
-        let displayedCount = 0;
-        const CHANNELS_PER_PAGE = 8;
-
-        // Ad Manager with Delay
+        // AD MANAGER
+        const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
+        const AD_COOLDOWN_MINUTES = 1; 
+        
         function manageAds() {
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    const lastShown = localStorage.getItem('ad_last_shown_time');
-                    const now = Date.now();
-                    if (!lastShown || (now - parseInt(lastShown) > 60000)) {
-                        const script = document.createElement('script');
-                        script.src = AD_URL; script.async = true;
-                        document.body.appendChild(script);
-                        localStorage.setItem('ad_last_shown_time', now.toString());
-                    }
-                }, 5000); 
-            });
+            const lastShown = localStorage.getItem('ad_last_shown_time');
+            const now = Date.now();
+            const cooldownMs = AD_COOLDOWN_MINUTES * 60 * 1000;
+            if (!lastShown || (now - parseInt(lastShown) > cooldownMs)) {
+                const script = document.createElement('script');
+                script.type = 'text/javascript'; script.src = AD_URL; script.async = true;
+                document.body.appendChild(script);
+                localStorage.setItem('ad_last_shown_time', now.toString());
+            }
         }
         manageAds();
 
-        // Render Channels
-        function renderChannelBatch() {
-            const grid = document.getElementById('channelGrid');
-            if (displayedCount === 0) grid.innerHTML = '';
-            
-            const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
-            if (nextBatch.length > 0) {
-                grid.insertAdjacentHTML('beforeend', nextBatch.map(c => `
-                    <a href="?id=${c.id}" class="channel-card">
-                        <div class="card-content">
-                            <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                                <img src="https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp" 
-                                     alt="${c.name}" loading="lazy" class="w-full h-full object-contain"
-                                     onerror="this.src='https://via.placeholder.com/200/111827/00f3ff?text=LIVE'">
-                            </div>
-                            <p class="text-center font-bold text-sm text-white line-clamp-1">${c.name}</p>
-                            <div class="mt-2 text-[10px] text-blue-400 border border-blue-400/20 px-2 py-0.5 rounded">
-                                LIVE
-                            </div>
-                        </div>
-                    </a>
-                `).join(''));
-                displayedCount += nextBatch.length;
-                document.getElementById('loadMoreContainer').classList.toggle('hidden', displayedCount >= allChannels.length);
+        // PLAYER CONFIG
+        const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
+        
+        let allChannels = [];
+        let displayedCount = 0;
+        const CHANNELS_PER_PAGE = 4; 
+
+        async function initApp() {
+            if (typeof shaka === 'undefined') {
+                setTimeout(initApp, 100);
+                return;
+            }
+            shaka.polyfill.installAll();
+            if (shaka.Player.isBrowserSupported()) {
+                initPlayer();
             }
         }
 
-        // Initialize Player
+        async function parseM3U(text) {
+             try {
+                const lines = text.split('\n');
+                const channels = [];
+                let currentChannel = { headers: {} }; 
+                for (let line of lines) {
+                    line = line.trim();
+                    if (line.startsWith('#EXTINF:')) {
+                        const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                        const logo = logoMatch ? logoMatch[1] : "https://via.placeholder.com/200?text=Sports";
+                        const parts = line.split(',');
+                        const name = parts[parts.length - 1].trim();
+                        const id = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                        currentChannel.id = id; currentChannel.name = name; currentChannel.logo = logo; currentChannel.quality = "Live";
+                    } else if (line.startsWith('#EXTVLCOPT:http-referrer=')) {
+                        currentChannel.headers['Referer'] = line.split('http-referrer=')[1].trim();
+                    } else if (line.startsWith('#EXTVLCOPT:http-origin=')) {
+                        currentChannel.headers['Origin'] = line.split('http-origin=')[1].trim();
+                    } else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
+                        currentChannel.headers['User-Agent'] = line.split('http-user-agent=')[1].trim();
+                    } else if (line.startsWith('http')) {
+                        if (currentChannel.name) {
+                            currentChannel.streamUrl = line;
+                            channels.push(currentChannel);
+                            currentChannel = { headers: {} }; 
+                        }
+                    }
+                }
+                return channels;
+            } catch (error) { return []; }
+        }
+
+        function renderChannelBatch() {
+            const gridContainer = document.getElementById('channelGrid');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+            
+            if (displayedCount === 0) {
+                gridContainer.innerHTML = ''; 
+            }
+            
+            const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
+            
+            if (nextBatch.length > 0) {
+                const batchHTML = nextBatch.map((c, index) => {
+                    const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp`;
+                    // Optimize LCP: First 4 images are eager loaded
+                    const isLCP = displayedCount === 0 && index < 4;
+                    const loadingType = isLCP ? "eager" : "lazy";
+                    const fetchPriority = isLCP ? "high" : "auto";
+                    
+                    return `
+                    <a href="?id=${c.id}" class="channel-card group">
+                        <div class="card-content">
+                            <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
+                                <img src="${optimizedLogo}" 
+                                     alt="${c.name}"
+                                     loading="${loadingType}" 
+                                     fetchpriority="${fetchPriority}" 
+                                     decoding="async" 
+                                     onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" 
+                                     class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                            </div>
+                            <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
+                            <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
+                                <i class="fas fa-circle text-[6px]"></i> ${c.quality || 'LIVE'}
+                            </div>
+                        </div>
+                    </a>
+                `}).join('');
+                
+                gridContainer.insertAdjacentHTML('beforeend', batchHTML);
+                displayedCount += nextBatch.length;
+                
+                if (displayedCount < allChannels.length) loadMoreContainer.classList.remove('hidden');
+                else loadMoreContainer.classList.add('hidden');
+            }
+        }
+
         async function initPlayer() {
             const video = document.getElementById('video');
-            const ui = video['ui'];
-            if (!ui) { setTimeout(initPlayer, 100); return; }
+            if (!video['ui']) {
+               const checkUI = setInterval(() => { if (video['ui']) { clearInterval(checkUI); initPlayer(); } }, 100);
+               return;
+            }
 
-            const player = ui.getControls().getPlayer();
+            const ui = video['ui'];
+            const controls = ui.getControls();
+            const player = controls.getPlayer();
+            
             const overlay = document.getElementById('status-overlay');
-            const spinner = document.getElementById('connect-spinner');
+            const connectSpinner = document.getElementById('connect-spinner');
+            const videoWrapper = document.getElementById('video-wrapper');
             
             const params = new URLSearchParams(window.location.search);
-            const channelId = params.get('id');
+            const channelId = params.get('id'); 
 
-            player.addEventListener('error', (e) => { if(e.detail.code != 7000) showError("Error: " + e.detail.code); });
-            player.addEventListener('buffering', (e) => spinner.style.display = e.buffering ? "flex" : "none");
+            player.addEventListener('error', (e) => {
+                if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
+            });
+
+            player.addEventListener('buffering', (event) => {
+                if (event.buffering) {
+                    connectSpinner.style.display = "flex";
+                    videoWrapper.classList.add("loading-state");
+                } else {
+                    if (!video.paused) {
+                        connectSpinner.style.display = "none";
+                        videoWrapper.classList.remove("loading-state");
+                    }
+                }
+            });
 
             try {
-                const data = await (window.dataFetchPromise || fetch(WORKER_API_URL).then(r => r.json()));
-                allChannels = data || [];
-                renderChannelBatch();
-                document.getElementById('loadMoreBtn').onclick = renderChannelBatch;
+                // --- OPTIMIZED DATA FETCHING LOGIC ---
+                let data = null;
+                if(window.dataFetchPromise) {
+                    data = await window.dataFetchPromise;
+                } else {
+                    const response = await fetch('links.json');
+                    data = await response.json();
+                }
+                
+                let manualChannels = [];
+                if (data && data.manual_channels) {
+                    manualChannels = data.manual_channels.map(c => ({
+                        id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
+                        name: c.name,
+                        logo: c.logo,
+                        quality: "HD", 
+                        streamUrl: c.url,
+                        headers: {}, 
+                        drm: c.drm 
+                    }));
+                }
+
+                let m3uChannels = [];
+                if (data && data.playlists) {
+                    const promises = data.playlists.map(async (url) => {
+                        try {
+                            const res = await fetch(url);
+                            const text = await res.text();
+                            return await parseM3U(text);
+                        } catch (e) {
+                            console.error("Failed to load M3U:", url, e);
+                            return [];
+                        }
+                    });
+                    const results = await Promise.all(promises);
+                    m3uChannels = results.flat();
+                }
+
+                // --- ORDERED WHITELIST LOGIC START ---
+        let combinedChannels = [...manualChannels, ...m3uChannels];
+
+        if (data && data.allowed_channels && Array.isArray(data.allowed_channels)) {
+            let orderedChannels = [];
+            
+            // JSON 
+            data.allowed_channels.forEach(allowedName => {
+                const targetName = allowedName.toLowerCase().trim();
+                
+                // 
+                const match = combinedChannels.find(ch => 
+                    ch.name.toLowerCase().trim() === targetName
+                );
+
+                if (match) {
+                    orderedChannels.push(match);
+                }
+            });
+            allChannels = orderedChannels;
+        } else {
+            allChannels = combinedChannels;
+        }
+
+        // 
+        allChannels = allChannels.filter(c => c.streamUrl && c.streamUrl.trim() !== "");
+        // --- ORDERED WHITELIST LOGIC END ---
+                
+                const gridContainer = document.getElementById('channelGrid');
+
+                if (allChannels.length > 0) {
+                    renderChannelBatch();
+                    document.getElementById('loadMoreBtn').addEventListener('click', renderChannelBatch);
+                } else {
+                    gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
+                }
 
                 const ch = allChannels.find(c => c.id === channelId);
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
                     document.getElementById('ch-name').innerText = ch.name;
-                    document.getElementById('ch-quality').innerText = "Connecting to " + ch.name + "...";
+                    document.getElementById('ch-quality').innerText = "Connecting...";
 
-                    player.getNetworkingEngine().registerRequestFilter((type, request) => {
+                    connectSpinner.style.display = "flex";
+                    videoWrapper.classList.add("loading-state");
+
+                    player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
-                        let proxy = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
-                        if (ch.headers?.Referer) proxy += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
-                        request.uris[0] = proxy;
+                        const originalUrl = request.uris[0];
+                        let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(originalUrl)}`;
+                        if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
+                        if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
+                        if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
+                        request.uris[0] = proxyUrl;
                     });
+                    
+                    if (ch.drm) {
+                        player.configure({
+                            drm: ch.drm
+                        });
+                    } else {
+                        player.configure({
+                            drm: { clearKeys: {} }
+                        });
+                    }
+                    
+                    player.configure({ streaming: { bufferingGoal: 5, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 },lowLatencyMode: true} });
+                    
+                    const hideSpinner = () => {
+                        connectSpinner.style.display = "none";
+                        videoWrapper.classList.remove("loading-state");
+                        document.getElementById('ch-quality').innerText = "Live";
+                    };
 
-                    if (ch.drm) player.configure({ drm: ch.drm });
-                    player.configure({ streaming: { bufferingGoal: 5, rebufferingGoal: 1, lowLatencyMode: true } });
+                    video.addEventListener('canplay', hideSpinner, { once: true });
+                    video.addEventListener('playing', hideSpinner, { once: true });
 
                     await player.load(ch.streamUrl);
-                    spinner.style.display = "none";
-                    document.getElementById('ch-quality').innerText = "Streaming Live";
+                    
                 } else {
-                    spinner.style.display = "none";
-                    if(channelId) showError("Channel Not Found");
+                    if(!channelId) {
+                         document.getElementById('ch-name').innerText = "Select a Channel";
+                         document.getElementById('ch-quality').innerText = "Ready";
+                         connectSpinner.style.display = "none";
+                         videoWrapper.classList.remove("loading-state");
+                    } else { 
+                        showError("Channel Not Found"); 
+                        connectSpinner.style.display = "none";
+                    }
                 }
-            } catch (err) { showError("Failed to connect to API"); }
+            } catch (err) {
+                console.error("App Error:", err);
+                connectSpinner.style.display = "none"; 
+                if(channelId) showError("Failed to Load Stream");
+            }
 
             function showError(msg) {
                 overlay.classList.add('show');
@@ -243,13 +494,8 @@
             }
         }
 
-        // Bootstrapping
-        if (typeof shaka === 'undefined') {
-            document.addEventListener('shaka-ui-loaded', initPlayer);
-            document.addEventListener('shaka-polyfill-installed', () => {});
-        } else {
-            initPlayer();
-        }
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initApp); } 
+        else { initApp(); }
     </script>
 </body>
 </html>
