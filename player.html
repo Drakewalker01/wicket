@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Watch live cricket streaming on HIT Wicket. High quality sports channels available for free.">
-    
     <meta name="robots" content="index, follow">
     
     <title id="page-title">Stream Loading... | HIT Wicket</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2300f3ff'/></svg>">
     
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://images.weserv.nl" crossorigin> 
     <link rel="preconnect" href="https://autoupdate.hitwicket.online" crossorigin>
 
@@ -25,109 +23,84 @@
             .catch(err => { console.error("Early fetch failed", err); return null; });
     </script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css"></noscript>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" defer></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Rajdhani', 'sans-serif'] },
-                    colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe', darkBg: '#0b1120' },
-                    animation: { 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
-                }
-            }
+    <style>
+        /* --- CSS VARIABLES (Tailwind Config එක වෙනුවට) --- */
+        :root {
+            --neonBlue: #00f3ff;
+            --neonPurple: #bc13fe;
+            --darkBg: #0b1120;
         }
-    </script>
 
-   <style>
-    body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; font-display: swap; }
-    
-    .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.3; will-change: transform; transform: translateZ(0); }
-    .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
-    .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; }
-
-    .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-    .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
-
-    /* --- FIXED & OPTIMIZED CHANNEL CARD --- */
-    .channel-card { 
-        position: relative; 
-        background: #0c4a6e; 
-        border-radius: 1rem; 
-        padding: 3px; 
-        overflow: hidden; 
-        cursor: pointer; 
-        display: block; 
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-        transform: translateZ(0); 
-        backface-visibility: hidden;
-    }
-
-    /* Animation එක කලින්ම සෙට් කරලා, පෝස් (Paused) කරලා තියෙන්නේ */
-    .channel-card::before, 
-    .channel-card::after { 
-        content: ""; 
-        position: absolute; 
-        top: -50%; 
-        left: -50%; 
-        width: 200%; 
-        height: 200%; 
-        background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
+        /* Custom Utility Classes */
+        .text-neonBlue { color: var(--neonBlue); }
+        .bg-neonBlue { background-color: var(--neonBlue); }
+        .border-neonBlue { border-color: var(--neonBlue); }
+        .shadow-neon { box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); }
         
-        /* Animation Configuration */
-        animation: rotate 1.5s linear infinite; 
-        animation-play-state: paused; /* මුලින් නවත්තලයි තියෙන්නේ */
+        @keyframes pulse-fast {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-fast { animation: pulse-fast 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        /* --- GLOBAL STYLES --- */
+        body { 
+            background-color: var(--darkBg); 
+            color: #ffffff; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            font-family: 'Rajdhani', sans-serif;
+            font-display: swap; 
+        }
+
+        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.2; will-change: transform; }
+        .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--neonBlue); }
+        .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: var(--neonPurple); }
+
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
+
+        /* --- CHANNEL CARD OPTIMIZATION --- */
+        .channel-card { 
+            position: relative; 
+            background: #0c4a6e; 
+            border-radius: 1rem; 
+            padding: 3px; 
+            overflow: hidden; 
+            cursor: pointer; 
+            display: block; 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        }
+
+        .channel-card::before { 
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
+            background: conic-gradient(transparent 0deg, transparent 250deg, var(--neonBlue) 300deg, #ffffff 360deg); 
+            animation: rotate 2s linear infinite; animation-play-state: paused; opacity: 0; transition: opacity 0.3s;
+        }
+
+        .channel-card:hover::before { animation-play-state: running; opacity: 1; }
+        .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); }
+
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .channel-logo { object-fit: contain; background: transparent; transition: transform 0.3s ease; }
+
+        .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
+        .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
         
-        opacity: 0; 
-        visibility: hidden;
-        transition: opacity 0.3s ease;
-        transform: translateZ(0);
-    }
-
-    .channel-card::after { filter: blur(20px); }
-
-    /* Hover කළ විට පමණක් Play වීම ආරම්භ වේ */
-    .channel-card:hover::before, 
-    .channel-card:hover::after { 
-        animation-play-state: running; /* දැන් ප්ලේ වෙනවා */
-        opacity: 1; 
-        visibility: visible;
-    }
-
-    .channel-card:hover::after { opacity: 0.7; }
-
-    .channel-card:hover { 
-        transform: translateY(-5px) translateZ(0); 
-        box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); 
-    }
-
-    @keyframes rotate { 
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); } 
-    }
-
-    .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-    .channel-logo { object-fit: contain; background: transparent; transition: transform 0.3s ease; }
-    .channel-card:hover .channel-logo { transform: scale(1.1); }
-
-    .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
-    .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
-    .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
-    .status-overlay.show { display: flex; }
-    .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; pointer-events: none; }
-    .skeleton { background: #1f2937; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-</style>
+        .status-overlay, .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; }
+        .status-overlay { display: none; z-index: 50; }
+        .status-overlay.show { display: flex; }
+    </style>
 </head>
 <body class="antialiased flex flex-col items-center">
 
@@ -285,31 +258,35 @@
             
             if (nextBatch.length > 0) {
                 const batchHTML = nextBatch.map((c, index) => {
-                    const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&output=webp`;
-                    // Optimize LCP: First 4 images are eager loaded
-                    const isLCP = displayedCount === 0 && index < 4;
-                    const loadingType = isLCP ? "eager" : "lazy";
-                    const fetchPriority = isLCP ? "high" : "auto";
-                    
-                    return `
-                    <a href="?id=${c.id}" class="channel-card group">
-                        <div class="card-content">
-                            <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center">
-                                <img src="${optimizedLogo}" 
-                                     alt="${c.name}"
-                                     loading="${loadingType}" 
-                                     fetchpriority="${fetchPriority}" 
-                                     decoding="async" 
-                                     onerror="this.src='https://via.placeholder.com/300x300/111827/00f3ff?text=SPORTS'" 
-                                     class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
-                            </div>
-                            <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
-                            <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
-                                <i class="fas fa-circle text-[6px]"></i> ${c.quality || 'LIVE'}
-                            </div>
-                        </div>
-                    </a>
-                `}).join('');
+    const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=200&h=200&fit=contain&output=webp`;
+    
+    // මුල්ම චැනල් 4 image එකට priority එක දෙනවා (LCP Speed)
+    const isPriority = (displayedCount === 0 && index < 4);
+    const loadingAttr = isPriority ? "eager" : "lazy";
+    const priorityAttr = isPriority ? "high" : "auto";
+
+    return `
+    <a href="?id=${c.id}" class="channel-card group">
+        <div class="card-content">
+            <div class="w-full aspect-square mb-3 overflow-hidden flex items-center justify-center bg-slate-800/50 rounded-lg">
+                <img src="${optimizedLogo}" 
+                     alt="${c.name}"
+                     width="250" 
+                     height="250"
+                     loading="${loadingAttr}" 
+                     fetchpriority="${priorityAttr}" 
+                     decoding="async" 
+                     onerror="this.src='https://via.placeholder.com/200?text=SPORTS'" 
+                     class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+            </div>
+            <p class="text-center font-bold text-sm md:text-base leading-tight text-white">${c.name}</p>
+            <div class="mt-2 flex items-center gap-1 text-[10px] text-neonBlue border border-neonBlue/30 px-2 py-0.5 rounded">
+                <i class="fas fa-circle text-[6px] animate-pulse"></i> ${c.quality || 'LIVE'}
+            </div>
+        </div>
+    </a>
+    `;
+}).join('');
                 
                 gridContainer.insertAdjacentHTML('beforeend', batchHTML);
                 displayedCount += nextBatch.length;
@@ -458,7 +435,7 @@
                         });
                     }
                     
-                    player.configure({ streaming: { bufferingGoal: 5, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 },lowLatencyMode: true} });
+                    player.configure({ streaming: { bufferingGoal: 3, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 },lowLatencyMode: true, jumpLargeGaps: true} });
                     
                     const hideSpinner = () => {
                         connectSpinner.style.display = "none";
