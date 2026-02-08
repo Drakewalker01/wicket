@@ -25,13 +25,12 @@
    "T Sports HD (3)",
    "Ten Sports",
    "T Sports (8)",
+   "T Sports (720p) (3)",
    "T Sports HD (5)",
     "T SPORTS HD (10)",
     "Astro Cricket",
    "TNT 1",
    "TNT 2",
-   "Prime Sports",
-   "Star Sports 2HD"
   ],
   "manual_channels": [
     {
@@ -49,7 +48,7 @@
       "name": "Star Sports 2HD",
       "logo": "https://is2-ssl.mzstatic.com/image/thumb/Purple116/v4/9d/94/5b/9d945be1-8c09-8ca5-575a-e28e7ae8355e/AppIcon-0-0-1x_U007emarketing-0-0-0-10-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/512x512bb.jpg",
       "group": "Sports",
-      "url": "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD2_BTS/output/index.mpd"
+      "url": ""
     }
   ]
 }
