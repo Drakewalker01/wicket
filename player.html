@@ -22,6 +22,18 @@
             .then(response => response.json())
             .catch(err => { console.error("Early fetch failed", err); return null; });
     </script>
+    <script>
+    // සෑම විනාඩි 10කට වරක්ම වෙනස් වන අංකයක් සාදා ගනී (Smart Cache)
+    const getCacheBuster = () => Math.floor(Date.now() / (10 * 60 * 1000));
+    
+    window.dataFetchPromise = fetch('links.json?v=' + getCacheBuster())
+        .then(response => response.json())
+        .catch(err => { console.error("Early fetch failed", err); return null; });
+        // සෑම විනාඩි 15කට වරක්ම මුළු පේජ් එකම refresh කර අලුත් links ලබා ගනී
+setTimeout(() => {
+    location.reload();
+}, 15 * 60 * 1000);
+</script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -331,44 +343,48 @@
             });
 
             try {
-                // --- OPTIMIZED DATA FETCHING LOGIC ---
-                let data = null;
-                if(window.dataFetchPromise) {
-                    data = await window.dataFetchPromise;
-                } else {
-                    const response = await fetch('links.json');
-                    data = await response.json();
-                }
-                
-                let manualChannels = [];
-                if (data && data.manual_channels) {
-                    manualChannels = data.manual_channels.map(c => ({
-                        id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
-                        name: c.name,
-                        logo: c.logo,
-                        quality: "HD", 
-                        streamUrl: c.url,
-                        headers: {}, 
-                        drm: c.drm 
-                    }));
-                }
+               // --- OPTIMIZED DATA FETCHING LOGIC (SMART CACHE UPDATED) ---
+let data = null;
+const cacheBuster = Math.floor(Date.now() / (10 * 60 * 1000));
 
-                let m3uChannels = [];
-                if (data && data.playlists) {
-                    const promises = data.playlists.map(async (url) => {
-                        try {
-                            const res = await fetch(url);
-                            const text = await res.text();
-                            return await parseM3U(text);
-                        } catch (e) {
-                            console.error("Failed to load M3U:", url, e);
-                            return [];
-                        }
-                    });
-                    const results = await Promise.all(promises);
-                    m3uChannels = results.flat();
-                }
+if(window.dataFetchPromise) {
+    data = await window.dataFetchPromise;
+} else {
+    const response = await fetch('links.json?v=' + cacheBuster);
+    data = await response.json();
+}
 
+let manualChannels = [];
+if (data && data.manual_channels) {
+    manualChannels = data.manual_channels.map(c => ({
+        id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
+        name: c.name,
+        logo: c.logo,
+        quality: "HD", 
+        streamUrl: c.url,
+        headers: {}, 
+        drm: c.drm 
+    }));
+}
+
+let m3uChannels = [];
+if (data && data.playlists) {
+    const promises = data.playlists.map(async (url) => {
+        try {
+            // Playlist URL එකට cache buster එක එකතු කිරීම
+            const finalM3uUrl = url + (url.includes('?') ? '&' : '?') + 'update=' + cacheBuster;
+            
+            const res = await fetch(finalM3uUrl);
+            const text = await res.text();
+            return await parseM3U(text);
+        } catch (e) {
+            console.error("Failed to load M3U:", url, e);
+            return [];
+        }
+    });
+    const results = await Promise.all(promises);
+    m3uChannels = results.flat();
+}
                 // --- ORDERED WHITELIST LOGIC START ---
         let combinedChannels = [...manualChannels, ...m3uChannels];
 
