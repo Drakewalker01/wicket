@@ -50,45 +50,16 @@
     </script>
 
    <style>
-    /* --- Base Reset & Typography --- */
-    body { 
-        background-color: #0b1120; 
-        color: #ffffff; 
-        min-height: 100vh; 
-        overflow-x: hidden; 
-        font-display: swap;
-    }
+    body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; font-display: swap; }
     
-    /* --- Background Orbs (Performance Optimized) --- */
-    .bg-gradient-orb { 
-        position: fixed; 
-        border-radius: 50%; 
-        filter: blur(80px); 
-        z-index: -1; 
-        opacity: 0.3; 
-        will-change: transform; /* GPU එකට කලින්ම දැනුම් දීම */
-        transform: translateZ(0); 
-    }
+    .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.3; will-change: transform; transform: translateZ(0); }
     .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
     .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; }
 
-    /* --- Layout Components --- */
-    .glass-panel { 
-        background: rgba(15, 23, 42, 0.6); 
-        backdrop-filter: blur(20px); 
-        -webkit-backdrop-filter: blur(20px); 
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
-    }
-    .unified-player-container { 
-        border-radius: 1.5rem; 
-        overflow: hidden; 
-        background: #000; 
-        box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); 
-        border: 1px solid rgba(255,255,255,0.1); 
-        position: relative; 
-    }
+    .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
 
-    /* --- ULTRA-OPTIMIZED CHANNEL CARD --- */
+    /* --- FIXED & OPTIMIZED CHANNEL CARD --- */
     .channel-card { 
         position: relative; 
         background: #0c4a6e; 
@@ -98,14 +69,13 @@
         cursor: pointer; 
         display: block; 
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-        /* Hardware Acceleration */
         transform: translateZ(0); 
         backface-visibility: hidden;
     }
 
-    /* Hover වුණාම විතරක් Pseudo Elements සහ Animation එක Create වේ */
-    .channel-card:hover::before, 
-    .channel-card:hover::after { 
+    /* Animation එක කලින්ම සෙට් කරලා, පෝස් (Paused) කරලා තියෙන්නේ */
+    .channel-card::before, 
+    .channel-card::after { 
         content: ""; 
         position: absolute; 
         top: -50%; 
@@ -113,14 +83,28 @@
         width: 200%; 
         height: 200%; 
         background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
-        animation: rotate 1.2s linear infinite; 
+        
+        /* Animation Configuration */
+        animation: rotate 1.5s linear infinite; 
+        animation-play-state: paused; /* මුලින් නවත්තලයි තියෙන්නේ */
+        
+        opacity: 0; 
+        visibility: hidden;
+        transition: opacity 0.3s ease;
         transform: translateZ(0);
     }
 
+    .channel-card::after { filter: blur(20px); }
+
+    /* Hover කළ විට පමණක් Play වීම ආරම්භ වේ */
+    .channel-card:hover::before, 
     .channel-card:hover::after { 
-        filter: blur(20px); 
-        opacity: 0.7;
+        animation-play-state: running; /* දැන් ප්ලේ වෙනවා */
+        opacity: 1; 
+        visibility: visible;
     }
+
+    .channel-card:hover::after { opacity: 0.7; }
 
     .channel-card:hover { 
         transform: translateY(-5px) translateZ(0); 
@@ -128,56 +112,21 @@
     }
 
     @keyframes rotate { 
-        100% { transform: rotate(360deg); } 
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); } 
     }
 
-    .card-content { 
-        background: #111827; 
-        border-radius: 0.85rem; 
-        width: 100%; 
-        height: 100%; 
-        position: relative; 
-        z-index: 1; /* Glow එක content එකට යටින් තබා ගනී */
-        padding: 1rem; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: space-between; 
-    }
+    .card-content { background: #111827; border-radius: 0.85rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+    .channel-logo { object-fit: contain; background: transparent; transition: transform 0.3s ease; }
+    .channel-card:hover .channel-logo { transform: scale(1.1); }
 
-    .channel-logo { 
-        object-fit: contain; 
-        background: transparent; 
-        transition: transform 0.3s ease;
-    }
-    .channel-card:hover .channel-logo {
-        transform: scale(1.1);
-    }
-
-    /* --- Video & Player Elements --- */
     .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
     .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
-    
     .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
     .status-overlay.show { display: flex; }
-
     .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; pointer-events: none; }
-    
-    .loading-state .shaka-controls-container,
-    .loading-state .shaka-play-button-container,
-    .loading-state .shaka-scrim-container {
-        display: none !important;
-        opacity: 0 !important;
-    }
-
-    /* --- Skeleton Loader (Simple & Fast) --- */
-    .skeleton { background: #1f2937; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    .skeleton { background: #1f2937; animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-
-    /* Mobile Optimization: Disable heavy effects on small screens if needed */
-    @media (max-width: 640px) {
-        .bg-gradient-orb { display: none; } /* Mobile වල speed එක තවත් වැඩි කිරීමට */
-    }
 </style>
 </head>
 <body class="antialiased flex flex-col items-center">
