@@ -459,25 +459,30 @@ if (data && data.playlists) {
                     connectSpinner.style.display = "flex";
                     videoWrapper.classList.add("loading-state");
 
-                    player.getNetworkingEngine().registerRequestFilter(function(type, request) {
+                   player.getNetworkingEngine().registerRequestFilter(function(type, request) {
     const originalUrl = request.uris[0];
 
-    // 
+    // 1. දැනටමත් අපේ proxy එකේ URL එක නම් ආයෙත් proxy කරන්න එපා
     if (originalUrl.includes(WORKER_BASE_URL)) return;
 
-    // T
-    // 
-    const isType2 = originalUrl.includes('unosottor.workers.dev') || originalUrl.includes('aynaott');
+    // 2. Type 2 ලින්ක් හඳුනා ගැනීම (AynaOTT / Workers.dev)
+    // මේ ලින්ක් දැනටමත් Proxy කරලා තියෙන්නේ, ඒ නිසා අපේ Proxy එක අවශ්‍ය නැහැ.
+    const isAlreadyProxied = originalUrl.includes('workers.dev') || 
+                             originalUrl.includes('aynaott') || 
+                             originalUrl.includes('bpk-tv');
 
-    if (isType2) {
-        // 
+    if (isAlreadyProxied) {
+        // මේ ලින්ක් Proxy එකට යවන්නේ නැතිව කෙලින්ම ප්ලේ වෙන්න ඉඩ හරින්න
         return; 
     }
 
-    // අනිත් ඒවා (Type 1) proxy එක හරහා යවන්න
+    // 3. Type 1 ලින්ක් සඳහා පමණක් අපේ Proxy එක භාවිතා කිරීම
     let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(originalUrl)}`;
+    
     if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
     if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
+    if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
+    
     request.uris[0] = proxyUrl;
 });
                     
