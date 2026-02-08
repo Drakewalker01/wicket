@@ -2,17 +2,19 @@
   "playlists": [
     
    
-    "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u"
+    "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u",
+    "https://raw.githubusercontent.com/abusaeeidx/T-Sports-Playlist-Auto-Update/refs/heads/main/combine_playlist.m3u"
   ],
  "allowed_channels": [
    
-   "T Sports T20 World Cup 26 (2)",
-   "T Sports (720p) (4)",
+  
    "Star Sports 1",
    "PTV Sports",
     "T Sports T20 World Cup 26 (1)",
     "Willow HD",
+   "T Sports T20 World Cup 26 (2)",
     "Willow HD 2",
+   "T Sports (720p) (4)",
    "Sky Sports Cricket",
    "ESPN 1",
    "ESPN 12",
