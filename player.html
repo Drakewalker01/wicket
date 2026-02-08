@@ -112,6 +112,34 @@ setTimeout(() => {
         .status-overlay, .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; }
         .status-overlay { display: none; z-index: 50; }
         .status-overlay.show { display: flex; }
+
+        /* Load More Button Styling */
+.load-more-btn {
+    background: transparent;
+    border: 1px solid var(--neonBlue);
+    color: var(--neonBlue);
+    padding: 12px 35px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+    outline: none; /* */
+}
+
+.load-more-btn:hover {
+    background: var(--neonBlue);
+    color: #000;
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+}
+
+/*  (Focus state) */
+.load-more-btn:focus {
+    outline: none;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+}
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -178,11 +206,11 @@ setTimeout(() => {
                 <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-3 bg-gray-800 rounded-lg animate-pulse"></div><div class="h-4 bg-gray-800 rounded w-3/4 mx-auto animate-pulse"></div></div></div>
             </div>
             
-            <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
-                <button id="loadMoreBtn" class="px-8 py-3 bg-neonBlue/10 border border-neonBlue text-neonBlue rounded-full hover:bg-neonBlue hover:text-black transition-all duration-300 font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]">
-                    Load More Channels
-                </button>
-            </div>
+           <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
+    <button id="loadMoreBtn" class="load-more-btn">
+        Load More Channels <i class="fas fa-arrow-down ml-2"></i>
+    </button>
+</div>
         </section>
     </main>
 
