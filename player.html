@@ -460,14 +460,26 @@ if (data && data.playlists) {
                     videoWrapper.classList.add("loading-state");
 
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
-                        if (request.uris[0].includes(WORKER_BASE_URL)) return;
-                        const originalUrl = request.uris[0];
-                        let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(originalUrl)}`;
-                        if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
-                        if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
-                        if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
-                        request.uris[0] = proxyUrl;
-                    });
+    const originalUrl = request.uris[0];
+
+    // 
+    if (originalUrl.includes(WORKER_BASE_URL)) return;
+
+    // T
+    // 
+    const isType2 = originalUrl.includes('unosottor.workers.dev') || originalUrl.includes('aynaott');
+
+    if (isType2) {
+        // 
+        return; 
+    }
+
+    // අනිත් ඒවා (Type 1) proxy එක හරහා යවන්න
+    let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(originalUrl)}`;
+    if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
+    if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
+    request.uris[0] = proxyUrl;
+});
                     
                     if (ch.drm) {
                         player.configure({
