@@ -72,8 +72,13 @@
         .video-wrapper { position: relative; width: 100%; padding-top: 56.25%; }
         .video-wrapper [data-shaka-player-container] { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; }
 
+        /* Error Overlay (Z-Index 50 - Top most) */
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
         .status-overlay.show { display: flex; }
+
+        /* Spinner Overlay (Z-Index 40 - Below Error, Above Video) */
+        #loading-spinner { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); z-index: 40; pointer-events: none; }
+        #loading-spinner.hidden { display: none; }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0b1120; }
@@ -108,6 +113,13 @@
                 <div class="video-wrapper">
                     <div data-shaka-player-container>
                         <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
+                    </div>
+
+                    <div id="loading-spinner" class="hidden">
+                        <div class="relative w-16 h-16">
+                             <div class="absolute w-full h-full border-4 border-slate-700 rounded-full"></div>
+                             <div class="absolute w-full h-full border-4 border-t-neonBlue border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                        </div>
                     </div>
 
                     <div id="status-overlay" class="status-overlay show">
@@ -150,18 +162,16 @@
     </footer>
 
     <script>
-        // Global variables to store data
+        // Global variables
         let channelsData = null;
         let selectedChannelId = new URLSearchParams(window.location.search).get('id');
 
         async function loadGrid() {
             try {
-                // Fetch JSON without cache buster to allow browser caching (Faster)
                 const res = await fetch(`highquality.json`);
                 const data = await res.json();
                 channelsData = data; 
 
-                // Filter Active Channels
                 const activeChannels = data.channels.filter(c => 
                     (c.mpdUrl && c.mpdUrl.trim() !== "") || (c.streamUrl && c.streamUrl.trim() !== "")
                 );
@@ -208,6 +218,7 @@
                 
                 const video = document.getElementById('video');
                 const overlay = document.getElementById('status-overlay');
+                const spinner = document.getElementById('loading-spinner');
                 const errorMsg = document.getElementById('error-msg');
                 const statusIcon = document.getElementById('status-icon');
                 
@@ -221,24 +232,37 @@
                 const controls = ui.getControls();
                 const player = controls.getPlayer();
 
-                // ==========================================
-                // 🔥 LOW LATENCY CONFIGURATION ADDED HERE 🔥
-                // ==========================================
+                // Low Latency Config
                 player.configure({
                     streaming: {
-                        bufferingGoal: 3,          // Keep only 3s buffer (Fast)
-                        rebufferingGoal: 1,        // Resume fast after buffer
-                        retryParameters: {
-                            maxAttempts: 3,
-                            baseDelay: 1000
-                        },
-                        lowLatencyMode: true,      // Enable Low Latency
-                        jumpLargeGaps: true        // Jump to live if stuck
+                        bufferingGoal: 3,
+                        rebufferingGoal: 1,
+                        retryParameters: { maxAttempts: 3, baseDelay: 1000 },
+                        lowLatencyMode: true,
+                        jumpLargeGaps: true
                     }
                 });
 
+                // --- SPINNER LOGIC ---
+                // Show spinner when buffering starts
+                player.addEventListener('buffering', (event) => {
+                    if (event.buffering) {
+                        spinner.classList.remove('hidden'); // Show spinner
+                    } else {
+                        spinner.classList.add('hidden');    // Hide spinner
+                    }
+                });
+
+                // Hide spinner when playing starts
+                video.addEventListener('playing', () => {
+                    spinner.classList.add('hidden');
+                    overlay.classList.remove('show');
+                });
+
+                // Handle Errors
                 player.addEventListener('error', (e) => {
                     console.error('Shaka Error:', e.detail);
+                    spinner.classList.add('hidden'); // Hide spinner on error
                     overlay.classList.add('show');
                     statusIcon.className = "fas fa-exclamation-triangle text-4xl text-red-500 mb-3";
                     errorMsg.innerText = "Stream Error";
@@ -252,6 +276,10 @@
                     const ch = channelsData.channels.find(c => c.id === selectedChannelId);
                     if (ch) {
                         overlay.classList.remove('show');
+                        
+                        // Show spinner immediately before load
+                        spinner.classList.remove('hidden');
+
                         const videoUrl = ch.mpdUrl || ch.streamUrl;
                         
                         if(ch.drm && ch.drm.clearKeys) {
@@ -261,8 +289,10 @@
                         console.log("Starting Player...");
                         try {
                             await player.load(videoUrl);
+                            // Note: Spinner will hide when 'playing' event fires
                         } catch (e) {
                             console.error("Load failed", e);
+                            spinner.classList.add('hidden');
                         }
                     } else {
                          overlay.classList.add('show');
