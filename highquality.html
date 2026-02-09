@@ -316,21 +316,7 @@
 
         document.addEventListener('shaka-ui-loaded', initApp);
 
-        // --- ADVERTISEMENT LOGIC ---
-        const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
-        const AD_COOLDOWN_MINUTES = 1; 
-
-        function manageAds() {
-            const lastShown = localStorage.getItem('ad_last_shown_time');
-            const now = Date.now();
-            if (!lastShown || (now - parseInt(lastShown) > AD_COOLDOWN_MINUTES * 60 * 1000)) {
-                const script = document.createElement('script');
-                script.type = 'text/javascript'; script.src = AD_URL; script.async = true;
-                document.body.appendChild(script);
-                localStorage.setItem('ad_last_shown_time', now.toString());
-            }
-        }
-        setTimeout(manageAds, 3000);
+        
     </script>
 </body>
 </html>
