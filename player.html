@@ -80,11 +80,23 @@ setTimeout(() => {
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
 
+        /* --- CHANNEL CARD CUSTOM WIDTHS (FIXED) --- */
+        /* මෙය දැම්මේ පරණ Tailwind Link එක නිසා w-[23%] වැඩ නොකරන නිසා */
+        .custom-card-width {
+            width: 23%; /* Mobile: 4 Cards (23% x 4 = 92%) */
+        }
+        @media (min-width: 640px) {
+            .custom-card-width { width: 13%; } /* Tablet: 7 Cards */
+        }
+        @media (min-width: 1024px) {
+            .custom-card-width { width: 9%; } /* PC: 10 Cards */
+        }
+
         /* --- CHANNEL CARD OPTIMIZATION --- */
         .channel-card { 
             position: relative; 
             background: #0c4a6e; 
-            border-radius: 0.5rem; /* Reduced radius for smaller cards */
+            border-radius: 0.5rem; 
             padding: 2px; 
             overflow: hidden; 
             cursor: pointer; 
@@ -155,7 +167,7 @@ setTimeout(() => {
             </a>
             <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50">
                 <span class="relative flex h-3 w-3"><span class="animate-ping absolute h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative h-3 w-3 bg-red-600 rounded-full"></span></span>
-                <span class="text-xs font-bold text-red-400">LIVE Update</span>
+                <span class="text-xs font-bold text-red-400">LIVE NOW</span>
             </div>
         </div>
     </nav>
@@ -207,10 +219,10 @@ setTimeout(() => {
             </div>
             
             <div class="flex flex-wrap justify-center items-start gap-2 w-full min-h-[400px]" id="channelGrid">
-                <div class="channel-card skeleton-card opacity-50 w-[23%] sm:w-[13%] lg:w-[9%]"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
-                <div class="channel-card skeleton-card opacity-50 w-[23%] sm:w-[13%] lg:w-[9%]"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
-                <div class="channel-card skeleton-card opacity-50 w-[23%] sm:w-[13%] lg:w-[9%]"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
-                <div class="channel-card skeleton-card opacity-50 w-[23%] sm:w-[13%] lg:w-[9%]"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
             </div>
             
            <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
@@ -313,9 +325,9 @@ setTimeout(() => {
     const loadingAttr = isPriority ? "eager" : "lazy";
     const priorityAttr = isPriority ? "high" : "auto";
 
-    /* UPDATED CARD HTML FOR FLEX LAYOUT (Mobile: 23% width = 4 cards) */
+    /* USED custom-card-width CLASS INSTEAD OF w-[23%] */
     return `
-    <a href="?id=${c.id}" class="channel-card group block w-[23%] sm:w-[13%] lg:w-[9%]">
+    <a href="?id=${c.id}" class="channel-card group block custom-card-width">
         <div class="card-content !p-1">
             <div class="w-full aspect-square mb-0.5 overflow-hidden flex items-center justify-center bg-slate-800/50 rounded-md">
                 <img src="${optimizedLogo}" 
