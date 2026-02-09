@@ -16,7 +16,7 @@
         body { background-color: #0b1120; color: #ffffff; margin: 0; font-family: sans-serif; }
         .glass-panel { background: #0f172a; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .video-wrapper { aspect-ratio: 16/9; background: #000; }
-        /* Skeleton Loading for Grid - මුලින්ම පේන කොටු ටික */
+        /* Skeleton Loading for Grid -  */
         .skeleton-card { background: #1e293b; height: 180px; border-radius: 1rem; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
@@ -152,21 +152,22 @@
         © 2026 HITWicket Sports Network.
     </footer>
 
-   <script>
-        // Global variables
+    <script>
+        // Global variables to store data
         let channelsData = null;
         let selectedChannelId = new URLSearchParams(window.location.search).get('id');
 
         // ==========================================
-        // 1. FAST GRID LOADING (No Changes Here)
+        // STEP 1: LOAD GRID IMMEDIATELY (OPTIMIZED)
         // ==========================================
         async function loadGrid() {
             try {
-                const cacheBuster = new Date().getTime();
-                const res = await fetch(`highquality.json?t=${cacheBuster}`);
+                // Fetch JSON without cache buster to allow browser caching (Faster)
+                const res = await fetch(`highquality.json`);
                 const data = await res.json();
-                channelsData = data; 
+                channelsData = data; // Store globally for player to use later
 
+                // Filter Active Channels
                 const activeChannels = data.channels.filter(c => 
                     (c.mpdUrl && c.mpdUrl.trim() !== "") || (c.streamUrl && c.streamUrl.trim() !== "")
                 );
@@ -178,7 +179,7 @@
                         <a href="?id=${c.id}" class="channel-card cursor-pointer group no-underline">
                             <div class="card-content">
                                 <div class="w-full aspect-square rounded-lg mb-3 bg-slate-800 overflow-hidden relative">
-                                    <img src="${c.logo}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
+                                    <img src="${c.logo}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
                                             onerror="this.style.display='none';">
                                 </div>
                                 <p class="font-bold text-center text-sm text-gray-100 truncate w-full">${c.name}</p>
@@ -190,6 +191,7 @@
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center py-10">No channels available.</p>`;
                 }
 
+                // Update Title text immediately (UX improvement)
                 if (selectedChannelId) {
                     const ch = channelsData.channels.find(c => c.id === selectedChannelId);
                     if (ch) {
@@ -205,10 +207,14 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', loadGrid);
+        // ==========================================
+        // CRITICAL FIX: Run immediately! Do not wait for DOMContentLoaded
+        // ==========================================
+        loadGrid(); 
+
 
         // ==========================================
-        // 2. LOW LATENCY PLAYER CONFIGURATION
+        // STEP 2: LOAD PLAYER (SHAKA)
         // ==========================================
         async function initApp() {
             shaka.polyfill.installAll();
@@ -217,56 +223,29 @@
                 const video = document.getElementById('video');
                 const overlay = document.getElementById('status-overlay');
                 const errorMsg = document.getElementById('error-msg');
+                const statusIcon = document.getElementById('status-icon');
                 
                 const ui = video['ui'];
-                
-                // UI Config
-                const uiConfig = {
+                const config = {
                     'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'quality', 'mute', 'volume', 'fullscreen', 'overflow_menu'],
                     'overflowMenuButtons': ['captions', 'cast', 'playback_rate', 'picture_in_picture']
                 };
-                ui.configure(uiConfig);
+                ui.configure(config);
 
                 const controls = ui.getControls();
                 const player = controls.getPlayer();
 
-                // ---------------------------------------------
-                // 🔥 PERFORMANCE & LOW LATENCY SETTINGS 🔥
-                // ---------------------------------------------
-                player.configure({
-                    streaming: {
-                        lowLatencyMode: true,  // 1. Live Mode 
-                        bufferingGoal: 3,      
-                        rebufferingGoal: 0.5,  
-                        bufferBehind: 5,       
-                        jumpLargeGaps: true,   // 5
-                        inaccurateManifestTolerance: 0, // Manifest
-                        stallEnabled: true,    // 
-                    },
-                    manifest: {
-                        dash: {
-                            ignoreMinBufferTime: true, // Server 
-                        },
-                        retryParameters: {
-                            maxAttempts: 2,    // 6. 
-                            baseDelay: 500,    // 
-                            backoffFactor: 1,  // 
-                            fuzzFactor: 0,
-                        }
-                    },
-                    abr: {
-                        enabled: true,
-                        bandwidthUpgradeTarget: 0.85, // 7.
-                        switchInterval: 1, //
-                    }
-                });
-                // ---------------------------------------------
-
                 player.addEventListener('error', (e) => {
                     console.error('Shaka Error:', e.detail);
+                    overlay.classList.add('show');
+                    statusIcon.className = "fas fa-exclamation-triangle text-4xl text-red-500 mb-3";
+                    errorMsg.innerText = "Stream Error";
                 });
 
-                if (!channelsData) { await new Promise(r => setTimeout(r, 500)); }
+                // Wait for channelsData if it's not ready yet
+                if (!channelsData) {
+                    await new Promise(r => setTimeout(r, 500)); 
+                }
 
                 if (channelsData && selectedChannelId) {
                     const ch = channelsData.channels.find(c => c.id === selectedChannelId);
@@ -278,14 +257,9 @@
                             player.configure({ drm: { clearKeys: ch.drm.clearKeys } });
                         }
                         
+                        console.log("Starting Player...");
                         try {
-                            // Enable auto-play with sound handling
                             await player.load(videoUrl);
-                            video.play().catch(() => {
-                                // Browser
-                                video.muted = true;
-                                video.play();
-                            });
                         } catch (e) {
                             console.error("Load failed", e);
                         }
@@ -296,13 +270,16 @@
                 } else {
                     overlay.classList.add('show');
                     if(!selectedChannelId) {
+                        statusIcon.className = "fas fa-arrow-down text-4xl text-neonBlue mb-3 animate-bounce";
                         errorMsg.innerText = "Select a Channel";
                     }
                 }
             }
         }
 
+        // Listen for Shaka UI
         document.addEventListener('shaka-ui-loaded', initApp);
+        
     </script>
 </body>
 </html>
