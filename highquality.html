@@ -6,7 +6,40 @@
     
     <title id="page-title">HitWicket | Live Sports</title>
 
-    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<style>
+    /* display: none දැම්මොත් Layout කැඩෙනවා.
+       ඒ නිසා අපි opacity: 0 දානවා. එතකොට පිටුව තියෙනවා, හැබැයි පේන්නේ නෑ.
+       pointer-events: none දාන්නේ click කරන එක නවත්තන්න.
+    */
+    body { 
+        opacity: 0; 
+        pointer-events: none; 
+        transition: opacity 0.3s ease; /* ලස්සනට මතු වෙන්න */
+    }
+</style>
+
+<script>
+    // 1. Session එක check කිරීම
+    var token = sessionStorage.getItem("user_auth");
+
+    if (token !== "valid_session") {
+        // Token එක නැත්නම් Index එකට එලවන්න
+        window.location.replace("index.html"); 
+    } else {
+        // Token එක තියෙනවා නම්
+        document.addEventListener("DOMContentLoaded", function() {
+            // තත්පර පොඩි ගානක් ඉඳලා පෙන්නන්න (Layout එක හැදෙන්න Time එක දෙනවා)
+            setTimeout(function() {
+                document.body.style.opacity = "1";
+                document.body.style.pointerEvents = "auto";
+            }, 100); 
+        });
+    }
+</script>
     
     <link rel="preload" href="highquality.json" as="fetch" crossorigin="anonymous">
 
