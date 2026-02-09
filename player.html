@@ -84,8 +84,8 @@ setTimeout(() => {
         .channel-card { 
             position: relative; 
             background: #0c4a6e; 
-            border-radius: 0.5rem; /* Reduced radius for smaller cards */
-            padding: 2px; 
+            border-radius: 0.4rem; 
+            padding: 1px; /* Super thin padding for mobile */
             overflow: hidden; 
             cursor: pointer; 
             display: block; 
@@ -103,7 +103,7 @@ setTimeout(() => {
 
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .card-content { background: #111827; border-radius: 0.4rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 0.5rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .card-content { background: #111827; border-radius: 0.3rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 0.25rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
         .channel-logo { object-fit: contain; background: transparent; transition: transform 0.3s ease; }
 
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
@@ -114,32 +114,31 @@ setTimeout(() => {
         .status-overlay.show { display: flex; }
 
         /* Load More Button Styling */
-.load-more-btn {
-    background: transparent;
-    border: 1px solid var(--neonBlue);
-    color: var(--neonBlue);
-    padding: 10px 30px;
-    border-radius: 50px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-    outline: none; /* */
-}
+        .load-more-btn {
+            background: transparent;
+            border: 1px solid var(--neonBlue);
+            color: var(--neonBlue);
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            outline: none; 
+        }
 
-.load-more-btn:hover {
-    background: var(--neonBlue);
-    color: #000;
-    box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
-}
+        .load-more-btn:hover {
+            background: var(--neonBlue);
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+        }
 
-/* (Focus state) */
-.load-more-btn:focus {
-    outline: none;
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-}
+        .load-more-btn:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -206,10 +205,10 @@ setTimeout(() => {
                 <h2 class="text-2xl font-bold uppercase tracking-widest">More <span class="text-neonBlue">Channels</span></h2>
             </div>
             
-            <div class="grid grid-cols-5 sm:grid-cols-7 lg:grid-cols-10 gap-2 min-h-[400px] w-full" id="channelGrid">
-                <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
-                <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
-                <div class="channel-card skeleton-card opacity-50"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
+            <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2 w-full min-h-[400px]" id="channelGrid">
+                <div class="channel-card skeleton-card opacity-50 w-[18.5%] sm:w-[13%] lg:w-[9%]"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50 w-[18.5%] sm:w-[13%] lg:w-[9%]"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
+                <div class="channel-card skeleton-card opacity-50 w-[18.5%] sm:w-[13%] lg:w-[9%]"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
             </div>
             
            <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
@@ -247,7 +246,7 @@ setTimeout(() => {
         
         let allChannels = [];
         let displayedCount = 0;
-        const CHANNELS_PER_PAGE = 20; /* UPDATED to 20 */
+        const CHANNELS_PER_PAGE = 20;
 
         async function initApp() {
             if (typeof shaka === 'undefined') {
@@ -304,7 +303,7 @@ setTimeout(() => {
             
             if (nextBatch.length > 0) {
                 const batchHTML = nextBatch.map((c, index) => {
-    // Smaller image size for faster loading in grid
+    // Smaller image size
     const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=150&h=150&fit=contain&output=webp`;
     
     //  (LCP Speed)
@@ -312,11 +311,13 @@ setTimeout(() => {
     const loadingAttr = isPriority ? "eager" : "lazy";
     const priorityAttr = isPriority ? "high" : "auto";
 
-    /* UPDATED CARD HTML FOR SMALLER GRID (10 COLS) */
+    /* UPDATED: COMPACT CARD FOR MOBILE */
+    /* w-[18.5%] fits 5 items with small gap */
+    /* text-[8px] for mobile */
     return `
-    <a href="?id=${c.id}" class="channel-card group block">
-        <div class="card-content !p-1">
-            <div class="w-full aspect-square mb-1 overflow-hidden flex items-center justify-center bg-slate-800/50 rounded-md">
+    <a href="?id=${c.id}" class="channel-card group block w-[18.5%] sm:w-[13%] lg:w-[9%]">
+        <div class="card-content !p-0.5">
+            <div class="w-full aspect-square mb-0.5 overflow-hidden flex items-center justify-center bg-slate-800/50 rounded-sm">
                 <img src="${optimizedLogo}" 
                      alt="${c.name}"
                      width="150" 
@@ -327,9 +328,11 @@ setTimeout(() => {
                      onerror="this.src='https://via.placeholder.com/150?text=TV'" 
                      class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
             </div>
-            <p class="text-center font-bold text-[9px] sm:text-[10px] leading-tight text-gray-200 line-clamp-1 w-full overflow-hidden text-ellipsis">${c.name}</p>
-            <div class="mt-1 flex items-center justify-center gap-0.5 text-[8px] text-neonBlue border border-neonBlue/30 px-1 py-0 rounded bg-neonBlue/5 w-full">
-                <i class="fas fa-circle text-[4px] animate-pulse"></i> ${c.quality || 'LIVE'}
+            
+            <p class="text-center font-bold text-[8px] sm:text-[10px] leading-none text-gray-200 line-clamp-1 w-full overflow-hidden text-ellipsis mt-0.5">${c.name}</p>
+            
+            <div class="mt-0.5 flex items-center justify-center gap-0.5 text-[7px] text-neonBlue border border-neonBlue/20 px-1 py-0 rounded bg-neonBlue/5 w-full leading-none">
+                <i class="fas fa-circle text-[3px] animate-pulse"></i> ${c.quality || 'LIVE'}
             </div>
         </div>
     </a>
@@ -379,7 +382,7 @@ setTimeout(() => {
             });
 
             try {
-                // --- OPTIMIZED DATA FETCHING LOGIC (SMART CACHE UPDATED) ---
+                // --- OPTIMIZED DATA FETCHING LOGIC ---
 let data = null;
 const cacheBuster = Math.floor(Date.now() / (10 * 60 * 1000));
 
@@ -407,9 +410,7 @@ let m3uChannels = [];
 if (data && data.playlists) {
     const promises = data.playlists.map(async (url) => {
         try {
-            // Playlist URL
             const finalM3uUrl = url + (url.includes('?') ? '&' : '?') + 'update=' + cacheBuster;
-            
             const res = await fetch(finalM3uUrl);
             const text = await res.text();
             return await parseM3U(text);
@@ -421,21 +422,16 @@ if (data && data.playlists) {
     const results = await Promise.all(promises);
     m3uChannels = results.flat();
 }
-                // --- ORDERED WHITELIST LOGIC START ---
+                // --- ORDERED WHITELIST LOGIC ---
         let combinedChannels = [...manualChannels, ...m3uChannels];
 
         if (data && data.allowed_channels && Array.isArray(data.allowed_channels)) {
             let orderedChannels = [];
-            
-            // JSON 
             data.allowed_channels.forEach(allowedName => {
                 const targetName = allowedName.toLowerCase().trim();
-                
-                // 
                 const match = combinedChannels.find(ch => 
                     ch.name.toLowerCase().trim() === targetName
                 );
-
                 if (match) {
                     orderedChannels.push(match);
                 }
@@ -445,7 +441,6 @@ if (data && data.playlists) {
             allChannels = combinedChannels;
         }
 
-        // 
         allChannels = allChannels.filter(c => c.streamUrl && c.streamUrl.trim() !== "");
         // --- ORDERED WHITELIST LOGIC END ---
                 
