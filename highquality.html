@@ -16,7 +16,6 @@
         body { background-color: #0b1120; color: #ffffff; margin: 0; font-family: sans-serif; }
         .glass-panel { background: #0f172a; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .video-wrapper { aspect-ratio: 16/9; background: #000; }
-        /* Skeleton Loading for Grid -  */
         .skeleton-card { background: #1e293b; height: 180px; border-radius: 1rem; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
@@ -54,13 +53,11 @@
             position: relative; background: #1e293b; border-radius: 1rem; overflow: hidden; display: flex; padding: 2px; 
             transition: 0.3s all ease-in-out; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); contain: content;
         }
-        
         .channel-card::before { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
             animation: rotate 4s linear infinite; z-index: 0; opacity: 0; transition: opacity 0.3s ease; will-change: transform, opacity;
         }
-
         .channel-card:hover::before { opacity: 1; }
         
         .card-content { 
@@ -157,15 +154,12 @@
         let channelsData = null;
         let selectedChannelId = new URLSearchParams(window.location.search).get('id');
 
-        // ==========================================
-        // STEP 1: LOAD GRID IMMEDIATELY (OPTIMIZED)
-        // ==========================================
         async function loadGrid() {
             try {
                 // Fetch JSON without cache buster to allow browser caching (Faster)
                 const res = await fetch(`highquality.json`);
                 const data = await res.json();
-                channelsData = data; // Store globally for player to use later
+                channelsData = data; 
 
                 // Filter Active Channels
                 const activeChannels = data.channels.filter(c => 
@@ -191,7 +185,6 @@
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center py-10">No channels available.</p>`;
                 }
 
-                // Update Title text immediately (UX improvement)
                 if (selectedChannelId) {
                     const ch = channelsData.channels.find(c => c.id === selectedChannelId);
                     if (ch) {
@@ -207,15 +200,8 @@
             }
         }
 
-        // ==========================================
-        // CRITICAL FIX: Run immediately! Do not wait for DOMContentLoaded
-        // ==========================================
         loadGrid(); 
 
-
-        // ==========================================
-        // STEP 2: LOAD PLAYER (SHAKA)
-        // ==========================================
         async function initApp() {
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) {
@@ -235,6 +221,22 @@
                 const controls = ui.getControls();
                 const player = controls.getPlayer();
 
+                // ==========================================
+                // 🔥 LOW LATENCY CONFIGURATION ADDED HERE 🔥
+                // ==========================================
+                player.configure({
+                    streaming: {
+                        bufferingGoal: 3,          // Keep only 3s buffer (Fast)
+                        rebufferingGoal: 1,        // Resume fast after buffer
+                        retryParameters: {
+                            maxAttempts: 3,
+                            baseDelay: 1000
+                        },
+                        lowLatencyMode: true,      // Enable Low Latency
+                        jumpLargeGaps: true        // Jump to live if stuck
+                    }
+                });
+
                 player.addEventListener('error', (e) => {
                     console.error('Shaka Error:', e.detail);
                     overlay.classList.add('show');
@@ -242,7 +244,6 @@
                     errorMsg.innerText = "Stream Error";
                 });
 
-                // Wait for channelsData if it's not ready yet
                 if (!channelsData) {
                     await new Promise(r => setTimeout(r, 500)); 
                 }
@@ -277,9 +278,7 @@
             }
         }
 
-        // Listen for Shaka UI
         document.addEventListener('shaka-ui-loaded', initApp);
-        
     </script>
 </body>
 </html>
