@@ -52,24 +52,52 @@
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
 
-        /* --- FIXED WIDTHS & ASPECT RATIO --- */
+        /* --- FIXED WIDTHS (GRID SYSTEM) --- */
         .custom-card-width { width: 23%; } /* Mobile: 4 Cards */
-        @media (min-width: 640px) { .custom-card-width { width: 13%; } } /* Tablet */
-        @media (min-width: 1024px) { .custom-card-width { width: 9%; } } /* PC */
+        @media (min-width: 640px) { .custom-card-width { width: 13%; } } /* Tablet: 7 Cards */
+        @media (min-width: 1024px) { .custom-card-width { width: 9%; } } /* PC: 10 Cards */
 
-        /* Force Uniform Height using Aspect Ratio */
+        /* --- CARD & LOGO STYLING --- */
         .channel-card { 
             position: relative; background: #0c4a6e; border-radius: 0.5rem; padding: 2px; overflow: hidden; cursor: pointer; display: block; 
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-            aspect-ratio: 0.75; /* (3:4 ratio) හැම කාඩ් එකම එකම උසින් තියන්න */
         }
         .channel-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, transparent 250deg, var(--neonBlue) 300deg, #ffffff 360deg); animation: rotate 2s linear infinite; animation-play-state: paused; opacity: 0; transition: opacity 0.3s; }
         .channel-card:hover::before { animation-play-state: running; opacity: 1; }
         .channel-card:hover { transform: translateY(-3px); box-shadow: 0 0 15px rgba(0, 243, 255, 0.4); }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .card-content { background: #111827; border-radius: 0.4rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 0.25rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-        .channel-logo { object-fit: contain; }
+        .card-content { background: #111827; border-radius: 0.4rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 0.25rem; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+        
+        /* 1. Logo Container (Square Box) */
+        .logo-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 4px;
+            margin-bottom: 4px;
+            overflow: hidden;
+        }
+
+        /* 2. Channel Name (Fixed Height & Clamp) */
+        .channel-name {
+            font-size: 10px;
+            line-height: 1.1;
+            font-weight: 700;
+            color: #e2e8f0;
+            text-align: center;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 22px; /* Uniform height for text area */
+            width: 100%;
+        }
+
+        @media (min-width: 640px) { .channel-name { font-size: 11px; height: 24px; } }
         
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
         .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
@@ -143,7 +171,7 @@
                 <h2 class="text-2xl font-bold uppercase tracking-widest">More <span class="text-neonBlue">Channels</span></h2>
             </div>
             
-            <div class="flex flex-wrap justify-center gap-2 w-full min-h-[400px]" id="channelGrid">
+            <div class="flex flex-wrap justify-center items-start gap-2 w-full min-h-[400px]" id="channelGrid">
                 <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
                 <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
                 <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
@@ -233,22 +261,18 @@
                     const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=150&h=150&fit=contain&output=webp`;
                     const isPriority = (displayedCount === 0 && index < 10);
                     
-                    /* --- UPDATES FOR SMALL TEXT & UNIFORM CARDS --- */
-                    // 1. Text size reduced to text-[8px] for name
-                    // 2. Padding reduced to !p-0.5
-                    // 3. line-clamp-2 ensures max 2 lines
                     return `
                     <a href="?id=${c.id}" class="channel-card group block custom-card-width">
-                        <div class="card-content !p-1">
-                            <div class="w-full aspect-square mb-0.5 overflow-hidden flex items-center justify-center bg-slate-800/50 rounded-sm">
+                        <div class="card-content !p-1.5">
+                            <div class="logo-container">
                                 <img src="${optimizedLogo}" 
                                      alt="${c.name}"
                                      loading="${isPriority ? "eager" : "lazy"}" 
                                      onerror="this.src='https://via.placeholder.com/150?text=TV'" 
-                                     class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                                     class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
                             </div>
-                            <p class="text-center font-bold text-[8px] sm:text-[10px] leading-none text-gray-200 line-clamp-2 w-full break-words h-[18px] flex items-center justify-center">${c.name}</p>
-                            <div class="mt-0.5 flex items-center justify-center gap-0.5 text-[7px] text-neonBlue border border-neonBlue/30 px-1 py-0 rounded bg-neonBlue/5 w-full">
+                            <div class="channel-name">${c.name}</div>
+                            <div class="mt-1 flex items-center justify-center gap-1 text-[7px] text-neonBlue border border-neonBlue/30 px-1 py-0.5 rounded bg-neonBlue/5 w-full">
                                 <i class="fas fa-circle text-[3px] animate-pulse"></i> ${c.quality || 'LIVE'}
                             </div>
                         </div>
