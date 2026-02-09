@@ -33,17 +33,12 @@
 
         body { background-color: #0b1120; color: #ffffff; min-height: 100vh; overflow-x: hidden; }
         
-        /* Background Effects */
-        .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: blob 10s infinite alternate; }
-        .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #00f3ff; }
-        .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #bc13fe; animation-delay: 2s; }
-        @keyframes blob { 0% { transform: translate(0,0) scale(1) } 100% { transform: translate(0,0) scale(1) } }
-
-        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        /* Glass Panel (Simplified) */
+        .glass-panel { background: #0f172a; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 
         .unified-player-container {
             border-radius: 1.5rem; overflow: hidden; background: #000; 
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); 
+            /* Removed the permanent box-shadow glow here */
             border: 1px solid rgba(255,255,255,0.1);
             position: relative;
         }
@@ -54,17 +49,27 @@
             background: #1e293b; 
             border-radius: 1rem; 
             overflow: hidden; 
-            display: flex; /* Flex is crucial here */
+            display: flex; 
             padding: 2px; 
             transition: 0.3s all ease-in-out; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
         }
         
-        /* Animated Border Logic */
+        /* Animated Border Logic - MODIFIED: Hidden by default */
         .channel-card::before { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
-            animation: rotate 4s linear infinite; z-index: 0; 
+            animation: rotate 4s linear infinite; 
+            z-index: 0; 
+            
+            /* KEY CHANGE: Hidden by default, smooth transition */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* KEY CHANGE: Show border only on hover */
+        .channel-card:hover::before {
+            opacity: 1;
         }
         
         .card-content { 
@@ -79,7 +84,8 @@
             padding: 1rem; 
         }
 
-        .channel-card:hover { transform: translateY(-5px); box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+        /* Hover lift effect */
+        .channel-card:hover { transform: translateY(-5px); }
         .channel-card:hover::before { animation-duration: 1.5s; }
         
         @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -107,9 +113,6 @@
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
-
-    <div class="bg-gradient-orb orb-1"></div>
-    <div class="bg-gradient-orb orb-2"></div>
 
     <nav class="w-full glass-panel sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
@@ -150,14 +153,14 @@
                         <h2 class="text-xl md:text-2xl font-bold text-white" id="ch-name">Welcome</h2>
                         <span class="text-xs font-medium text-gray-400 uppercase" id="ch-quality">Live Sports Network</span>
                     </div>
-                    <div class="px-4 py-2 bg-neonBlue text-black rounded-lg text-xs font-black shadow-[0_0_15px_#00f3ff]">LIVE HD</div>
+                    <div class="px-4 py-2 bg-neonBlue text-black rounded-lg text-xs font-black">LIVE HD</div>
                 </div>
             </div>
         </section>
 
         <section>
             <div class="flex items-center gap-4 mb-8">
-                <div class="h-8 w-1 bg-neonBlue rounded-full shadow-[0_0_10px_#00f3ff]"></div>
+                <div class="h-8 w-1 bg-neonBlue rounded-full"></div>
                 <h2 class="text-2xl font-bold uppercase tracking-widest text-white">More <span class="text-neonBlue">Channels</span></h2>
             </div>
             
@@ -232,7 +235,6 @@
                         </a>
                     `).join(''); 
                 } else {
-                    // --- CHANGED THIS SECTION AS REQUESTED ---
                     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center py-10 text-lg">No high quality channels available at the moment.</p>`;
                 }
 
