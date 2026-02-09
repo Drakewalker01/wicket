@@ -7,14 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap" rel="stylesheet">
     
     <style>
-        /* --- Theme Colors --- */
         :root {
             --site-bg-dark: #050b14;
-            --site-accent-cyan: #00d2ff;
-            --glass-bg: rgba(20, 30, 48, 0.75);
+            --site-accent-cyan: #00d2ff; 
+            --glass-bg: rgba(20, 30, 48, 0.7);
         }
 
-        /* --- General Layout --- */
+        /* මුළු පිටුවම screen එකේ උසට සමාන කර මැදට ගැනීම */
         body {
             margin: 0;
             padding: 0;
@@ -23,35 +22,29 @@
                         radial-gradient(circle at bottom right, #560a5c, transparent 40%),
                         #02040a;
             color: white;
+            
             display: flex;
-            justify-content: center;
-            align-items: center;
-            /* 100dvh ensures it centers correctly on mobile browsers with address bars */
-            min-height: 100dvh; 
+            justify-content: center; /* දෙපැත්තෙන් සමාන ඉඩ (Horizontal Center) */
+            align-items: center;     /* උඩ සහ යටින් සමාන ඉඩ (Vertical Center) */
+            height: 100vh;           /* Screen එකේ සම්පූර්ණ උස */
+            width: 100vw;            /* Screen එකේ සම්පූර්ණ පළල */
             overflow: hidden;
         }
 
-        /* --- The Card (Glassmorphism style) --- */
         .card {
             background: var(--glass-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            padding: 40px 30px;
-            border-radius: 20px;
+            padding: 40px 25px;
+            border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             text-align: center;
-            /* Default for Desktop */
-            width: 90%; 
-            max-width: 400px; 
-            position: relative;
+            width: 85%;              /* Mobile එකේදී දෙපැත්තෙන් 7.5% බැගින් ඉඩ ඉතිරි වේ */
+            max-width: 380px;
             box-sizing: border-box;
         }
 
-        /* --- Logo Styling --- */
-        .logo-container {
-            margin-bottom: 5px;
-        }
         .logo-text {
             font-size: 28px;
             font-weight: 900;
@@ -59,17 +52,11 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: white;
+            margin-bottom: 5px;
         }
-        .logo-accent {
-            color: var(--site-accent-cyan);
-        }
+        .logo-accent { color: var(--site-accent-cyan); }
 
-        h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 10px 0;
-            color: #e0e6ed;
-        }
+        h2 { font-size: 18px; font-weight: 600; margin: 10px 0; color: #e0e6ed; }
 
         .subtitle {
             color: #94a3b8;
@@ -80,7 +67,6 @@
             padding-bottom: 15px;
         }
 
-        /* --- Buttons --- */
         .btn {
             display: flex;
             justify-content: space-between;
@@ -88,29 +74,23 @@
             width: 100%;
             padding: 16px 20px;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 15px;
             font-weight: 700;
             text-transform: uppercase;
             cursor: pointer;
-            text-decoration: none;
-            box-sizing: border-box;
             transition: all 0.3s ease;
             margin-bottom: 20px;
             font-family: 'Montserrat', sans-serif;
+            box-sizing: border-box;
         }
 
-        /* Button 1: Task */
         .btn-task {
             background: linear-gradient(90deg, #00d2ff, #3a7bd5);
             color: #000;
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
         }
 
-        .btn-task:active {
-            transform: scale(0.98);
-        }
-        
         .btn-task.completed {
             background: rgba(255, 255, 255, 0.1);
             color: #888;
@@ -118,7 +98,6 @@
             cursor: default;
         }
 
-        /* Button 2: Final */
         .btn-final {
             background: rgba(255, 255, 255, 0.05);
             color: #555;
@@ -129,7 +108,6 @@
         .btn-final.active {
             background: linear-gradient(90deg, #00d2ff, #3a7bd5);
             color: #000;
-            cursor: pointer;
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.6);
             animation: pulseCyan 2s infinite;
         }
@@ -140,82 +118,39 @@
             100% { box-shadow: 0 0 0 0 rgba(0, 210, 255, 0); }
         }
 
-        /* Icons */
-        .icon {
-            width: 22px;
-            height: 22px;
-            fill: currentColor;
-        }
+        .icon { width: 22px; height: 22px; fill: currentColor; }
 
-        /* --- Progress Bar --- */
-        .progress-section {
-            margin: 25px 0;
-            text-align: center;
-        }
-
+        .progress-section { margin: 25px 0; }
         .progress-text {
             color: #64748b;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
             margin-bottom: 8px;
             display: block;
         }
-
         .progress-track {
-            background-color: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.1);
             height: 4px;
             border-radius: 10px;
             overflow: hidden;
-            width: 100%;
         }
-
         .progress-fill {
-            background-color: var(--site-accent-cyan);
+            background: var(--site-accent-cyan);
             height: 100%;
             width: 0%;
-            border-radius: 10px;
             transition: width 0.6s ease;
             box-shadow: 0 0 10px var(--site-accent-cyan);
         }
 
-        /* ========================================= */
-        /* MOBILE RESPONSIVE TWEAKS (NEW ADDITION)   */
-        /* ========================================= */
-        @media screen and (max-width: 480px) {
-            .card {
-                /* Make box slightly narrower to show more margin on sides */
-                width: 85%; 
-                /* Reduce internal padding for small screens */
-                padding: 30px 20px; 
-            }
-
-            .logo-text {
-                font-size: 22px; /* Smaller Logo */
-            }
-
-            h2 {
-                font-size: 16px; /* Smaller Heading */
-            }
-
-            .subtitle {
-                font-size: 11px;
-                margin-bottom: 20px;
-            }
-
-            .btn {
-                padding: 14px 15px; /* Compact buttons */
-                font-size: 13px;
-                margin-bottom: 15px;
-            }
-
-            .icon {
-                width: 18px;
-                height: 18px;
-            }
+        @media (max-width: 480px) {
+            .card { padding: 30px 20px; width: 85%; }
+            .logo-text { font-size: 22px; }
+            h2 { font-size: 16px; }
+            .subtitle { font-size: 11px; }
+            .btn { padding: 14px 15px; font-size: 13px; }
+            .icon { width: 18px; height: 18px; }
         }
-
     </style>
 </head>
 <body>
@@ -224,49 +159,34 @@
         <div class="logo-container">
             <div class="logo-text"><span class="logo-accent">HIT</span>WICKET</div>
         </div>
-
         <h2>Link is Ready</h2>
-        
-        <p class="subtitle">
-            To keep this service free, please help us cover server and maintenance costs. ❤️
-        </p>
+        <p class="subtitle">To keep this service free, please help us cover server and maintenance costs. ❤️</p>
 
         <button id="taskBtn" class="btn btn-task" onclick="doTask()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path></svg>
-            
-            <span id="taskText">Click & Back</span>
-            
+            <span id="taskText">Click Here to Unlock</span>
             <svg id="taskIcon" class="icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
         </button>
 
         <div class="progress-section">
             <span class="progress-text" id="progText">Steps Completed 0 / 1</span>
-            <div class="progress-track">
-                <div class="progress-fill" id="progBar"></div>
-            </div>
+            <div class="progress-track"><div class="progress-fill" id="progBar"></div></div>
         </div>
 
         <button id="finalBtn" class="btn btn-final" disabled onclick="goNext()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M13.13 22.19l-1.63-3.83c1.57-.58 3.04-1.36 4.4-2.27l-2.77 6.1zM5.6 10.25c0 2.58 1.56 4.81 3.91 5.75-.42-.64-.69-1.4-.77-2.2l-3.14-3.55zm7.4-4.85c2.58 0 4.81 1.56 5.75 3.91-.64-.42-1.4-.69-2.2-.77L13 5.4zm2.18 10.7l-2.58 1.5c-.32.19-.73.08-.92-.24L10.2 14.8c-.19-.32-.08-.73.24-.92l2.58-1.5c.32-.19.73-.08.92.24l1.48 2.56c.19.32.08.73-.24.92zM21 11c0 5.52-4.48 10-10 10S1 16.52 1 11 5.48 1 11 1s10 4.48 10 10z"></path></svg>
-            
             <span>Watch Full HD Channels</span>
-            
             <svg class="icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
         </button>
     </div>
 
     <script>
         function doTask() {
-            // ============================================
-            // 1. ADD YOUR AD LINK HERE
-            // ============================================
             window.open('https://otieu.com/4/10589874', '_blank');
-
-            const taskBtn = document.getElementById('taskBtn');
-            const taskText = document.getElementById('taskText');
-            const taskIcon = document.getElementById('taskIcon');
-
             setTimeout(() => {
+                const taskBtn = document.getElementById('taskBtn');
+                const taskText = document.getElementById('taskText');
+                const taskIcon = document.getElementById('taskIcon');
                 taskBtn.classList.add('completed');
                 taskBtn.onclick = null; 
                 taskText.innerText = "Task Completed";
@@ -287,9 +207,6 @@
         }
 
         function goNext() {
-            // ============================================
-            // 2. ADD YOUR PLAYER PAGE NAME HERE
-            // ============================================
             window.location.href = "https://hitwicket.online/highquality";
         }
     </script>
