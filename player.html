@@ -23,135 +23,62 @@
             .catch(err => { console.error("Early fetch failed", err); return null; });
     </script>
     <script>
-    // (Smart Cache)
     const getCacheBuster = () => Math.floor(Date.now() / (10 * 60 * 1000));
-    
     window.dataFetchPromise = fetch('links.json?v=' + getCacheBuster())
         .then(response => response.json())
         .catch(err => { console.error("Early fetch failed", err); return null; });
-        // 
-setTimeout(() => {
-    location.reload();
-}, 120 * 60 * 1000);
-</script>
+    setTimeout(() => { location.reload(); }, 120 * 60 * 1000);
+    </script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" defer></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* --- CSS VARIABLES (Tailwind Config ) --- */
-        :root {
-            --neonBlue: #00f3ff;
-            --neonPurple: #bc13fe;
-            --darkBg: #0b1120;
-        }
-
-        /* Custom Utility Classes */
+        :root { --neonBlue: #00f3ff; --neonPurple: #bc13fe; --darkBg: #0b1120; }
         .text-neonBlue { color: var(--neonBlue); }
         .bg-neonBlue { background-color: var(--neonBlue); }
         .border-neonBlue { border-color: var(--neonBlue); }
         .shadow-neon { box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); }
-        
-        @keyframes pulse-fast {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        @keyframes pulse-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .animate-pulse-fast { animation: pulse-fast 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-        /* --- GLOBAL STYLES --- */
-        body { 
-            background-color: var(--darkBg); 
-            color: #ffffff; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            font-family: 'Rajdhani', sans-serif;
-            font-display: swap; 
-        }
-
+        body { background-color: var(--darkBg); color: #ffffff; min-height: 100vh; overflow-x: hidden; font-family: 'Rajdhani', sans-serif; font-display: swap; }
         .bg-gradient-orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.2; will-change: transform; }
         .orb-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--neonBlue); }
         .orb-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: var(--neonPurple); }
-
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
 
-        /* --- CHANNEL CARD CUSTOM WIDTHS (FIXED) --- */
-        /* මෙය දැම්මේ පරණ Tailwind Link එක නිසා w-[23%] වැඩ නොකරන නිසා */
-        .custom-card-width {
-            width: 23%; /* Mobile: 4 Cards (23% x 4 = 92%) */
-        }
-        @media (min-width: 640px) {
-            .custom-card-width { width: 13%; } /* Tablet: 7 Cards */
-        }
-        @media (min-width: 1024px) {
-            .custom-card-width { width: 9%; } /* PC: 10 Cards */
-        }
+        /* --- FIXED WIDTHS & ASPECT RATIO --- */
+        .custom-card-width { width: 23%; } /* Mobile: 4 Cards */
+        @media (min-width: 640px) { .custom-card-width { width: 13%; } } /* Tablet */
+        @media (min-width: 1024px) { .custom-card-width { width: 9%; } } /* PC */
 
-        /* --- CHANNEL CARD OPTIMIZATION --- */
+        /* Force Uniform Height using Aspect Ratio */
         .channel-card { 
-            position: relative; 
-            background: #0c4a6e; 
-            border-radius: 0.5rem; 
-            padding: 2px; 
-            overflow: hidden; 
-            cursor: pointer; 
-            display: block; 
+            position: relative; background: #0c4a6e; border-radius: 0.5rem; padding: 2px; overflow: hidden; cursor: pointer; display: block; 
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+            aspect-ratio: 0.75; /* (3:4 ratio) හැම කාඩ් එකම එකම උසින් තියන්න */
         }
-
-        .channel-card::before { 
-            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
-            background: conic-gradient(transparent 0deg, transparent 250deg, var(--neonBlue) 300deg, #ffffff 360deg); 
-            animation: rotate 2s linear infinite; animation-play-state: paused; opacity: 0; transition: opacity 0.3s;
-        }
-
+        .channel-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent 0deg, transparent 250deg, var(--neonBlue) 300deg, #ffffff 360deg); animation: rotate 2s linear infinite; animation-play-state: paused; opacity: 0; transition: opacity 0.3s; }
         .channel-card:hover::before { animation-play-state: running; opacity: 1; }
         .channel-card:hover { transform: translateY(-3px); box-shadow: 0 0 15px rgba(0, 243, 255, 0.4); }
-
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .card-content { background: #111827; border-radius: 0.4rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 0.5rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-        .channel-logo { object-fit: contain; background: transparent; transition: transform 0.3s ease; }
-
+        .card-content { background: #111827; border-radius: 0.4rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 0.25rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .channel-logo { object-fit: contain; }
+        
         .video-area { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
         .video-area .shaka-video-container { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
-        
         .status-overlay, .connect-spinner { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 40; }
         .status-overlay { display: none; z-index: 50; }
         .status-overlay.show { display: flex; }
 
-        /* Load More Button Styling */
-.load-more-btn {
-    background: transparent;
-    border: 1px solid var(--neonBlue);
-    color: var(--neonBlue);
-    padding: 10px 30px;
-    border-radius: 50px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-    outline: none; /* */
-}
-
-.load-more-btn:hover {
-    background: var(--neonBlue);
-    color: #000;
-    box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
-}
-
-/* (Focus state) */
-.load-more-btn:focus {
-    outline: none;
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-}
+        .load-more-btn { background: transparent; border: 1px solid var(--neonBlue); color: var(--neonBlue); padding: 10px 30px; border-radius: 50px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s ease; cursor: pointer; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); outline: none; }
+        .load-more-btn:hover { background: var(--neonBlue); color: #000; box-shadow: 0 0 30px rgba(0, 243, 255, 0.6); }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -179,14 +106,12 @@ setTimeout(() => {
                     <div data-shaka-player-container>
                         <video data-shaka-player id="video" autoplay style="width:100%;height:100%"></video>
                     </div>
-
                     <div id="connect-spinner" class="connect-spinner">
                         <div class="text-center">
                             <i class="fas fa-circle-notch fa-spin text-5xl text-neonBlue drop-shadow-[0_0_10px_#00f3ff]"></i>
                             <p class="mt-4 text-neonBlue font-bold tracking-widest text-sm uppercase">Loading Stream...</p>
                         </div>
                     </div>
-
                     <div id="status-overlay" class="status-overlay">
                         <div class="text-center">
                             <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-3"></i>
@@ -218,7 +143,7 @@ setTimeout(() => {
                 <h2 class="text-2xl font-bold uppercase tracking-widest">More <span class="text-neonBlue">Channels</span></h2>
             </div>
             
-            <div class="flex flex-wrap justify-center items-start gap-2 w-full min-h-[400px]" id="channelGrid">
+            <div class="flex flex-wrap justify-center gap-2 w-full min-h-[400px]" id="channelGrid">
                 <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
                 <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
                 <div class="channel-card skeleton-card opacity-50 custom-card-width"><div class="card-content"><div class="w-full aspect-square mb-1 bg-gray-800 rounded animate-pulse"></div></div></div>
@@ -226,10 +151,10 @@ setTimeout(() => {
             </div>
             
            <div id="loadMoreContainer" class="w-full flex justify-center mt-12 hidden">
-    <button id="loadMoreBtn" class="load-more-btn">
-        Load More Channels <i class="fas fa-arrow-down ml-2"></i>
-    </button>
-</div>
+                <button id="loadMoreBtn" class="load-more-btn">
+                    Load More Channels <i class="fas fa-arrow-down ml-2"></i>
+                </button>
+            </div>
         </section>
     </main>
 
@@ -238,15 +163,13 @@ setTimeout(() => {
     </footer>
 
     <script>
-        // AD MANAGER
         const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
         const AD_COOLDOWN_MINUTES = 1; 
         
         function manageAds() {
             const lastShown = localStorage.getItem('ad_last_shown_time');
             const now = Date.now();
-            const cooldownMs = AD_COOLDOWN_MINUTES * 60 * 1000;
-            if (!lastShown || (now - parseInt(lastShown) > cooldownMs)) {
+            if (!lastShown || (now - parseInt(lastShown) > AD_COOLDOWN_MINUTES * 60 * 1000)) {
                 const script = document.createElement('script');
                 script.type = 'text/javascript'; script.src = AD_URL; script.async = true;
                 document.body.appendChild(script);
@@ -255,7 +178,6 @@ setTimeout(() => {
         }
         setTimeout(manageAds, 3000);
 
-        // PLAYER CONFIG
         const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
         
         let allChannels = [];
@@ -263,14 +185,9 @@ setTimeout(() => {
         const CHANNELS_PER_PAGE = 20;
 
         async function initApp() {
-            if (typeof shaka === 'undefined') {
-                setTimeout(initApp, 100);
-                return;
-            }
+            if (typeof shaka === 'undefined') { setTimeout(initApp, 100); return; }
             shaka.polyfill.installAll();
-            if (shaka.Player.isBrowserSupported()) {
-                initPlayer();
-            }
+            if (shaka.Player.isBrowserSupported()) initPlayer();
         }
 
         async function parseM3U(text) {
@@ -285,8 +202,7 @@ setTimeout(() => {
                         const logo = logoMatch ? logoMatch[1] : "https://via.placeholder.com/200?text=Sports";
                         const parts = line.split(',');
                         const name = parts[parts.length - 1].trim();
-                        const id = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-                        currentChannel.id = id; currentChannel.name = name; currentChannel.logo = logo; currentChannel.quality = "Live";
+                        currentChannel.id = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(); currentChannel.name = name; currentChannel.logo = logo; currentChannel.quality = "Live";
                     } else if (line.startsWith('#EXTVLCOPT:http-referrer=')) {
                         currentChannel.headers['Referer'] = line.split('http-referrer=')[1].trim();
                     } else if (line.startsWith('#EXTVLCOPT:http-origin=')) {
@@ -308,46 +224,37 @@ setTimeout(() => {
         function renderChannelBatch() {
             const gridContainer = document.getElementById('channelGrid');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
-            
-            if (displayedCount === 0) {
-                gridContainer.innerHTML = ''; 
-            }
+            if (displayedCount === 0) gridContainer.innerHTML = ''; 
             
             const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
             
             if (nextBatch.length > 0) {
                 const batchHTML = nextBatch.map((c, index) => {
-    // Smaller image size for faster loading
-    const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=150&h=150&fit=contain&output=webp`;
-    
-    //  (LCP Speed)
-    const isPriority = (displayedCount === 0 && index < 10);
-    const loadingAttr = isPriority ? "eager" : "lazy";
-    const priorityAttr = isPriority ? "high" : "auto";
-
-    /* USED custom-card-width CLASS INSTEAD OF w-[23%] */
-    return `
-    <a href="?id=${c.id}" class="channel-card group block custom-card-width">
-        <div class="card-content !p-1">
-            <div class="w-full aspect-square mb-0.5 overflow-hidden flex items-center justify-center bg-slate-800/50 rounded-md">
-                <img src="${optimizedLogo}" 
-                     alt="${c.name}"
-                     width="150" 
-                     height="150"
-                     loading="${loadingAttr}" 
-                     fetchpriority="${priorityAttr}" 
-                     decoding="async" 
-                     onerror="this.src='https://via.placeholder.com/150?text=TV'" 
-                     class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
-            </div>
-            <p class="text-center font-bold text-[9px] sm:text-[10px] leading-tight text-gray-200 line-clamp-1 w-full overflow-hidden text-ellipsis">${c.name}</p>
-            <div class="mt-0.5 flex items-center justify-center gap-0.5 text-[8px] text-neonBlue border border-neonBlue/30 px-1 py-0 rounded bg-neonBlue/5 w-full">
-                <i class="fas fa-circle text-[4px] animate-pulse"></i> ${c.quality || 'LIVE'}
-            </div>
-        </div>
-    </a>
-    `;
-}).join('');
+                    const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=150&h=150&fit=contain&output=webp`;
+                    const isPriority = (displayedCount === 0 && index < 10);
+                    
+                    /* --- UPDATES FOR SMALL TEXT & UNIFORM CARDS --- */
+                    // 1. Text size reduced to text-[8px] for name
+                    // 2. Padding reduced to !p-0.5
+                    // 3. line-clamp-2 ensures max 2 lines
+                    return `
+                    <a href="?id=${c.id}" class="channel-card group block custom-card-width">
+                        <div class="card-content !p-1">
+                            <div class="w-full aspect-square mb-0.5 overflow-hidden flex items-center justify-center bg-slate-800/50 rounded-sm">
+                                <img src="${optimizedLogo}" 
+                                     alt="${c.name}"
+                                     loading="${isPriority ? "eager" : "lazy"}" 
+                                     onerror="this.src='https://via.placeholder.com/150?text=TV'" 
+                                     class="channel-logo w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
+                            </div>
+                            <p class="text-center font-bold text-[8px] sm:text-[10px] leading-none text-gray-200 line-clamp-2 w-full break-words h-[18px] flex items-center justify-center">${c.name}</p>
+                            <div class="mt-0.5 flex items-center justify-center gap-0.5 text-[7px] text-neonBlue border border-neonBlue/30 px-1 py-0 rounded bg-neonBlue/5 w-full">
+                                <i class="fas fa-circle text-[3px] animate-pulse"></i> ${c.quality || 'LIVE'}
+                            </div>
+                        </div>
+                    </a>
+                    `;
+                }).join('');
                 
                 gridContainer.insertAdjacentHTML('beforeend', batchHTML);
                 displayedCount += nextBatch.length;
@@ -359,177 +266,88 @@ setTimeout(() => {
 
         async function initPlayer() {
             const video = document.getElementById('video');
-            if (!video['ui']) {
-               const checkUI = setInterval(() => { if (video['ui']) { clearInterval(checkUI); initPlayer(); } }, 100);
-               return;
-            }
+            if (!video['ui']) { const checkUI = setInterval(() => { if (video['ui']) { clearInterval(checkUI); initPlayer(); } }, 100); return; }
 
             const ui = video['ui'];
-            const controls = ui.getControls();
-            const player = controls.getPlayer();
-            
+            const player = ui.getControls().getPlayer();
             const overlay = document.getElementById('status-overlay');
             const connectSpinner = document.getElementById('connect-spinner');
             const videoWrapper = document.getElementById('video-wrapper');
-            
             const params = new URLSearchParams(window.location.search);
             const channelId = params.get('id'); 
 
-            player.addEventListener('error', (e) => {
-                if(e.detail.code != 7000) { showError("Stream Error: " + e.detail.code); }
-            });
-
+            player.addEventListener('error', (e) => { if(e.detail.code != 7000) showError("Stream Error: " + e.detail.code); });
             player.addEventListener('buffering', (event) => {
-                if (event.buffering) {
-                    connectSpinner.style.display = "flex";
-                    videoWrapper.classList.add("loading-state");
-                } else {
-                    if (!video.paused) {
-                        connectSpinner.style.display = "none";
-                        videoWrapper.classList.remove("loading-state");
-                    }
-                }
+                if (event.buffering) { connectSpinner.style.display = "flex"; videoWrapper.classList.add("loading-state"); } 
+                else if (!video.paused) { connectSpinner.style.display = "none"; videoWrapper.classList.remove("loading-state"); }
             });
 
             try {
-                // --- OPTIMIZED DATA FETCHING LOGIC ---
-let data = null;
-const cacheBuster = Math.floor(Date.now() / (10 * 60 * 1000));
+                let data = null;
+                const cacheBuster = Math.floor(Date.now() / (10 * 60 * 1000));
+                if(window.dataFetchPromise) data = await window.dataFetchPromise;
+                else { const response = await fetch('links.json?v=' + cacheBuster); data = await response.json(); }
 
-if(window.dataFetchPromise) {
-    data = await window.dataFetchPromise;
-} else {
-    const response = await fetch('links.json?v=' + cacheBuster);
-    data = await response.json();
-}
+                let manualChannels = (data && data.manual_channels) ? data.manual_channels.map(c => ({
+                    id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(), name: c.name, logo: c.logo, quality: "HD", streamUrl: c.url, headers: {}, drm: c.drm 
+                })) : [];
 
-let manualChannels = [];
-if (data && data.manual_channels) {
-    manualChannels = data.manual_channels.map(c => ({
-        id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(),
-        name: c.name,
-        logo: c.logo,
-        quality: "HD", 
-        streamUrl: c.url,
-        headers: {}, 
-        drm: c.drm 
-    }));
-}
-
-let m3uChannels = [];
-if (data && data.playlists) {
-    const promises = data.playlists.map(async (url) => {
-        try {
-            const finalM3uUrl = url + (url.includes('?') ? '&' : '?') + 'update=' + cacheBuster;
-            const res = await fetch(finalM3uUrl);
-            const text = await res.text();
-            return await parseM3U(text);
-        } catch (e) {
-            console.error("Failed to load M3U:", url, e);
-            return [];
-        }
-    });
-    const results = await Promise.all(promises);
-    m3uChannels = results.flat();
-}
-                // --- ORDERED WHITELIST LOGIC ---
-        let combinedChannels = [...manualChannels, ...m3uChannels];
-
-        if (data && data.allowed_channels && Array.isArray(data.allowed_channels)) {
-            let orderedChannels = [];
-            data.allowed_channels.forEach(allowedName => {
-                const targetName = allowedName.toLowerCase().trim();
-                const match = combinedChannels.find(ch => 
-                    ch.name.toLowerCase().trim() === targetName
-                );
-                if (match) {
-                    orderedChannels.push(match);
+                let m3uChannels = [];
+                if (data && data.playlists) {
+                    const promises = data.playlists.map(async (url) => {
+                        try { return await parseM3U(await (await fetch(url + (url.includes('?') ? '&' : '?') + 'update=' + cacheBuster)).text()); } 
+                        catch (e) { return []; }
+                    });
+                    m3uChannels = (await Promise.all(promises)).flat();
                 }
-            });
-            allChannels = orderedChannels;
-        } else {
-            allChannels = combinedChannels;
-        }
-
-        allChannels = allChannels.filter(c => c.streamUrl && c.streamUrl.trim() !== "");
-        // --- ORDERED WHITELIST LOGIC END ---
                 
+                let combinedChannels = [...manualChannels, ...m3uChannels];
+                if (data && data.allowed_channels && Array.isArray(data.allowed_channels)) {
+                    allChannels = [];
+                    data.allowed_channels.forEach(allowedName => {
+                        const match = combinedChannels.find(ch => ch.name.toLowerCase().trim() === allowedName.toLowerCase().trim());
+                        if (match) allChannels.push(match);
+                    });
+                } else { allChannels = combinedChannels; }
+
+                allChannels = allChannels.filter(c => c.streamUrl && c.streamUrl.trim() !== "");
                 const gridContainer = document.getElementById('channelGrid');
 
-                if (allChannels.length > 0) {
-                    renderChannelBatch();
-                    document.getElementById('loadMoreBtn').addEventListener('click', renderChannelBatch);
-                } else {
-                    gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`;
-                }
+                if (allChannels.length > 0) { renderChannelBatch(); document.getElementById('loadMoreBtn').addEventListener('click', renderChannelBatch); } 
+                else { gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No channels found.</p>`; }
 
                 const ch = allChannels.find(c => c.id === channelId);
                 if (ch) {
                     document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
                     document.getElementById('ch-name').innerText = ch.name;
                     document.getElementById('ch-quality').innerText = "Connecting...";
-
-                    connectSpinner.style.display = "flex";
-                    videoWrapper.classList.add("loading-state");
+                    connectSpinner.style.display = "flex"; videoWrapper.classList.add("loading-state");
 
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
-                        const originalUrl = request.uris[0];
-                        let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(originalUrl)}`;
+                        let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
                         if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
                         if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
                         if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
                         request.uris[0] = proxyUrl;
                     });
                     
-                    if (ch.drm) {
-                        player.configure({
-                            drm: ch.drm
-                        });
-                    } else {
-                        player.configure({
-                            drm: { clearKeys: {} }
-                        });
-                    }
+                    player.configure({ drm: ch.drm || { clearKeys: {} }, streaming: { bufferingGoal: 3, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 }, lowLatencyMode: true } });
                     
-                    player.configure({ streaming: { bufferingGoal: 3, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 },lowLatencyMode: true, jumpLargeGaps: true} });
-                    
-                    const hideSpinner = () => {
-                        connectSpinner.style.display = "none";
-                        videoWrapper.classList.remove("loading-state");
-                        document.getElementById('ch-quality').innerText = "Live";
-                    };
-
-                    video.addEventListener('canplay', hideSpinner, { once: true });
-                    video.addEventListener('playing', hideSpinner, { once: true });
-
+                    const hideSpinner = () => { connectSpinner.style.display = "none"; videoWrapper.classList.remove("loading-state"); document.getElementById('ch-quality').innerText = "Live"; };
+                    video.addEventListener('canplay', hideSpinner, { once: true }); video.addEventListener('playing', hideSpinner, { once: true });
                     await player.load(ch.streamUrl);
                     
                 } else {
-                    if(!channelId) {
-                         document.getElementById('ch-name').innerText = "Select a Channel";
-                         document.getElementById('ch-quality').innerText = "Ready";
-                         connectSpinner.style.display = "none";
-                         videoWrapper.classList.remove("loading-state");
-                    } else { 
-                        showError("Channel Not Found"); 
-                        connectSpinner.style.display = "none";
-                    }
+                    if(!channelId) { document.getElementById('ch-name').innerText = "Select a Channel"; document.getElementById('ch-quality').innerText = "Ready"; connectSpinner.style.display = "none"; videoWrapper.classList.remove("loading-state"); } 
+                    else { showError("Channel Not Found"); connectSpinner.style.display = "none"; }
                 }
-            } catch (err) {
-                console.error("App Error:", err);
-                connectSpinner.style.display = "none"; 
-                if(channelId) showError("Failed to Load Stream");
-            }
+            } catch (err) { connectSpinner.style.display = "none"; if(channelId) showError("Failed to Load Stream"); }
 
-            function showError(msg) {
-                overlay.classList.add('show');
-                document.getElementById('error-msg').innerText = msg;
-            }
+            function showError(msg) { overlay.classList.add('show'); document.getElementById('error-msg').innerText = msg; }
         }
 
-        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initApp); } 
-        else { initApp(); }
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initApp); } else { initApp(); }
     </script>
 </body>
 </html>
