@@ -3,7 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title id="page-title">HitWicket | Live Sports</title>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <style>
+    body { display: none; }
+</style>
+
+<script>
+   
+    var token = sessionStorage.getItem("user_auth");
+
+    if (token !== "valid_session") {
+      
+        window.location.replace("index.html"); 
+    } else {
+       
+        document.addEventListener("DOMContentLoaded", function() {
+            document.body.style.display = "block";
+        });
+    }
+</script>
     
     <link rel="preload" href="highquality.json" as="fetch" crossorigin="anonymous">
 
