@@ -82,20 +82,21 @@
             overflow: hidden;
         }
 
-        /* 2. Channel Name (Fixed Height & Clamp) */
-        .channel-name {
-            font-size: 10px;
-            line-height: 1.1;
-            font-weight: 700;
-            color: #e2e8f0;
-            text-align: center;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            height: 22px; /* Uniform height for text area */
-            width: 100%;
-        }
+        /* 
+.channel-name-wrapper {
+    width: 100%;
+    height: 18px; /*  */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.channel-name-wrapper svg {
+    width: 100%;
+    height: 100%;
+}
 
         @media (min-width: 640px) { .channel-name { font-size: 11px; height: 24px; } }
         
@@ -276,7 +277,19 @@
                                      onerror="this.src='https://via.placeholder.com/150?text=TV'" 
                                      class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
                             </div>
-                            <div class="channel-name">${c.name}</div>
+                          
+<div class="channel-name-wrapper">
+    <svg viewBox="0 0 100 12" preserveAspectRatio="xMidYMid meet">
+        <text x="50" y="9" 
+              text-anchor="middle" 
+              fill="#e2e8f0" 
+              font-weight="700" 
+              font-family="Rajdhani" 
+              style="font-size: 10px;">
+            ${c.name}
+        </text>
+    </svg>
+</div>
                             <div class="mt-1 flex items-center justify-center gap-1 text-[7px] text-neonBlue border border-neonBlue/30 px-1 py-0.5 rounded bg-neonBlue/5 w-full">
                                 <i class="fas fa-circle text-[3px] animate-pulse"></i> ${c.quality || 'LIVE'}
                             </div>
