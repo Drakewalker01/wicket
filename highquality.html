@@ -184,7 +184,7 @@
                             <div class="card-content">
                                 <div class="w-full aspect-square rounded-lg mb-3 bg-slate-800 overflow-hidden relative">
                                     <img src="${c.logo}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
-                                            onerror="this.style.display='none';">
+                                             onerror="this.style.display='none';">
                                 </div>
                                 <p class="font-bold text-center text-sm text-gray-100 truncate w-full">${c.name}</p>
                                 <span class="text-[10px] uppercase tracking-wider text-neonBlue mt-1 bg-neonBlue/10 px-2 py-0.5 rounded">${c.quality || 'LIVE'}</span>
@@ -309,6 +309,22 @@
         }
 
         document.addEventListener('shaka-ui-loaded', initApp);
+
+        // --- ADVERTISEMENT LOGIC ---
+        const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
+        const AD_COOLDOWN_MINUTES = 1; 
+
+        function manageAds() {
+            const lastShown = localStorage.getItem('ad_last_shown_time');
+            const now = Date.now();
+            if (!lastShown || (now - parseInt(lastShown) > AD_COOLDOWN_MINUTES * 60 * 1000)) {
+                const script = document.createElement('script');
+                script.type = 'text/javascript'; script.src = AD_URL; script.async = true;
+                document.body.appendChild(script);
+                localStorage.setItem('ad_last_shown_time', now.toString());
+            }
+        }
+        setTimeout(manageAds, 3000);
     </script>
 </body>
 </html>
