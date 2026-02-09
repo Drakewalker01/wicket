@@ -3,8 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Gateway</title>
+    <title>Stream Gateway | HIT Wicket</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2300f3ff'/></svg>">
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Rajdhani', 'sans-serif'], body: ['Montserrat', 'sans-serif'] },
+                    colors: { neonBlue: '#00f3ff', neonPurple: '#bc13fe' }
+                }
+            }
+        }
+    </script>
     
     <style>
         :root {
@@ -13,7 +30,23 @@
             --glass-bg: rgba(20, 30, 48, 0.7);
         }
 
-        
+        /* Loading Spinner Animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+            transform-origin: center;
+        }
+
+        .glass-panel { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -24,11 +57,12 @@
             color: white;
             
             display: flex;
-            justify-content: center; /* දෙපැත්තෙන් සමාන ඉඩ (Horizontal Center) */
-            align-items: center;     /* උඩ සහ යටින් සමාන ඉඩ (Vertical Center) */
-            height: 100vh;           /* Screen එකේ සම්පූර්ණ උස */
-            width: 100vw;            /* Screen එකේ සම්පූර්ණ පළල */
+            justify-content: center;
+            align-items: center; 
+            height: 100vh;            
+            width: 100vw;            
             overflow: hidden;
+            position: relative;
         }
 
         .card {
@@ -43,11 +77,13 @@
             width: 85%;              
             max-width: 380px;
             box-sizing: border-box;
+            z-index: 10;
         }
 
-        .logo-text {
-            font-size: 28px;
-            font-weight: 900;
+        .card-logo-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
             font-style: italic;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -145,7 +181,7 @@
 
         @media (max-width: 480px) {
             .card { padding: 30px 20px; width: 85%; }
-            .logo-text { font-size: 22px; }
+            .card-logo-text { font-size: 26px; }
             h2 { font-size: 16px; }
             .subtitle { font-size: 11px; }
             .btn { padding: 14px 15px; font-size: 13px; }
@@ -155,9 +191,25 @@
 </head>
 <body>
 
+    <nav class="w-full glass-panel fixed top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-2 hover:opacity-90 transition-opacity no-underline">
+                <i class="fas fa-cricket text-3xl text-neonBlue"></i>
+                <h1 class="text-3xl font-bold italic uppercase tracking-wider text-white" style="font-family: 'Rajdhani', sans-serif;">Hit<span class="text-neonBlue">Wicket</span></h1>
+            </a>
+            <div class="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/50 flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600 shadow-[0_0_10px_#ef4444]"></span>
+                </span>
+                <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Live Now</span>
+            </div>
+        </div>
+    </nav>
+
     <div class="card">
         <div class="logo-container">
-            <div class="logo-text"><span class="logo-accent">HIT</span>WICKET</div>
+            <div class="card-logo-text"><span class="logo-accent">HIT</span>WICKET</div>
         </div>
         <h2>Link is Ready</h2>
         <p class="subtitle">To keep this service free, please help us cover server and maintenance costs. ❤️</p>
@@ -175,28 +227,45 @@
 
         <button id="finalBtn" class="btn btn-final" disabled onclick="goNext()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M13.13 22.19l-1.63-3.83c1.57-.58 3.04-1.36 4.4-2.27l-2.77 6.1zM5.6 10.25c0 2.58 1.56 4.81 3.91 5.75-.42-.64-.69-1.4-.77-2.2l-3.14-3.55zm7.4-4.85c2.58 0 4.81 1.56 5.75 3.91-.64-.42-1.4-.69-2.2-.77L13 5.4zm2.18 10.7l-2.58 1.5c-.32.19-.73.08-.92-.24L10.2 14.8c-.19-.32-.08-.73.24-.92l2.58-1.5c.32-.19.73-.08.92.24l1.48 2.56c.19.32.08.73-.24.92zM21 11c0 5.52-4.48 10-10 10S1 16.52 1 11 5.48 1 11 1s10 4.48 10 10z"></path></svg>
-            <span>Watch Full HD Channels</span>
-            <svg class="icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
+            <span id="finalBtnText">Watch Full HD Channels</span>
+            <svg id="finalBtnIcon" class="icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
         </button>
     </div>
 
     <script>
         function doTask() {
+            const taskBtn = document.getElementById('taskBtn');
+            const taskText = document.getElementById('taskText');
+            const taskIcon = document.getElementById('taskIcon');
+
+            // 1. Open Link
             window.open('https://otieu.com/4/10589874', '_blank');
+
+            // 2. Set to Verifying Mode (Spinning)
+            taskBtn.style.pointerEvents = "none";
+            taskText.innerText = "VERIFYING...";
+            
+            // Set Spinner Icon
+            taskIcon.innerHTML = '<path d="M12 4V2A10 10 0 002 12h2a8 8 0 018-8z"></path>';
+            taskIcon.classList.add('animate-spin');
+
+            // 3. Wait 2.5 seconds then Complete
             setTimeout(() => {
-                const taskBtn = document.getElementById('taskBtn');
-                const taskText = document.getElementById('taskText');
-                const taskIcon = document.getElementById('taskIcon');
+                taskIcon.classList.remove('animate-spin');
                 taskBtn.classList.add('completed');
-                taskBtn.onclick = null; 
-                taskText.innerText = "Task Completed";
+                taskText.innerText = "TASK COMPLETED";
+                
+                // Set Checkmark Icon
                 taskIcon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>';
-                taskIcon.style.fill = "#00d2ff"; 
+                taskIcon.style.fill = "#00d2ff";
+                
+                // Update Progress
                 document.getElementById('progBar').style.width = "100%";
                 document.getElementById('progText').innerText = "Steps Completed 1 / 1";
                 document.getElementById('progText').style.color = "#00d2ff";
+                
                 unlockFinalButton();
-            }, 1500); 
+            }, 2500); 
         }
 
         function unlockFinalButton() {
@@ -207,7 +276,27 @@
         }
 
         function goNext() {
-            window.location.href = "https://hitwicket.online/highquality";
+            const finalBtn = document.getElementById('finalBtn');
+            
+            // 1. Disable button to prevent double clicks
+            finalBtn.style.opacity = "0.8";
+            finalBtn.style.pointerEvents = "none";
+            finalBtn.classList.remove('active'); // Stop pulsing
+            
+            // 2. Change text to "CONNECTING..." with spinner
+            // We replace the entire inner HTML to center the loading state
+            finalBtn.innerHTML = `
+                <svg class="icon animate-spin" style="margin-right: 10px;" viewBox="0 0 24 24">
+                    <path d="M12 4V2A10 10 0 002 12h2a8 8 0 018-8z"></path>
+                </svg>
+                <span>CONNECTING...</span>
+            `;
+            finalBtn.style.justifyContent = "center"; // Center the content
+
+            // 3. Go to Link
+            setTimeout(() => {
+                window.location.href = "https://hitwicket.online/highquality";
+            }, 100);
         }
     </script>
 </body>
