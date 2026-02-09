@@ -11,28 +11,25 @@
 <meta http-equiv="Expires" content="0">
 
 <style>
-    /* display: none දැම්මොත් Layout කැඩෙනවා.
-       ඒ නිසා අපි opacity: 0 දානවා. එතකොට පිටුව තියෙනවා, හැබැයි පේන්නේ නෑ.
-       pointer-events: none දාන්නේ click කරන එක නවත්තන්න.
-    */
+   
     body { 
         opacity: 0; 
         pointer-events: none; 
-        transition: opacity 0.3s ease; /* ලස්සනට මතු වෙන්න */
+        transition: opacity 0.3s ease; /*  */
     }
 </style>
 
 <script>
-    // 1. Session එක check කිරීම
+    // 1. Session
     var token = sessionStorage.getItem("user_auth");
 
     if (token !== "valid_session") {
-        // Token එක නැත්නම් Index එකට එලවන්න
+        // Token 
         window.location.replace("index.html"); 
     } else {
-        // Token එක තියෙනවා නම්
+        // Token 
         document.addEventListener("DOMContentLoaded", function() {
-            // තත්පර පොඩි ගානක් ඉඳලා පෙන්නන්න (Layout එක හැදෙන්න Time එක දෙනවා)
+            // 
             setTimeout(function() {
                 document.body.style.opacity = "1";
                 document.body.style.pointerEvents = "auto";
