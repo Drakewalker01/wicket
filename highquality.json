@@ -17,7 +17,7 @@
       "id": "willow-hd-new",
       "name": "Willow HD",
       "logo": "https://i.postimg.cc/gkSg0cCP/512x512bb.jpg",
-      "mpdUrl": "https://a122aivottlinear-a.akamaihd.net/OTTB/iad-nitro/live/clients/dash/enc/81voamn3cf/out/v1/aa29590b17dc455e8cf570f6655c7d11/cenc.mpd",
+      "mpdUrl": "",
       "quality": "1080p HQ",
       "drm": {
         "clearKeys": {
@@ -26,8 +26,8 @@
       }
     },
     { "id": "Papare1", "name": "Papare TV 1", "logo": "https://yt3.googleusercontent.com/krdKKbHCJcmCBS-eHNDn9LYF-yRxILw0rkpfyKiDPfMLVMZ4LUzSJ_wBUabhEpuyqKpzraS3Kg=s900-c-k-c0x00ffffff-no-rj", "streamUrl": "https://livecdn9.thepapare.com/out/v1/94079f84fc2a447e95eab8010708c0ae/index.m3u8", "quality": "1080P" },
-    { "id": "Papare2", "name": "Papare TV 2 ", "logo": "https://yt3.googleusercontent.com/krdKKbHCJcmCBS-eHNDn9LYF-yRxILw0rkpfyKiDPfMLVMZ4LUzSJ_wBUabhEpuyqKpzraS3Kg=s900-c-k-c0x00ffffff-no-rj", "streamUrl": "https://livecdn3.thepapare.com/out/v1/bba38dbc45f543a1a61feec0e29c449d/index_6.m3u8", "quality": "Full HD" },
-    { "id": "sonysports1", "name": "Sony Sports 1", "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGE6O710SDHMpr580b_kjyRj2XD4fUMDc2gg&s", "streamUrl": "https://livecdn9.thepapare.com/out/v1/94079f84fc2a447e95eab8010708c0ae/index.m3u8", "quality": "Exclusive" },
+    { "id": "Papare2", "name": "Papare TV Sinhala ", "logo": "https://yt3.googleusercontent.com/krdKKbHCJcmCBS-eHNDn9LYF-yRxILw0rkpfyKiDPfMLVMZ4LUzSJ_wBUabhEpuyqKpzraS3Kg=s900-c-k-c0x00ffffff-no-rj", "streamUrl": "https://livecdn1.thepapare.com/out/v1/62cb03ab26ca4d35a75f842586fde664/index.m3u8", "quality": "Full HD" },
+    { "id": "sonysports1", "name": "Sony Sports 1", "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGE6O710SDHMpr580b_kjyRj2XD4fUMDc2gg&s", "streamUrl": "", "quality": "Exclusive" },
     { "id": "sonysports3", "name": "Sony Sports 3", "logo": "https://stmify.com/wp-content/uploads/2024/10/172-s.webp", "streamUrl": "", "quality": "Exclusive" },
     { "id": "tsportshd", "name": "TSports HD", "logo": "https://media.licdn.com/dms/image/v2/C560BAQEkzy6nAcsyag/company-logo_200_200/company-logo_200_200/0/1630662269264?e=2147483647&v=beta&t=Xyxc5WJFZRKGMmHUyjXuUmOmYGO9bgGLbkwV9uyduxo", "streamUrl": "", "quality": "Sports" },
     { "id": "tencricket", "name": "Ten Cricket", "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLMhVJFXkNYK7trsuhRe58ZK1-pQLUhD3T6w&s", "streamUrl": "", "quality": "Classic" },
