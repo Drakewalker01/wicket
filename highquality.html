@@ -38,7 +38,6 @@
 
         .unified-player-container {
             border-radius: 1.5rem; overflow: hidden; background: #000; 
-            /* Removed the permanent box-shadow glow here */
             border: 1px solid rgba(255,255,255,0.1);
             position: relative;
         }
@@ -55,19 +54,16 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
         }
         
-        /* Animated Border Logic - MODIFIED: Hidden by default */
+        /* Animated Border Logic */
         .channel-card::before { 
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; 
             background: conic-gradient(transparent 0deg, transparent 250deg, #00f3ff 300deg, #ffffff 360deg); 
             animation: rotate 4s linear infinite; 
             z-index: 0; 
-            
-            /* KEY CHANGE: Hidden by default, smooth transition */
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
-        /* KEY CHANGE: Show border only on hover */
         .channel-card:hover::before {
             opacity: 1;
         }
@@ -110,6 +106,11 @@
         ::-webkit-scrollbar-track { background: #0b1120; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #00f3ff; }
+        
+        /* Shaka Control Bar Tweaks */
+        .shaka-overflow-menu-button {
+            display: block; /* Ensure it stays visible if we keep it */
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col items-center">
@@ -195,6 +196,30 @@
             
             // Shaka Setup
             const ui = video['ui'];
+
+            // ==========================================
+            // START MODIFICATION: Custom UI Configuration
+            // ==========================================
+            const config = {
+                'controlPanelElements': [
+                    'play_pause',
+                    'time_and_duration',
+                    'spacer',
+                    'quality', // <--- Added Quality Button Here
+                    'mute',
+                    'volume',
+                    'fullscreen',
+                    'overflow_menu'
+                ],
+                // Remove quality from overflow menu if you want it ONLY on the bar, 
+                // or keep it just in case. Shaka usually hides duplicates intelligently.
+                'overflowMenuButtons': ['captions', 'cast', 'playback_rate', 'picture_in_picture']
+            };
+            ui.configure(config);
+            // ==========================================
+            // END MODIFICATION
+            // ==========================================
+
             const controls = ui.getControls();
             const player = controls.getPlayer();
 
@@ -208,7 +233,6 @@
 
             try {
                 // 1. Fetch Data
-                // 
                 const res = await fetch('highquality.json');
                 const data = await res.json();
 
@@ -221,7 +245,6 @@
                 const gridContainer = document.getElementById('channelGrid');
 
                 if (activeChannels.length > 0) {
-                    // .join('') is very important here!
                     gridContainer.innerHTML = activeChannels.map(c => `
                         <a href="?id=${c.id}" class="channel-card cursor-pointer group no-underline">
                             <div class="card-content">
@@ -261,8 +284,8 @@
                 } else {
                     // No Channel Selected (Homepage Mode)
                     if(!channelId) {
-                         showStatus("Select a Channel from below", false);
-                         statusIcon.className = "fas fa-arrow-down text-4xl text-neonBlue mb-3 animate-bounce";
+                          showStatus("Select a Channel from below", false);
+                          statusIcon.className = "fas fa-arrow-down text-4xl text-neonBlue mb-3 animate-bounce";
                     } else {
                         showStatus("Channel Not Found", true);
                     }
