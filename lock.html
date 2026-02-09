@@ -30,16 +30,7 @@
             --glass-bg: rgba(20, 30, 48, 0.7);
         }
 
-        /* Loading Spinner Animation */
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .animate-spin {
-            animation: spin 1s linear infinite;
-            transform-origin: center;
-        }
-
+        /* 2. Header Glass Effect Style */
         .glass-panel { 
             background: rgba(15, 23, 42, 0.6); 
             backdrop-filter: blur(20px); 
@@ -59,10 +50,10 @@
             display: flex;
             justify-content: center;
             align-items: center; 
-            height: 100vh;            
+            height: 100vh;           
             width: 100vw;            
             overflow: hidden;
-            position: relative;
+            position: relative; /* Header එක fixed නිසා මෙය වැදගත් */
         }
 
         .card {
@@ -77,11 +68,12 @@
             width: 85%;              
             max-width: 380px;
             box-sizing: border-box;
-            z-index: 10;
+            z-index: 10; /* Header එකට යට නොවී සිටීමට */
         }
 
+        /* Card Logo Styling */
         .card-logo-text {
-            font-family: 'Rajdhani', sans-serif;
+            font-family: 'Rajdhani', sans-serif; /* Matching header font */
             font-size: 32px;
             font-weight: 800;
             font-style: italic;
@@ -227,48 +219,28 @@
 
         <button id="finalBtn" class="btn btn-final" disabled onclick="goNext()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M13.13 22.19l-1.63-3.83c1.57-.58 3.04-1.36 4.4-2.27l-2.77 6.1zM5.6 10.25c0 2.58 1.56 4.81 3.91 5.75-.42-.64-.69-1.4-.77-2.2l-3.14-3.55zm7.4-4.85c2.58 0 4.81 1.56 5.75 3.91-.64-.42-1.4-.69-2.2-.77L13 5.4zm2.18 10.7l-2.58 1.5c-.32.19-.73.08-.92-.24L10.2 14.8c-.19-.32-.08-.73.24-.92l2.58-1.5c.32-.19.73-.08.92.24l1.48 2.56c.19.32.08.73-.24.92zM21 11c0 5.52-4.48 10-10 10S1 16.52 1 11 5.48 1 11 1s10 4.48 10 10z"></path></svg>
-            <span id="finalBtnText">Watch Full HD Channels</span>
-            <svg id="finalBtnIcon" class="icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
+            <span>Watch Full HD Channels</span>
+            <svg class="icon" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path></svg>
         </button>
     </div>
 
     <script>
-        // Encoded Link (Base64) to bypass GitHub safety checks
-        const _0x1a = "aHR0cHM6Ly9vdGlldS5jb20vNC8xMDU4OTg3NA=="; 
-
         function doTask() {
-            const taskBtn = document.getElementById('taskBtn');
-            const taskText = document.getElementById('taskText');
-            const taskIcon = document.getElementById('taskIcon');
-
-            // 1. Decode and Open Link
-            window.open(atob(_0x1a), '_blank');
-
-            // 2. Set to Verifying Mode (Spinning)
-            taskBtn.style.pointerEvents = "none";
-            taskText.innerText = "VERIFYING...";
-            
-            // Set Spinner Icon
-            taskIcon.innerHTML = '<path d="M12 4V2A10 10 0 002 12h2a8 8 0 018-8z"></path>';
-            taskIcon.classList.add('animate-spin');
-
-            // 3. Wait 2.5 seconds then Complete
+            window.open('https://otieu.com/4/10589874', '_blank');
             setTimeout(() => {
-                taskIcon.classList.remove('animate-spin');
+                const taskBtn = document.getElementById('taskBtn');
+                const taskText = document.getElementById('taskText');
+                const taskIcon = document.getElementById('taskIcon');
                 taskBtn.classList.add('completed');
-                taskText.innerText = "TASK COMPLETED";
-                
-                // Set Checkmark Icon
+                taskBtn.onclick = null; 
+                taskText.innerText = "Task Completed";
                 taskIcon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>';
-                taskIcon.style.fill = "#00d2ff";
-                
-                // Update Progress
+                taskIcon.style.fill = "#00d2ff"; 
                 document.getElementById('progBar').style.width = "100%";
                 document.getElementById('progText').innerText = "Steps Completed 1 / 1";
                 document.getElementById('progText').style.color = "#00d2ff";
-                
                 unlockFinalButton();
-            }, 2500); 
+            }, 1500); 
         }
 
         function unlockFinalButton() {
@@ -279,26 +251,7 @@
         }
 
         function goNext() {
-            const finalBtn = document.getElementById('finalBtn');
-            
-            // 1. Disable button to prevent double clicks
-            finalBtn.style.opacity = "0.8";
-            finalBtn.style.pointerEvents = "none";
-            finalBtn.classList.remove('active'); 
-            
-            // 2. Change text to "CONNECTING..." with spinner
-            finalBtn.innerHTML = `
-                <svg class="icon animate-spin" style="margin-right: 10px;" viewBox="0 0 24 24">
-                    <path d="M12 4V2A10 10 0 002 12h2a8 8 0 018-8z"></path>
-                </svg>
-                <span>CONNECTING...</span>
-            `;
-            finalBtn.style.justifyContent = "center";
-
-            // 3. Go to Link
-            setTimeout(() => {
-                window.location.href = "https://hitwicket.online/highquality";
-            }, 100);
+            window.location.href = "https://hitwicket.online/highquality";
         }
     </script>
 </body>
