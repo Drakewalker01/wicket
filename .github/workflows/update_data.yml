@@ -1,4 +1,4 @@
-name: Hourly JSON Update (SL Time)
+name: Hourly JSON Update (Time)
 
 on:
   schedule:
