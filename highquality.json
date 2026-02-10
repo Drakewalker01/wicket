@@ -1,36 +1,37 @@
 {
- 
-  "channels": [
-    {
-      "id": "tnt-sports-1",
-      "name": "TNT Sports 1",
-      "logo": "https://i.postimg.cc/VkxHPdwj/download.jpg",
-      "mpdUrl": "",
-      "quality": "FHD Live",
-      "drm": {
-        "clearKeys": {
-          "d0f2e5c39e70c18f29bf77768a1ad89a": "d6853c51fcf37a18905f0609972395d7"
+    "channels": [
+        {
+            "id": "prime-tvstream",
+            "name": "Prime Stream",
+            "logo": "https://i.postimg.cc/y8xbzQ3k/prime-logo-png-seeklogo-557061.png",
+            "mpdUrl": "https://a201aivottlinear-a.akamaihd.net/OTTB/lhr-nitro/live/dash/enc/83taeafait/out/v1/8f460e2902ee422e9ee8229e6de25719/cenc.mpd",
+            "quality": "1080p",
+            "drm": {
+                "clearKeys": {
+                    "ed76c18710d621a87c89dedc7c13019f": "7241c82fe48525a9dc6be6d7bb86611f"
+                }
+            }
+        },
+        {
+            "id": "willow-hd-new",
+            "name": "Willow HD",
+            "logo": "https://i.postimg.cc/qvWjHkTq/download.png",
+            "streamUrl": "https://stream.mokakdaoni.me/live/cb.php/https://livevideos.cricbuzz.com/hls/live/2099350/WCB-US/11253/139073/master.m3u8",
+            "quality": "1080p"
+        },
+        {
+            "id": "papare-tv",
+            "name": "Papare TV",
+            "logo": "https://yt3.googleusercontent.com/krdKKbHCJcmCBS-eHNDn9LYF-yRxILw0rkpfyKiDPfMLVMZ4LUzSJ_wBUabhEpuyqKpzraS3Kg=s900-c-k-c0x00ffffff-no-rj",
+            "streamUrl": "https://livecdn9.thepapare.com/out/v1/94079f84fc2a447e95eab8010708c0ae/index.m3u8",
+            "quality": "1080p"
+        },
+        {
+            "id": "papare-tv-sin",
+            "name": "Papare Tv Sinhala",
+            "logo": "https://yt3.googleusercontent.com/krdKKbHCJcmCBS-eHNDn9LYF-yRxILw0rkpfyKiDPfMLVMZ4LUzSJ_wBUabhEpuyqKpzraS3Kg=s900-c-k-c0x00ffffff-no-rj",
+            "streamUrl": "https://livecdn1.thepapare.com/out/v1/62cb03ab26ca4d35a75f842586fde664/index.m3u8",
+            "quality": "HD"
         }
-      }
-    },
-    {
-      "id": "willow-hd-new",
-      "name": "Willow HD",
-      "logo": "https://i.postimg.cc/gkSg0cCP/512x512bb.jpg",
-      "mpdUrl": "",
-      "quality": "1080p HQ",
-      "drm": {
-        "clearKeys": {
-          "3f1d41c4a51639460c9d4eac1cad8e07": "ab0cf870f856067a3ebcea54ca3791b2"
-        }
-      }
-    },
-    { "id": "Papare1", "name": "Papare TV 1", "logo": "https://yt3.googleusercontent.com/krdKKbHCJcmCBS-eHNDn9LYF-yRxILw0rkpfyKiDPfMLVMZ4LUzSJ_wBUabhEpuyqKpzraS3Kg=s900-c-k-c0x00ffffff-no-rj", "streamUrl": "https://livecdn9.thepapare.com/out/v1/94079f84fc2a447e95eab8010708c0ae/index.m3u8", "quality": "1080P" },
-    { "id": "Papare2", "name": "Papare TV Sinhala ", "logo": "https://yt3.googleusercontent.com/krdKKbHCJcmCBS-eHNDn9LYF-yRxILw0rkpfyKiDPfMLVMZ4LUzSJ_wBUabhEpuyqKpzraS3Kg=s900-c-k-c0x00ffffff-no-rj", "streamUrl": "https://livecdn1.thepapare.com/out/v1/62cb03ab26ca4d35a75f842586fde664/index.m3u8", "quality": "Full HD" },
-    { "id": "sonysports1", "name": "Sony Sports 1", "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGE6O710SDHMpr580b_kjyRj2XD4fUMDc2gg&s", "streamUrl": "", "quality": "Exclusive" },
-    { "id": "sonysports3", "name": "Sony Sports 3", "logo": "https://stmify.com/wp-content/uploads/2024/10/172-s.webp", "streamUrl": "", "quality": "Exclusive" },
-    { "id": "tsportshd", "name": "TSports HD", "logo": "https://media.licdn.com/dms/image/v2/C560BAQEkzy6nAcsyag/company-logo_200_200/company-logo_200_200/0/1630662269264?e=2147483647&v=beta&t=Xyxc5WJFZRKGMmHUyjXuUmOmYGO9bgGLbkwV9uyduxo", "streamUrl": "", "quality": "Sports" },
-    { "id": "tencricket", "name": "Ten Cricket", "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLMhVJFXkNYK7trsuhRe58ZK1-pQLUhD3T6w&s", "streamUrl": "", "quality": "Classic" },
-    { "id": "starsports", "name": "Star Sports", "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbbgmYRlzsx1lmawuW9Rq8Y1kEEOez-tIKzfipIl4NiLA3Gl_LRI6LDb8lDsAVPEv_KzE", "streamUrl": "", "quality": "Premium" }
-  ]
+    ]
 }
