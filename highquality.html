@@ -21,21 +21,22 @@
 </style>
 
 <script>
-    // 1. Session
+    // ේ
+    var skipAuthCheck = true; 
+
     var token = sessionStorage.getItem("user_auth");
 
-    if (token !== "valid_session") {
-        // Token 
-        window.location.replace("https://hitwicket.online/lock"); 
-    } else {
-        // Token 
+    // skipAuthCheck
+    if (skipAuthCheck || token === "valid_session") {
         document.addEventListener("DOMContentLoaded", function() {
-            // 
             setTimeout(function() {
                 document.body.style.opacity = "1";
                 document.body.style.pointerEvents = "auto";
             }, 100); 
         });
+    } else {
+        // 
+        window.location.replace("https://hitwicket.online/lock"); 
     }
 </script>
     
