@@ -1,0 +1,33 @@
+name: Hourly JSON Update (SL Time)
+
+on:
+  schedule:
+   
+    - cron: '30 * * * *'
+  workflow_dispatch: # 
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Fetch Latest Data
+        run: |
+          # Source link එකෙන් data ලබා ගැනීම
+          curl -s "https://raw.githubusercontent.com/Drakewalker01/tetstmpd/refs/heads/main/final.json" -o highquality.json
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add highquality.json
+          
+          # වෙනසක් තිබේ නම් පමණක් commit කර push කිරීම
+          if git diff --staged --quiet; then
+            echo "No changes detected"
+          else
+            git commit -m "Auto Update: $(date)"
+            git push
+          fi
