@@ -250,14 +250,14 @@
 
             const timeSpent = (Date.now() - taskStartTime) / 1000;
 
-            if (timeSpent >= 5) { // Smart check: must stay at least 5 seconds
+            if (timeSpent >= 1) { // Smart check: must stay at least 5 seconds
                 sessionStorage.setItem("user_auth", "valid_session");
                 unlockUI();
             } else {
                 // Reset if they came back too fast
                 taskStartTime = 0;
                 document.getElementById('taskText').innerText = "Click Here to Unlock";
-                alert("බැක් වෙන්න කලින් තත්පර 5ක් ඉන්න..!");
+                alert("Wait 2 seconds before going back..!");
             }
         };
 
