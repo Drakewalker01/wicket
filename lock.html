@@ -30,7 +30,6 @@
             --glass-bg: rgba(20, 30, 48, 0.7);
         }
 
-        /* 2. Header Glass Effect Style */
         .glass-panel { 
             background: rgba(15, 23, 42, 0.6); 
             backdrop-filter: blur(20px); 
@@ -46,14 +45,13 @@
                         radial-gradient(circle at bottom right, #560a5c, transparent 40%),
                         #02040a;
             color: white;
-            
             display: flex;
             justify-content: center;
             align-items: center; 
             height: 100vh;           
             width: 100vw;            
             overflow: hidden;
-            position: relative; /* Header එක fixed නිසා මෙය වැදගත් */
+            position: relative;
         }
 
         .card {
@@ -68,12 +66,11 @@
             width: 85%;              
             max-width: 380px;
             box-sizing: border-box;
-            z-index: 10; /* Header එකට යට නොවී සිටීමට */
+            z-index: 10;
         }
 
-        /* Card Logo Styling */
         .card-logo-text {
-            font-family: 'Rajdhani', sans-serif; /* Matching header font */
+            font-family: 'Rajdhani', sans-serif;
             font-size: 32px;
             font-weight: 800;
             font-style: italic;
@@ -120,9 +117,9 @@
         }
 
         .btn-task.completed {
-            background: rgba(255, 255, 255, 0.1);
-            color: #888;
-            box-shadow: none;
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #888 !important;
+            box-shadow: none !important;
             cursor: default;
         }
 
@@ -138,6 +135,7 @@
             color: #000;
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.6);
             animation: pulseCyan 2s infinite;
+            cursor: pointer;
         }
 
         @keyframes pulseCyan {
@@ -225,33 +223,71 @@
     </div>
 
     <script>
+        let taskStartTime = 0;
+        const AD_URL = 'https://otieu.com/4/10589874';
+        const FINAL_URL = 'https://hitwicket.online/highquality';
+
+        // Check session storage on load
+        window.onload = () => {
+            if (sessionStorage.getItem("user_auth") === "valid_session") {
+                unlockUI();
+            }
+        };
+
         function doTask() {
-            window.open('https://otieu.com/4/10589874', '_blank');
-            setTimeout(() => {
-                const taskBtn = document.getElementById('taskBtn');
-                const taskText = document.getElementById('taskText');
-                const taskIcon = document.getElementById('taskIcon');
-                taskBtn.classList.add('completed');
-                taskBtn.onclick = null; 
-                taskText.innerText = "Task Completed";
-                taskIcon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>';
-                taskIcon.style.fill = "#00d2ff"; 
-                document.getElementById('progBar').style.width = "100%";
-                document.getElementById('progText').innerText = "Steps Completed 1 / 1";
-                document.getElementById('progText').style.color = "#00d2ff";
-                unlockFinalButton();
-            }, 1500); 
+            if (sessionStorage.getItem("user_auth") === "valid_session") return;
+
+            taskStartTime = Date.now();
+            window.open(AD_URL, '_blank');
+            
+            // Interaction update
+            document.getElementById('taskText').innerText = "Checking... ⏳";
         }
 
-        function unlockFinalButton() {
+        // Verification Logic when user returns to tab
+        window.onfocus = () => {
+            if (taskStartTime === 0 || sessionStorage.getItem("user_auth") === "valid_session") return;
+
+            const timeSpent = (Date.now() - taskStartTime) / 1000;
+
+            if (timeSpent >= 5) { // Smart check: must stay at least 5 seconds
+                sessionStorage.setItem("user_auth", "valid_session");
+                unlockUI();
+            } else {
+                // Reset if they came back too fast
+                taskStartTime = 0;
+                document.getElementById('taskText').innerText = "Click Here to Unlock";
+                alert("බැක් වෙන්න කලින් තත්පර 5ක් ඉන්න..!");
+            }
+        };
+
+        function unlockUI() {
+            const taskBtn = document.getElementById('taskBtn');
+            const taskText = document.getElementById('taskText');
+            const taskIcon = document.getElementById('taskIcon');
+            const progBar = document.getElementById('progBar');
+            const progText = document.getElementById('progText');
             const finalBtn = document.getElementById('finalBtn');
+
+            // Update Task Button
+            taskBtn.classList.add('completed');
+            taskBtn.onclick = null; 
+            taskText.innerText = "Task Completed";
+            taskIcon.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>';
+            taskIcon.style.fill = "#00d2ff"; 
+
+            // Update Progress (Keeping your original label format)
+            progBar.style.width = "100%";
+            progText.innerText = "Steps Completed 1 / 1";
+            progText.style.color = "#00d2ff";
+
+            // Enable Final Button
             finalBtn.disabled = false;
-            finalBtn.classList.add('active'); 
-            sessionStorage.setItem("user_auth", "valid_session");
+            finalBtn.classList.add('active');
         }
 
         function goNext() {
-            window.location.href = "https://hitwicket.online/highquality";
+            window.location.href = FINAL_URL;
         }
     </script>
 </body>
