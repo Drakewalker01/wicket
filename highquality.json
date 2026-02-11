@@ -16,7 +16,7 @@
             "id": "prime-tvstream2",
             "name": "Prime Stream 2",
             "logo": "https://i.postimg.cc/y8xbzQ3k/prime-logo-png-seeklogo-557061.png",
-            "mpdUrl": "https://a65live-pv-ta-amazon.akamaized.net/syd-nitro/live/clients/dash/enc/ryfoddshmd/out/v1/2298afadf64943adb0b44dc540ace1ce/cenc.mpd?amznDtid=AOAGZA014O5RE&encoding=segmentBase",
+            "mpdUrl": "https://a65live-pv-ta-amazon.akamaized.net/syd-nitro/live/clients/dash/enc/ryfoddshmd/out/v1/2298afadf64943adb0b44dc540ace1ce/cenc.mpd",
             "quality": "1080p",
             "drm": {
                 "clearKeys": {
