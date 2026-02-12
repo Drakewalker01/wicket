@@ -2,9 +2,8 @@ name: Hourly JSON Update (Time)
 
 on:
   schedule:
-   
     - cron: '30 * * * *'
-  workflow_dispatch: # 
+  workflow_dispatch: 
 
 jobs:
   update-json:
@@ -15,19 +14,29 @@ jobs:
 
       - name: Fetch Latest Data
         run: |
-          # Source link එකෙන් data ලබා ගැනීම
+          # Source link 
           curl -s "https://raw.githubusercontent.com/Drakewalker01/tetstmpd/refs/heads/main/final.json" -o highquality.json
 
       - name: Commit and Push changes
+        id: commit_step
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add highquality.json
           
-          # වෙනසක් තිබේ නම් පමණක් commit කර push කිරීම
           if git diff --staged --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
             echo "No changes detected"
           else
             git commit -m "Auto Update: $(date)"
             git push
+            echo "changes=true" >> $GITHUB_OUTPUT
           fi
+
+      # Cloudflare Cache Clear කිරීම
+      - name: Purge Cloudflare Cache
+        if: steps.commit_step.outputs.changes == 'true'
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
