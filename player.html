@@ -23,8 +23,13 @@
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "vg5cn2g5zr");
-    </script>
+</script>
     
+    <script>
+        window.dataFetchPromise = fetch('links.json')
+            .then(response => response.json())
+            .catch(err => { console.error("Early fetch failed", err); return null; });
+    </script>
     <script>
     const getCacheBuster = () => Math.floor(Date.now() / (10 * 60 * 1000));
     window.dataFetchPromise = fetch('links.json?v=' + getCacheBuster())
@@ -36,12 +41,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-core@latest/build/p2p-media-loader-core.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-shaka@latest/build/p2p-media-loader-shaka.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         :root { --neonBlue: #00f3ff; --neonPurple: #bc13fe; --darkBg: #0b1120; }
@@ -59,10 +60,12 @@
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .unified-player-container { border-radius: 1.5rem; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(0, 243, 255, 0.15); border: 1px solid rgba(255,255,255,0.1); position: relative; }
 
-        .custom-card-width { width: 23%; } 
-        @media (min-width: 640px) { .custom-card-width { width: 13%; } } 
-        @media (min-width: 1024px) { .custom-card-width { width: 9%; } } 
+        /* --- FIXED WIDTHS (GRID SYSTEM) --- */
+        .custom-card-width { width: 23%; } /* Mobile: 4 Cards */
+        @media (min-width: 640px) { .custom-card-width { width: 13%; } } /* Tablet: 7 Cards */
+        @media (min-width: 1024px) { .custom-card-width { width: 9%; } } /* PC: 10 Cards */
 
+        /* --- CARD & LOGO STYLING --- */
         .channel-card { 
             position: relative; background: #0c4a6e; border-radius: 0.5rem; padding: 2px; overflow: hidden; cursor: pointer; display: block; 
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
@@ -74,8 +77,33 @@
 
         .card-content { background: #111827; border-radius: 0.4rem; width: 100%; height: 100%; position: relative; z-index: 1; padding: 0.25rem; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
         
-        .logo-container { width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; background: transparent; border-radius: 4px; margin-bottom: 4px; overflow: hidden; }
-        .channel-name { font-size: 10px; line-height: 1.1; font-weight: 700; color: #e2e8f0; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 22px; width: 100%; }
+        /* 1. Logo Container (Square Box) */
+        .logo-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            overflow: hidden;
+        }
+
+        /* 2. Channel Name (Fixed Height & Clamp) */
+        .channel-name {
+            font-size: 10px;
+            line-height: 1.1;
+            font-weight: 700;
+            color: #e2e8f0;
+            text-align: center;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 22px; /* Uniform height for text area */
+            width: 100%;
+        }
 
         @media (min-width: 640px) { .channel-name { font-size: 11px; height: 24px; } }
         
@@ -142,8 +170,11 @@
     <style>
         .glow-button {
             transition: all 0.3s ease;
+            
             box-shadow: 0 0 5px rgba(0, 243, 255, 0.1);
         }
+        
+       
         .glow-button:hover {
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.6) !important;
             background-color: #00f3ff !important;
@@ -153,6 +184,8 @@
         .telegram-glow {
             transition: all 0.3s ease;
         }
+
+        
         .telegram-glow:hover {
             box-shadow: 0 0 12px rgba(255, 255, 255, 0.5) !important;
             background-color: #0088cc !important;
@@ -163,14 +196,18 @@
     <a href="https://hitwicket.online/highquality" 
        onclick="location.reload()" 
        class="glow-button group relative w-full md:w-auto flex items-center justify-center gap-3 bg-neonBlue/10 text-neonBlue border border-neonBlue py-3 px-10 rounded-xl font-bold uppercase tracking-wider">
+        
         <i class="fas fa-bolt text-base animate-pulse"></i>
-        <span class="text-center leading-tight animate-pulse text-sm">Click Here to Watch in Full HD</span>
+        <span class="text-center leading-tight animate-pulse text-sm">
+            Click Here to Watch in Full HD
+        </span>
         <i class="fas fa-external-link-alt text-xs animate-pulse opacity-100"></i>
     </a>
 
     <a href="https://t.me/Hitwicket_updates" 
        target="_blank" 
        class="telegram-glow mt-4 flex items-center gap-2 px-6 py-2 rounded-full border border-[#0088cc]/50 text-[#0088cc] font-bold uppercase tracking-widest text-xs">
+        
         <i class="fab fa-telegram text-lg"></i>
         <span>Join Telegram</span>
     </a>
@@ -224,16 +261,14 @@
         }
         setTimeout(manageAds, 3000);
 
-        // Worker URL ඒ විදිහටම තිබ්බා 
-        const WORKER_BASE_URL = "https://dawn-dream-6841.hksujayasinghe.workers.dev"; 
+        const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
         
         let allChannels = [];
         let displayedCount = 0;
         const CHANNELS_PER_PAGE = 20;
 
         async function initApp() {
-            // NEW: Make sure both Shaka and p2pml are ready before initializing
-            if (typeof shaka === 'undefined' || typeof p2pml === 'undefined') { setTimeout(initApp, 100); return; }
+            if (typeof shaka === 'undefined') { setTimeout(initApp, 100); return; }
             shaka.polyfill.installAll();
             if (shaka.Player.isBrowserSupported()) initPlayer();
         }
@@ -314,33 +349,6 @@
 
             const ui = video['ui'];
             const player = ui.getControls().getPlayer();
-            
-            // ==========================================
-            // NEW: P2P Engine Setup
-            // ==========================================
-            if (p2pml.shaka.Engine.isSupported()) {
-                const engine = new p2pml.shaka.Engine({
-                    loader: {
-                        trackerAnnounce: [
-                            "wss://tracker.openwebtorrent.com",
-                            "wss://tracker.webtorrent.dev",
-                            "wss://tracker.btorrent.xyz"
-                        ]
-                    }
-                });
-                
-                // Bind P2P engine to Shaka Player
-engine.initShakaPlayer(player);
-                
-                // Testing Message in Console
-                engine.on(p2pml.core.Events.PieceBytesDownloaded, (method, bytes) => {
-                    if(method === 'p2p') {
-                        console.log("%c🔥 P2P WebRTC Download! Worker limit saved!", "color: #00f3ff; font-weight: bold; padding: 2px 4px; border: 1px solid #00f3ff;");
-                    }
-                });
-            }
-            // ==========================================
-
             const overlay = document.getElementById('status-overlay');
             const connectSpinner = document.getElementById('connect-spinner');
             const videoWrapper = document.getElementById('video-wrapper');
