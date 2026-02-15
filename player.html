@@ -330,7 +330,7 @@
                 });
                 
                 // Bind P2P engine to Shaka Player
-                engine.bindShakaPlayer(player);
+engine.initShakaPlayer(player);
                 
                 // Testing Message in Console
                 engine.on(p2pml.core.Events.PieceBytesDownloaded, (method, bytes) => {
