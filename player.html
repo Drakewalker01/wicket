@@ -42,6 +42,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" defer></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-core@0.6.2/build/p2p-media-loader-core.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-shaka@0.6.2/build/p2p-media-loader-shaka.min.js" defer></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
@@ -349,6 +353,14 @@
 
             const ui = video['ui'];
             const player = ui.getControls().getPlayer();
+
+            // --- P2P Engine Added Here ---
+            if (typeof p2pml !== 'undefined' && p2pml.shaka && p2pml.shaka.Engine.isSupported()) {
+                const p2pEngine = new p2pml.shaka.Engine();
+                p2pEngine.initShakaPlayer(player);
+            }
+            // -----------------------------
+
             const overlay = document.getElementById('status-overlay');
             const connectSpinner = document.getElementById('connect-spinner');
             const videoWrapper = document.getElementById('video-wrapper');
