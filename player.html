@@ -245,114 +245,91 @@
     <p>© 2026 HITWicket Sports Network.</p>
 </footer>
 
-   <script>
-    const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
-    const AD_COOLDOWN_MINUTES = 1; 
+  <script>
     const WORKER_BASE_URL = "https://autoupdate.hitwicket.online"; 
-    
     let allChannels = [];
     let displayedCount = 0;
     const CHANNELS_PER_PAGE = 20;
 
-    // --- 1. OPTIMIZED LOGO RENDERING (Saves Worker Requests) ---
-    function renderChannelBatch() {
-        const gridContainer = document.getElementById('channelGrid');
-        const loadMoreContainer = document.getElementById('loadMoreContainer');
-        if (displayedCount === 0) gridContainer.innerHTML = ''; 
-        
-        const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
-        
-        if (nextBatch.length > 0) {
-            const batchHTML = nextBatch.map((c, index) => {
-                // 
-                const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=150&h=150&fit=contain&output=webp`;
-                const isPriority = (displayedCount === 0 && index < 10);
-                
-                return `
-                <a href="?id=${c.id}" class="channel-card group block custom-card-width">
-                    <div class="card-content !p-1.5">
-                        <div class="logo-container">
-                            <img src="${optimizedLogo}" 
-                                 alt="${c.name}"
-                                 loading="${isPriority ? "eager" : "lazy"}" 
-                                 onerror="this.src='https://via.placeholder.com/150?text=TV'" 
-                                 class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300">
-                        </div>
-                        <div class="channel-name">${c.name}</div>
-                        <div class="mt-1 flex items-center justify-center gap-1 text-[7px] text-neonBlue border border-neonBlue/30 px-1 py-0.5 rounded bg-neonBlue/5 w-full">
-                            <i class="fas fa-circle text-[3px] animate-pulse"></i> ${c.quality || 'LIVE'}
-                        </div>
-                    </div>
-                </a>`;
-            }).join('');
-            
-            gridContainer.insertAdjacentHTML('beforeend', batchHTML);
-            displayedCount += nextBatch.length;
-            loadMoreContainer.classList.toggle('hidden', displayedCount >= allChannels.length);
+    // --- 1. M3U PARSER (tvg-logo සහ headers ලබා ගනී) ---
+    async function parseM3U(text) {
+        const lines = text.split('\n');
+        const channels = [];
+        let currentChannel = { headers: {} };
+        for (let line of lines) {
+            line = line.trim();
+            if (line.startsWith('#EXTINF:')) {
+                const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                const nameMatch = line.split(',').pop();
+                currentChannel.logo = logoMatch ? logoMatch[1] : "";
+                currentChannel.name = nameMatch ? nameMatch.trim() : "Unknown";
+                currentChannel.id = currentChannel.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            } else if (line.startsWith('#EXTVLCOPT:http-referrer=')) {
+                currentChannel.headers['Referer'] = line.split('=')[1];
+            } else if (line.startsWith('#EXTVLCOPT:http-origin=')) {
+                currentChannel.headers['Origin'] = line.split('=')[1];
+            } else if (line.startsWith('http')) {
+                currentChannel.streamUrl = line;
+                channels.push({...currentChannel});
+                currentChannel = { headers: {} };
+            }
         }
+        return channels;
     }
 
-    // --- 2. MANIFEST-ONLY PROXY LOGIC (Saves ~90% of requests) ---
+    // --- 2. LOGO RENDERING (Saves Worker Requests) ---
+    function renderChannelBatch() {
+        const gridContainer = document.getElementById('channelGrid');
+        if (displayedCount === 0) gridContainer.innerHTML = '';
+        const nextBatch = allChannels.slice(displayedCount, displayedCount + CHANNELS_PER_PAGE);
+        
+        const batchHTML = nextBatch.map(c => {
+            // ලෝගෝ වර්කර් එක හරහා නොයවා weserv.nl හරහා යවයි (Limit එක ඉතිරි වේ)
+            const optimizedLogo = `https://images.weserv.nl/?url=${encodeURIComponent(c.logo)}&w=150&h=150&fit=contain&output=webp`;
+            return `
+            <a href="?id=${c.id}" class="channel-card custom-card-width">
+                <div class="card-content">
+                    <div class="logo-container">
+                        <img src="${optimizedLogo}" onerror="this.src='${c.logo}'" class="w-full h-full object-contain">
+                    </div>
+                    <div class="channel-name">${c.name}</div>
+                </div>
+            </a>`;
+        }).join('');
+        gridContainer.insertAdjacentHTML('beforeend', batchHTML);
+        displayedCount += nextBatch.length;
+    }
+
+    // --- 3. PLAYER & MANIFEST-ONLY PROXY ---
     async function initPlayer() {
         const video = document.getElementById('video');
         if (!video['ui']) { setTimeout(initPlayer, 100); return; }
+        const player = video['ui'].getControls().getPlayer();
+        const channelId = new URLSearchParams(window.location.search).get('id');
 
-        const ui = video['ui'];
-        const player = ui.getControls().getPlayer();
-        const overlay = document.getElementById('status-overlay');
-        const connectSpinner = document.getElementById('connect-spinner');
-        const videoWrapper = document.getElementById('video-wrapper');
-        const params = new URLSearchParams(window.location.search);
-        const channelId = params.get('id'); 
-
-        // Request Filter
-        player.getNetworkingEngine().registerRequestFilter(function(type, request) {
-            const RequestType = shaka.net.NetworkingEngine.RequestType;
-
-            // .m3u8 
-            if (type === RequestType.MANIFEST) {
-                if (request.uris[0].includes(WORKER_BASE_URL)) return;
-                
+        player.getNetworkingEngine().registerRequestFilter((type, request) => {
+            if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST) {
                 const ch = allChannels.find(c => c.id === channelId);
-                let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
-                
-                if (ch && ch.headers) {
-                    if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
-                    if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
+                if (ch && !request.uris[0].includes(WORKER_BASE_URL)) {
+                    let proxy = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
+                    if (ch.headers.Referer) proxy += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
+                    if (ch.headers.Origin) proxy += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
+                    request.uris[0] = proxy;
                 }
-                request.uris[0] = proxyUrl;
             }
         });
 
-        player.configure({ 
-            streaming: { bufferingGoal: 15, rebufferingGoal: 2, lowLatencyMode: true } 
-        });
-
-        // 
         try {
-            const response = await fetch('links.json?v=' + Math.floor(Date.now() / 600000));
-            const data = await response.json();
-            
-           
-            allChannels = data.manual_channels || []; // 
+            const data = await (await fetch('links.json?v=' + Date.now())).json();
+            const playlistUrl = data.playlists[0]; // ඔබේ m3u ලින්ක් එක
+            const m3uText = await (await fetch(playlistUrl)).text();
+            allChannels = await parseM3U(m3uText);
             renderChannelBatch();
 
             const ch = allChannels.find(c => c.id === channelId);
             if (ch) await player.load(ch.streamUrl);
         } catch (e) { console.error(e); }
     }
-
-    // --- 3. ANTI-DEVTOOLS SECURITY (Protects your links) ---
-    setInterval(() => {
-        const threshold = 160;
-        // Inspect tool 
-        if ((window.outerWidth - window.innerWidth > threshold) || 
-            (window.outerHeight - window.innerHeight > threshold)) {
-            location.reload(); 
-        }
-        // Debugger trap
-        (function() { (function a() { try { (function b(i) { if (("" + i / i).length !== 1 || i % 20 === 0) { (function() {}).constructor("debugger")(); } else { debugger; } b(++i); })(0); } catch (e) { setTimeout(a, 5000); } })(); })();
-    }, 1000);
 
     shaka.polyfill.installAll();
     initPlayer();
