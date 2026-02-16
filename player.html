@@ -402,16 +402,8 @@
                     document.getElementById('ch-quality').innerText = "Connecting...";
                     connectSpinner.style.display = "flex"; videoWrapper.classList.add("loading-state");
 
-                    // මේ තියෙන්නේ අලුත් වෙනස කරපු තැන 👇
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
-
-                        // .ts හෝ video segments කෙලින්ම යවන්න (Worker එකට දාන්නේ නැහැ)
-                        if (request.uris[0].includes('.ts') || type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
-                            return; 
-                        }
-
-                        // .m3u8 වගේ manifest files විතරක් Worker එක හරහා යවයි
                         let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
                         if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
                         if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
