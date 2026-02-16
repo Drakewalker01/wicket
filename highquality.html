@@ -48,6 +48,7 @@
     }
 </script>
     
+    
     <link rel="preload" href="highquality.json" as="fetch" crossorigin="anonymous">
 
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
@@ -81,7 +82,8 @@
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js" defer></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mux.js/6.0.1/mux.min.js"></script>
+    
     <style>
         button { all: revert; } 
         .shaka-video-container { box-sizing: border-box; }
@@ -342,17 +344,30 @@
                         
                         console.log("Starting Player...");
                         try {
-                            await player.load(videoUrl);
-                            // Note: Spinner will hide when 'playing' event fires
+                            const isHLS = videoUrl.includes('.m3u8');
+                            
+                            if (isHLS) {
+                                // HLS (.m3u8)  MIME 
+                                await player.load(videoUrl, null, 'application/x-mpegurl');
+                            } else {
+                                // DASH (.mpd) 
+                                await player.load(videoUrl);
+                            }
+                            console.log("Stream loaded successfully!");
                         } catch (e) {
                             console.error("Load failed", e);
                             spinner.classList.add('hidden');
+                            overlay.classList.add('show');
+                            statusIcon.className = "fas fa-exclamation-triangle text-4xl text-red-500 mb-3";
+                            errorMsg.innerText = "Stream Load Error";
                         }
                     } else {
+                         // 
                          overlay.classList.add('show');
                          errorMsg.innerText = "Channel Not Found";
                     }
                 } else {
+                    // 
                     overlay.classList.add('show');
                     if(!selectedChannelId) {
                         statusIcon.className = "fas fa-arrow-down text-4xl text-neonBlue mb-3 animate-bounce";
@@ -362,6 +377,7 @@
             }
         }
 
+        // Shaka UI ලෝඩ් වුණාම ප්ලේයර් එක ස්ටාර්ට් කරනවා
         document.addEventListener('shaka-ui-loaded', initApp);
 
         // 1.  Switch 
