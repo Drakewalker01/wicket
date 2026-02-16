@@ -27,19 +27,17 @@
    "T Sports (720p) (3)",
    "T Sports HD (5)",
     "T SPORTS HD (10)",
-    "Astro Cricket",
-   "TNT 1",
-   "TNT 2"
+    "Astro Cricket"
   ],
   "manual_channels": [
     {
       "name": "Prime Sports",
       "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXCB-kbNwSejb2x5SglFeaJ4mDDopnhmaa-Q&s",
       "group": "Sports",
-      "url": "",
+      "url": "https://ABDIQDLAAAAAAAAMD3YW4NQ5NOO2T.ta.bia-cf.live.pv-cdn.net/syd-nitro/live/clients/dash/enc/vrisombzwm/out/v1/e21d21ec21e34c7192049a44ee3de428/cenc.mpd",
       "drm": {
         "clearKeys": {
-          "9c8743426487c9074b60b456dda93e4d": "643e4f68ec9e3309b7e1e61b95bec85d"
+          "ed76c18710d621a87c89dedc7c13019f": "7241c82fe48525a9dc6be6d7bb86611f"
         }
       }
     },
