@@ -8,8 +8,8 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2300f3ff'/></svg>">
 
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
@@ -17,40 +17,34 @@
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "vg5cn2g5zr");
-</script>
+    </script>
 
-<style>
-   
-    body { 
-        opacity: 0; 
-        pointer-events: none; 
-        transition: opacity 0.3s ease; /*  */
-    }
-</style>
+    <style>
+        body { 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.3s ease;
+        }
+    </style>
 
-<script>
-    // ේ
-    var skipAuthCheck = true; 
+    <script>
+        // Authentication check
+        const skipAuthCheck = true; 
+        const token = sessionStorage.getItem("user_auth");
 
-    var token = sessionStorage.getItem("user_auth");
-
-    // skipAuthCheck
-    if (skipAuthCheck || token === "valid_session") {
-        document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(function() {
-                document.body.style.opacity = "1";
-                document.body.style.pointerEvents = "auto";
-            }, 100); 
-        });
-    } else {
-        // 
-        window.location.replace("https://hitwicket.online/lock"); 
-    }
-</script>
-    
+        if (skipAuthCheck || token === "valid_session") {
+            document.addEventListener("DOMContentLoaded", function() {
+                setTimeout(function() {
+                    document.body.style.opacity = "1";
+                    document.body.style.pointerEvents = "auto";
+                }, 100); 
+            });
+        } else {
+            window.location.replace("https://hitwicket.online/lock"); 
+        }
+    </script>
     
     <link rel="preload" href="highquality.json" as="fetch" crossorigin="anonymous">
-
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,10 +75,11 @@
         }
     </script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mux.js/6.0.1/mux.min.js"></script>
     
     <style>
+        /* Fixes Tailwind resetting Shaka UI buttons */
         button { all: revert; } 
         .shaka-video-container { box-sizing: border-box; }
         body { min-height: 100vh; overflow-x: hidden; }
@@ -117,11 +112,10 @@
         .video-wrapper { position: relative; width: 100%; padding-top: 56.25%; }
         .video-wrapper [data-shaka-player-container] { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; }
 
-        /* Error Overlay (Z-Index 50 - Top most) */
+        /* Overlays */
         .status-overlay { position: absolute; inset: 0; background: #000; display: none; justify-content: center; align-items: center; z-index: 50; }
         .status-overlay.show { display: flex; }
 
-        /* Spinner Overlay (Z-Index 40 - Below Error, Above Video) */
         #loading-spinner { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); z-index: 40; pointer-events: none; }
         #loading-spinner.hidden { display: none; }
 
@@ -183,12 +177,13 @@
                     <div class="px-4 py-2 bg-neonBlue text-black rounded-lg text-xs font-black">LIVE HD</div>
                 </div>
             </div>
-             <div class="flex flex-col items-center justify-center bg-transparent">
-    <a href="https://t.me/Hitwicket_updates" target="_blank" class="mt-2 flex items-center gap-2 px-6 py-2 rounded-full border border-[#0088cc]/50 text-[#0088cc] hover:bg-[#0088cc]/10 hover:shadow-[0_0_15px_rgba(0,136,204,0.3)] transition-all duration-300 text-xs font-bold uppercase tracking-widest hover:text-black">
-        <i class="fab fa-telegram text-lg"></i>
-        <span>Join Telegram</span>
-    </a>
-</div>
+            
+            <div class="flex flex-col items-center justify-center bg-transparent mt-4">
+                <a href="https://t.me/Hitwicket_updates" target="_blank" class="flex items-center gap-2 px-6 py-2 rounded-full border border-[#0088cc]/50 text-[#0088cc] hover:bg-[#0088cc]/10 hover:shadow-[0_0_15px_rgba(0,136,204,0.3)] transition-all duration-300 text-xs font-bold uppercase tracking-widest hover:text-white">
+                    <i class="fab fa-telegram text-lg"></i>
+                    <span>Join Telegram</span>
+                </a>
+            </div>
         </section>
 
         <section>
@@ -209,22 +204,23 @@
     </main>
 
    <footer class="w-full py-10 border-t border-gray-800 bg-slate-900/50 backdrop-blur-md mt-auto text-center text-gray-500 text-sm">
-    <div class="mb-4">
-        <a href="disclaimer.html" class="hover:text-cyan-400 transition-colors duration-300 border border-gray-700 px-4 py-1.5 rounded-full inline-block">
-            Disclaimer
-        </a>
-    </div>
-    <p>© 2026 HITWicket Sports Network.</p>
-</footer>
+        <div class="mb-4">
+            <a href="disclaimer.html" class="hover:text-cyan-400 transition-colors duration-300 border border-gray-700 px-4 py-1.5 rounded-full inline-block">
+                Disclaimer
+            </a>
+        </div>
+        <p>© 2026 HITWicket Sports Network.</p>
+    </footer>
 
     <script>
         // Global variables
         let channelsData = null;
-        let selectedChannelId = new URLSearchParams(window.location.search).get('id');
+        const selectedChannelId = new URLSearchParams(window.location.search).get('id');
 
         async function loadGrid() {
             try {
                 const res = await fetch(`highquality.json`);
+                if (!res.ok) throw new Error("Network response was not ok");
                 const data = await res.json();
                 channelsData = data; 
 
@@ -240,7 +236,7 @@
                             <div class="card-content">
                                 <div class="w-full aspect-square rounded-lg mb-3 bg-slate-800 overflow-hidden relative">
                                     <img src="${c.logo}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
-                                             onerror="this.style.display='none';">
+                                         onerror="this.style.display='none';">
                                 </div>
                                 <p class="font-bold text-center text-sm text-gray-100 truncate w-full">${c.name}</p>
                                 <span class="text-[10px] uppercase tracking-wider text-neonBlue mt-1 bg-neonBlue/10 px-2 py-0.5 rounded">${c.quality || 'LIVE'}</span>
@@ -252,7 +248,8 @@
                 }
 
                 if (selectedChannelId) {
-                    const ch = channelsData.channels.find(c => c.id === selectedChannelId);
+                    // Force matching regardless of type (Number vs String)
+                    const ch = channelsData.channels.find(c => c.id.toString() === selectedChannelId);
                     if (ch) {
                         document.getElementById('page-title').innerText = ch.name + " | HIT Wicket";
                         document.getElementById('ch-name').innerText = ch.name;
@@ -299,17 +296,15 @@
                     }
                 });
 
-                // --- SPINNER LOGIC ---
-                // Show spinner when buffering starts
+                // Spinner Logic
                 player.addEventListener('buffering', (event) => {
                     if (event.buffering) {
-                        spinner.classList.remove('hidden'); // Show spinner
+                        spinner.classList.remove('hidden');
                     } else {
-                        spinner.classList.add('hidden');    // Hide spinner
+                        spinner.classList.add('hidden'); 
                     }
                 });
 
-                // Hide spinner when playing starts
                 video.addEventListener('playing', () => {
                     spinner.classList.add('hidden');
                     overlay.classList.remove('show');
@@ -318,7 +313,7 @@
                 // Handle Errors
                 player.addEventListener('error', (e) => {
                     console.error('Shaka Error:', e.detail);
-                    spinner.classList.add('hidden'); // Hide spinner on error
+                    spinner.classList.add('hidden'); 
                     overlay.classList.add('show');
                     statusIcon.className = "fas fa-exclamation-triangle text-4xl text-red-500 mb-3";
                     errorMsg.innerText = "Stream Error";
@@ -329,11 +324,9 @@
                 }
 
                 if (channelsData && selectedChannelId) {
-                    const ch = channelsData.channels.find(c => c.id === selectedChannelId);
+                    const ch = channelsData.channels.find(c => c.id.toString() === selectedChannelId);
                     if (ch) {
                         overlay.classList.remove('show');
-                        
-                        // Show spinner immediately before load
                         spinner.classList.remove('hidden');
 
                         const videoUrl = ch.mpdUrl || ch.streamUrl;
@@ -342,17 +335,9 @@
                             player.configure({ drm: { clearKeys: ch.drm.clearKeys } });
                         }
                         
-                        console.log("Starting Player...");
                         try {
-                            const isHLS = videoUrl.includes('.m3u8');
-                            
-                            if (isHLS) {
-                                // HLS (.m3u8)  MIME 
-                                await player.load(videoUrl, null, 'application/x-mpegurl');
-                            } else {
-                                // DASH (.mpd) 
-                                await player.load(videoUrl);
-                            }
+                            // Shaka handles M3U8 and MPD natively through player.load()
+                            await player.load(videoUrl);
                             console.log("Stream loaded successfully!");
                         } catch (e) {
                             console.error("Load failed", e);
@@ -362,12 +347,10 @@
                             errorMsg.innerText = "Stream Load Error";
                         }
                     } else {
-                         // 
                          overlay.classList.add('show');
                          errorMsg.innerText = "Channel Not Found";
                     }
                 } else {
-                    // 
                     overlay.classList.add('show');
                     if(!selectedChannelId) {
                         statusIcon.className = "fas fa-arrow-down text-4xl text-neonBlue mb-3 animate-bounce";
@@ -377,40 +360,40 @@
             }
         }
 
-        // Shaka UI ලෝඩ් වුණාම ප්ලේයර් එක ස්ටාර්ට් කරනවා
-        document.addEventListener('shaka-ui-loaded', initApp);
+        // Initialize Shaka UI safely
+        if (window.shaka && window.shaka.ui) {
+            initApp();
+        } else {
+            document.addEventListener('shaka-ui-loaded', initApp);
+        }
 
-        // 1.  Switch 
-const SHOW_ADS = true; // Ads 
+        // Ads Management
+        const SHOW_ADS = true; 
+        const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
+        const AD_COOLDOWN_MINUTES = 1; 
 
-const AD_URL = "https://intermediategillsevent.com/1b/0f/68/1b0f68c09c17308c6b0d92ee85311590.js";
-const AD_COOLDOWN_MINUTES = 1; 
+        function manageAds() {
+            if (!SHOW_ADS) {
+                console.log("Ads are currently disabled.");
+                return; 
+            }
 
-function manageAds() {
-    // -
-    if (!SHOW_ADS) {
-        console.log("Ads are currently disabled.");
-        return; // 
-    }
+            const lastShown = localStorage.getItem('ad_last_shown_time');
+            const now = Date.now();
+            
+            if (!lastShown || (now - parseInt(lastShown) > AD_COOLDOWN_MINUTES * 60 * 1000)) {
+                const script = document.createElement('script');
+                script.type = 'text/javascript'; 
+                script.src = AD_URL; 
+                script.async = true;
+                // Append inside head for cleaner DOM management
+                document.head.appendChild(script);
+                
+                localStorage.setItem('ad_last_shown_time', now.toString());
+            }
+        }
 
-    const lastShown = localStorage.getItem('ad_last_shown_time');
-    const now = Date.now();
-    
-    if (!lastShown || (now - parseInt(lastShown) > AD_COOLDOWN_MINUTES * 60 * 1000)) {
-        const script = document.createElement('script');
-        script.type = 'text/javascript'; 
-        script.src = AD_URL; 
-        script.async = true;
-        document.body.appendChild(script);
-        
-        localStorage.setItem('ad_last_shown_time', now.toString());
-    }
-}
-
-// 
-setTimeout(manageAds, 3000);
-
-        
+        setTimeout(manageAds, 3000);
     </script>
 </body>
 </html>
