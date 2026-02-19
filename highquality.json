@@ -40,11 +40,11 @@
             "id": "cricket-willow",
             "name": "Willow HD",
             "logo": "https://i.postimg.cc/hjPqm15C/download.png",
-            "mpdUrl": "nitro/live/clients/dash/enc/wt1pltyb9z/out/v1/3542ef35fd004ae2b7c718829175e868/cenc.mpd",
+            "mpdUrl": "https://ta.bia-cf.live.pv-cdn.net/bom-nitro/live/clients/dash/enc/3x7bmhsq1i/out/v1/8bb72cce7d8d4c28b34e2193bb03b4fc/cenc.mpd",
             "quality": "1080p",
             "drm": {
                 "clearKeys": {
-                    "e9fd517a44b10834f914c2dd3ddd07f0": "cc5e6232a1a5ef63be1618828e1b2ef7"
+                    "a7925c9d5e31477608659ada42f7070e":"9a19ed9a5acf7129f61d8b5e9d24c29f"
                 }
             }
         }
