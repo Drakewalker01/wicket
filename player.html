@@ -403,13 +403,17 @@
                     connectSpinner.style.display = "flex"; videoWrapper.classList.add("loading-state");
 
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
-                        if (request.uris[0].includes(WORKER_BASE_URL)) return;
-                        let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
-                        if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
-                        if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
-                        if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
-                        request.uris[0] = proxyUrl;
-                    });
+    if (request.uris[0].includes(WORKER_BASE_URL)) return;
+    let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
+    if (ch.headers.Referer) proxyUrl += `&referer=${encodeURIComponent(ch.headers.Referer)}`;
+    if (ch.headers.Origin) proxyUrl += `&origin=${encodeURIComponent(ch.headers.Origin)}`;
+    if (ch.headers['User-Agent']) proxyUrl += `&ua=${encodeURIComponent(ch.headers['User-Agent'])}`;
+    
+    // 🎯 
+    proxyUrl += `&_t=${Date.now()}`;
+    
+    request.uris[0] = proxyUrl;
+});
                     
                     player.configure({ drm: ch.drm || { clearKeys: {} }, streaming: { bufferingGoal: 3, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 }, lowLatencyMode: true } });
                     
