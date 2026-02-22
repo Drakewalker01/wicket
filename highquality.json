@@ -4,11 +4,11 @@
             "id": "prime-tvstream",
             "name": "Prime Stream 1",
             "logo": "https://i.postimg.cc/y8xbzQ3k/prime-logo-png-seeklogo-557061.png",
-            "mpdUrl": "https://otte.live.fly.ww.aiv-cdn.net/sin-nitro/live/dash/enc/108rikwly7/out/v1/8777014e61534e7c873dc695bc485397/cenc.mpd",
+            "mpdUrl": "https://live-pv-ta.amazon.fastly-edge.com/syd-nitro/live/clients/dash/enc/wwrmho82pc/out/v1/d7130f460d41486ea7e8e3eb45f0522f/cenc.mpd",
             "quality": "1080p",
             "drm": {
                 "clearKeys": {
-                    "2904b17cb64c996dbc254981b7602863":"66a7ef671b84498e64f94e8401fe8cb9"
+                    "baafdb8ebcbbc0655332291da6f121da":"60ac892e0ea0b2c46fc6837c97ed641a"
                 }
             }
         },
@@ -40,11 +40,11 @@
             "id": "cricket-willow",
             "name": "Willow HD",
             "logo": "https://i.postimg.cc/hjPqm15C/download.png",
-            "mpdUrl": "https://ta.bia-cf.live.pv-cdn.net/bom-nitro/live/clients/dash/enc/3x7bmhsq1i/out/v1/8bb72cce7d8d4c28b34e2193bb03b4fc/cenc.mpd",
+            "mpdUrl": "https://otte.live.fly.ww.aiv-cdn.net/sin-nitro/live/clients/dash/enc/irel8nc2xz/out/v1/ef73fa5f78a14612ae832608119db7be/cenc.mpd",
             "quality": "1080p",
             "drm": {
                 "clearKeys": {
-                    "a7925c9d5e31477608659ada42f7070e":"9a19ed9a5acf7129f61d8b5e9d24c29f"
+                    "597d7ef3084032b3739bfb3a1156be8c":"6914989efcf9803e26eb62bb94f0688e"
                 }
             }
         }
