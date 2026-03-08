@@ -240,73 +240,86 @@
 
         // --- CORE FUNCTION TO FETCH CHANNELS FROM LINKS.JSON ---
         async function fetchChannels() {
-    const loader = document.getElementById('loader');
-    const grid = document.getElementById('channelGrid');
-    const countLabel = document.getElementById('channelCount');
-    
-    try {
-        const response = await fetch('links.json');
-        const config = await response.json();
-        
-        let tempChannels = []; 
-
-        // 1. Manual Channels 
-        if (config.manual_channels) {
-            tempChannels.push(...config.manual_channels.map(ch => ({
-                id: ch.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
-                name: ch.name,
-                logo: ch.logo,
-                streamUrl: ch.url,
-                drm: ch.drm
-            })));
-        }
-
-        // 2. Playlists Fetch 
-        if (config.playlists) {
-            const playlistResults = await Promise.all(config.playlists.map(async (url) => {
-                try {
-                    const res = await fetch(url);
-                    const text = await res.text();
-                    return parseM3U(text);
-                } catch (err) { return []; }
-            }));
-            playlistResults.forEach(channels => tempChannels.push(...channels));
-        }
-
-        // 3. --- ORDERED WHITELIST LOGIC ---
-        if (config.allowed_channels && Array.isArray(config.allowed_channels)) {
-            let orderedChannels = [];
+            const loader = document.getElementById('loader');
+            const grid = document.getElementById('channelGrid');
+            const countLabel = document.getElementById('channelCount');
             
-            // JSON
-            config.allowed_channels.forEach(allowedName => {
-                const targetName = allowedName.toLowerCase().trim();
+            try {
+                const response = await fetch('links.json');
+                const config = await response.json();
                 
-                // 
-                const match = tempChannels.find(ch => 
-                    ch.name.toLowerCase().trim() === targetName
-                );
+                let tempChannels = []; 
 
-                if (match) {
-                    orderedChannels.push(match);
+                // 1. Manual Channels 
+                if (config.manual_channels) {
+                    tempChannels.push(...config.manual_channels.map(ch => ({
+                        id: ch.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                        name: ch.name,
+                        logo: ch.logo,
+                        streamUrl: ch.url,
+                        drm: ch.drm
+                    })));
                 }
-            });
-            allChannels = orderedChannels;
-        } else {
-            allChannels = tempChannels;
+
+                // 2. Playlists Fetch 
+                if (config.playlists) {
+                    const playlistResults = await Promise.all(config.playlists.map(async (url) => {
+                        try {
+                            const res = await fetch(url);
+                            const text = await res.text();
+                            return parseM3U(text);
+                        } catch (err) { return []; }
+                    }));
+                    playlistResults.forEach(channels => tempChannels.push(...channels));
+                }
+
+                // --- NEW CODE ADDED: Direct Playlists Fetch ---
+                if (config.direct_playlists) {
+                    const directPlaylistResults = await Promise.all(config.direct_playlists.map(async (url) => {
+                        try {
+                            const res = await fetch(url);
+                            const text = await res.text();
+                            return parseM3U(text);
+                        } catch (err) { return []; }
+                    }));
+                    directPlaylistResults.forEach(channels => tempChannels.push(...channels));
+                }
+                // ----------------------------------------------
+
+                // 3. --- ORDERED WHITELIST LOGIC ---
+                if (config.allowed_channels && Array.isArray(config.allowed_channels)) {
+                    let orderedChannels = [];
+                    
+                    // JSON
+                    config.allowed_channels.forEach(allowedName => {
+                        const targetName = allowedName.toLowerCase().trim();
+                        
+                        // 
+                        const match = tempChannels.find(ch => 
+                            ch.name.toLowerCase().trim() === targetName
+                        );
+
+                        if (match) {
+                            orderedChannels.push(match);
+                        }
+                    });
+                    allChannels = orderedChannels;
+                } else {
+                    allChannels = tempChannels;
+                }
+
+                // 4. Final Clean
+                allChannels = allChannels.filter(ch => ch.streamUrl && ch.streamUrl.trim() !== "");
+
+                countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
+                loader.classList.add('hidden');
+                loadMoreChannels();
+
+            } catch (error) {
+                console.error("Error:", error);
+                loader.innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
+            }
         }
-
-        // 4. Final Clean
-        allChannels = allChannels.filter(ch => ch.streamUrl && ch.streamUrl.trim() !== "");
-
-        countLabel.textContent = `${allChannels.length} CHANNELS LIVE`;
-        loader.classList.add('hidden');
-        loadMoreChannels();
-
-    } catch (error) {
-        console.error("Error:", error);
-        loader.innerHTML = '<p class="text-red-500">Failed to load channels.</p>';
-    }
-}
 
         function parseM3U(content) {
             const lines = content.split('\n');
