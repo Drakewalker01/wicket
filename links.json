@@ -5,8 +5,9 @@
     "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u"
   ],
  "allowed_channels": [
-   
-  
+
+   "Cricbuzz Willow 1",
+  "Cricbuzz Willow 2",
    "Star Sports 1",
    "PTV Sports",
     "T Sports T20 World Cup (1)",
