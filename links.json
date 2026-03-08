@@ -1,35 +1,35 @@
 {
   "playlists": [
-    
-   "https://cricknbtv-embed.vercel.app/playlist.m3u",
     "https://raw.githubusercontent.com/abusaeeidx/IPTV-Scraper-Zilla/main/CricHD.m3u"
   ],
- "allowed_channels": [
-
-   "Cricbuzz Willow 1",
-  "Cricbuzz Willow 2",
-   "Star Sports 1",
-   "PTV Sports",
+  "direct_playlists": [
+    "https://cricknbtv-embed.vercel.app/playlist.m3u"
+  ],
+  "allowed_channels": [
+    "Cricbuzz Willow 1",
+    "Cricbuzz Willow 2",
+    "Star Sports 1",
+    "PTV Sports",
     "T Sports T20 World Cup (1)",
     "Willow HD",
-   "T Sports T20 World Cup 26 📺 (2)",
+    "T Sports T20 World Cup 26 📺 (2)",
     "Willow HD 2",
-   "T Sports (720p) (4)",
-   "Sky Sports Cricket",
-   "ESPN 1",
-   "ESPN 12",
-   "Sony Sports3",
-   "Fox Cricket 501 HD",
-   "Sky Sports Main Event",
-   "A Sports HD",
-   "T Sports HD (3)",
-   "Ten Sports",
-   "T Sports (8)",
-   "T Sports (720p) (3)",
-   "T Sports HD (5)",
+    "T Sports (720p) (4)",
+    "Sky Sports Cricket",
+    "ESPN 1",
+    "ESPN 12",
+    "Sony Sports3",
+    "Fox Cricket 501 HD",
+    "Sky Sports Main Event",
+    "A Sports HD",
+    "T Sports HD (3)",
+    "Ten Sports",
+    "T Sports (8)",
+    "T Sports (720p) (3)",
+    "T Sports HD (5)",
     "T SPORTS HD (10)",
     "Astro Cricket",
-   "Star Sports 2HD"
+    "Star Sports 2HD"
   ],
   "manual_channels": [
     {
@@ -47,8 +47,8 @@
       "name": "Star Sports 2HD",
       "logo": "https://is2-ssl.mzstatic.com/image/thumb/Purple116/v4/9d/94/5b/9d945be1-8c09-8ca5-575a-e28e7ae8355e/AppIcon-0-0-1x_U007emarketing-0-0-0-10-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/512x512bb.jpg",
       "group": "Sports",
-      "url": "https://cricknbtv-embed.vercel.app/nbtv/willowusa.m3u8"
+      "url": "https://cricknbtv-embed.vercel.app/nbtv/willowusa.m3u8",
+      "useProxy": false
     }
   ]
 }
-
