@@ -360,7 +360,7 @@
                 if(window.dataFetchPromise) data = await window.dataFetchPromise;
                 else { const response = await fetch('links.json?v=' + cacheBuster); data = await response.json(); }
 
-                // 🎯 මෙතනින් manualChannels ඔක්කොම proxy එක bypass කරන්න හැදුවා (useProxy: c.useProxy === true)
+                // 🎯  manualChannels 
                 let manualChannels = (data && data.manual_channels) ? data.manual_channels.map(c => ({
                     id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(), name: c.name, logo: c.logo, quality: "HD", streamUrl: c.url, headers: {}, drm: c.drm, 
                     useProxy: c.useProxy === true 
@@ -373,7 +373,7 @@
                         catch (e) { return []; }
                     });
                     m3uChannels = (await Promise.all(promises)).flat();
-                    m3uChannels.forEach(c => c.useProxy = true); // මේවා proxy හරහා යනවා
+                    m3uChannels.forEach(c => c.useProxy = true); //  proxy 
                 }
 
                 let directM3uChannels = [];
@@ -383,7 +383,7 @@
                         catch (e) { return []; }
                     });
                     directM3uChannels = (await Promise.all(promises)).flat();
-                    directM3uChannels.forEach(c => c.useProxy = false); // මේවා proxy bypass කරනවා
+                    directM3uChannels.forEach(c => c.useProxy = false); //  proxy bypass 
                 }
                 
                 let combinedChannels = [...manualChannels, ...m3uChannels, ...directM3uChannels];
@@ -412,7 +412,7 @@
                     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
                         if (request.uris[0].includes(WORKER_BASE_URL)) return;
                         
-                        // 🎯 Proxy Bypass Check එක
+                        // 🎯 Proxy Bypass Check
                         if (ch.useProxy === false) return; 
 
                         let proxyUrl = `${WORKER_BASE_URL}?url=${encodeURIComponent(request.uris[0])}`;
