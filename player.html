@@ -23,7 +23,7 @@
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "vg5cn2g5zr");
-</script>
+    </script>
     
     <script>
         window.dataFetchPromise = fetch('links.json')
@@ -368,10 +368,6 @@
                 else { const response = await fetch('links.json?v=' + cacheBuster); data = await response.json(); }
 
                 let manualChannels = (data && data.manual_channels) ? data.manual_channels.map(c => ({
-                    id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(), name: c.name, logo: c.logo, quality: "HD", streamUrl: c.url, headers: {}, drm: c.drm 
-                })) : [];
-
-                let manualChannels = (data && data.manual_channels) ? data.manual_channels.map(c => ({
                     id: c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase(), name: c.name, logo: c.logo, quality: "HD", streamUrl: c.url, headers: {}, drm: c.drm, useProxy: c.useProxy !== false 
                 })) : [];
 
@@ -433,9 +429,6 @@
                         
                         request.uris[0] = proxyUrl;
                     });
-    
-    request.uris[0] = proxyUrl;
-});
                     
                     player.configure({ drm: ch.drm || { clearKeys: {} }, streaming: { bufferingGoal: 3, rebufferingGoal: 1, retryParameters: { maxAttempts: 3, baseDelay: 1000 }, lowLatencyMode: true } });
                     
